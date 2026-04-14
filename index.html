@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Tycoon — Earn. Invest. Expand.</title>
+    <meta name="description" content="Money Tycoon is a realistic financial simulation game. Build your empire from scratch — earn income, invest in stocks & real estate, and expand your business empire.">
+    <meta name="theme-color" content="#0a0a0f">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --gold: #d4a843;
+            --gold-light: #e8c96a;
+            --gold-dim: #a07d2e;
+            --bg-deep: #07070c;
+            --bg-card: #0f0f18;
+            --bg-card-border: #1a1a2a;
+            --text-primary: #e8e6e1;
+            --text-secondary: #8a8892;
+            --green: #34c759;
+            --red: #ff3b30;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ─── Animated Background ─── */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(212,168,67,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,168,67,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .bg-glow {
+            position: fixed; top: -30vh; left: 50%; transform: translateX(-50%);
+            width: 80vw; height: 60vh; z-index: 0; pointer-events: none;
+            background: radial-gradient(ellipse, rgba(212,168,67,0.08) 0%, transparent 70%);
+        }
+
+        /* ─── Layout ─── */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+        /* ─── Nav ─── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 18px 0;
+            background: rgba(7,7,12,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212,168,67,0.08);
+        }
+        nav .container { display: flex; align-items: center; justify-content: space-between; }
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.4rem; color: var(--gold);
+            letter-spacing: 0.5px;
+        }
+        .logo span { color: var(--text-primary); }
+        .nav-cta {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 22px; border-radius: 10px;
+            background: var(--gold); color: #0a0a0f;
+            text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+        .nav-cta svg { width: 16px; height: 16px; }
+
+        /* ─── Hero ─── */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center;
+            padding: 120px 0 80px;
+        }
+        .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; border-radius: 100px;
+            background: rgba(212,168,67,0.1);
+            border: 1px solid rgba(212,168,67,0.2);
+            font-size: 0.8rem; color: var(--gold); font-weight: 500;
+            margin-bottom: 24px;
+        }
+        .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+        h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(2.6rem, 5vw, 4rem);
+            line-height: 1.1; margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        h1 .gold { color: var(--gold); }
+        .hero-sub {
+            font-size: 1.1rem; color: var(--text-secondary);
+            max-width: 440px; margin-bottom: 36px; font-weight: 300;
+        }
+        .cta-group { display: flex; gap: 14px; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 28px; border-radius: 12px;
+            background: var(--gold); color: #0a0a0f;
+            text-decoration: none; font-weight: 600; font-size: 1rem;
+            transition: all 0.3s; border: none; cursor: pointer;
+        }
+        .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,168,67,0.3); }
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 28px; border-radius: 12px;
+            background: transparent; color: var(--text-primary);
+            text-decoration: none; font-weight: 500; font-size: 1rem;
+            border: 1px solid var(--bg-card-border);
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+        /* ─── Phone Mockup ─── */
+        .phone-wrap { display: flex; justify-content: center; }
+        .phone {
+            width: 280px; height: 560px;
+            background: #1a1a2a;
+            border-radius: 36px;
+            border: 2px solid #2a2a3a;
+            padding: 12px;
+            box-shadow:
+                0 0 0 1px rgba(212,168,67,0.05),
+                0 20px 60px rgba(0,0,0,0.6),
+                0 0 100px rgba(212,168,67,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .phone-screen {
+            width: 100%; height: 100%;
+            background: linear-gradient(160deg, #0d1117 0%, #0a0f1a 50%, #0f0a1a 100%);
+            border-radius: 26px;
+            display: flex; flex-direction: column;
+            padding: 28px 20px 20px;
+            overflow: hidden;
+        }
+        .phone-header { text-align: center; margin-bottom: 20px; }
+        .phone-greeting { font-size: 0.7rem; color: var(--text-secondary); }
+        .phone-networth-label { font-size: 0.65rem; color: var(--text-secondary); margin-top: 10px; }
+        .phone-networth {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.9rem; color: var(--gold);
+        }
+        .phone-change { font-size: 0.7rem; color: var(--green); margin-top: 2px; }
+
+        .phone-chart {
+            width: 100%; height: 80px; margin: 12px 0;
+            position: relative;
+        }
+        .phone-chart svg { width: 100%; height: 100%; }
+
+        .phone-assets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .phone-asset {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 12px;
+        }
+        .phone-asset-name { font-size: 0.6rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .phone-asset-val { font-size: 0.85rem; font-weight: 600; }
+        .phone-asset-change { font-size: 0.6rem; margin-top: 2px; }
+        .up { color: var(--green); }
+        .down { color: var(--red); }
+
+        /* ─── Features ─── */
+        .section { padding: 100px 0; }
+        .section-label {
+            font-size: 0.8rem; color: var(--gold); font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            margin-bottom: 16px;
+        }
+        .section-desc {
+            color: var(--text-secondary); font-size: 1.05rem; max-width: 520px;
+            margin-bottom: 48px; font-weight: 300;
+        }
+
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            border-radius: 16px; padding: 28px;
+            transition: all 0.4s;
+        }
+        .feature-card:hover {
+            border-color: rgba(212,168,67,0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+        .feature-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(212,168,67,0.1);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px; font-size: 1.3rem;
+        }
+        .feature-card h3 { font-size: 1.05rem; margin-bottom: 8px; font-weight: 600; }
+        .feature-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
+
+        /* ─── Ticker ─── */
+        .ticker-wrap {
+            overflow: hidden; padding: 20px 0;
+            border-top: 1px solid var(--bg-card-border);
+            border-bottom: 1px solid var(--bg-card-border);
+            margin: 0 -24px;
+        }
+        .ticker {
+            display: flex; gap: 40px;
+            animation: scroll 25s linear infinite;
+            width: max-content;
+        }
+        .ticker-item {
+            display: flex; align-items: center; gap: 10px;
+            white-space: nowrap; font-size: 0.9rem;
+        }
+        .ticker-item .symbol { font-weight: 600; color: var(--text-primary); }
+        .ticker-item .price { color: var(--text-secondary); }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* ─── Tagline Band ─── */
+        .tagline-band {
+            padding: 80px 0; text-align: center;
+        }
+        .tagline {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            letter-spacing: 6px; text-transform: uppercase;
+        }
+        .tagline .sep { color: var(--gold); margin: 0 6px; }
+
+        /* ─── Footer ─── */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--bg-card-border);
+        }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .footer-copy { font-size: 0.82rem; color: var(--text-secondary); }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a {
+            font-size: 0.82rem; color: var(--text-secondary);
+            text-decoration: none; transition: color 0.3s;
+        }
+        .footer-links a:hover { color: var(--gold); }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .hero-inner { grid-template-columns: 1fr; text-align: center; }
+            .hero-sub { margin-left: auto; margin-right: auto; }
+            .cta-group { justify-content: center; }
+            .phone-wrap { margin-top: 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .footer-inner { flex-direction: column; text-align: center; }
+        }
+        @media (max-width: 480px) {
+            .phone { width: 240px; height: 480px; }
+            .cta-group { flex-direction: column; align-items: center; }
+        }
+
+        /* ─── Animations ─── */
+        .fade-up {
+            opacity: 0; transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards;
+        }
+        .fade-up-d1 { animation-delay: 0.1s; }
+        .fade-up-d2 { animation-delay: 0.25s; }
+        .fade-up-d3 { animation-delay: 0.4s; }
+        .fade-up-d4 { animation-delay: 0.55s; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- Nav -->
+<nav>
+    <div class="container">
+        <div class="logo">Money <span>Tycoon</span></div>
+        <a class="nav-cta" href="https://play.google.com/store/apps/details?id=com.moneytycoon.app" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 0 1 0 1.38l-2.302 2.302L15.2 12l2.498-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+            Get on Google Play
+        </a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-inner">
+            <div>
+                <div class="hero-badge fade-up">
+                    <span class="dot"></span>
+                    Realistic Financial Simulation
+                </div>
+                <h1 class="fade-up fade-up-d1">Build Your <span class="gold">Financial Empire</span></h1>
+                <p class="hero-sub fade-up fade-up-d2">
+                    Start from zero. Earn income, trade stocks, flip real estate, and expand a business empire — all in a hyper-realistic simulation.
+                </p>
+                <div class="cta-group fade-up fade-up-d3">
+                    <a class="btn-primary" href="https://play.google.com/store/apps/details?id=com.moneytycoon.app" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 0 1 0 1.38l-2.302 2.302L15.2 12l2.498-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/></svg>
+                        Download Free
+                    </a>
+                    <a class="btn-secondary" href="#features">Explore Features</a>
+                </div>
+            </div>
+            <div class="phone-wrap fade-up fade-up-d4">
+                <div class="phone">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div class="phone-greeting">Good morning, Tycoon</div>
+                            <div class="phone-networth-label">NET WORTH</div>
+                            <div class="phone-networth">$2,847,350</div>
+                            <div class="phone-change">+12.4% this month</div>
+                        </div>
+                        <div class="phone-chart">
+                            <svg viewBox="0 0 240 70" fill="none">
+                                <defs>
+                                    <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#d4a843" stop-opacity="0.3"/>
+                                        <stop offset="100%" stop-color="#d4a843" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M0 60 Q20 55 40 50 T80 38 T120 30 T160 22 T200 18 T240 8" stroke="#d4a843" stroke-width="2" fill="none"/>
+                                <path d="M0 60 Q20 55 40 50 T80 38 T120 30 T160 22 T200 18 T240 8 V70 H0 Z" fill="url(#cg)"/>
+                            </svg>
+                        </div>
+                        <div class="phone-assets">
+                            <div class="phone-asset">
+                                <div class="phone-asset-name">Stocks</div>
+                                <div class="phone-asset-val">$842K</div>
+                                <div class="phone-asset-change up">+3.2%</div>
+                            </div>
+                            <div class="phone-asset">
+                                <div class="phone-asset-name">Real Estate</div>
+                                <div class="phone-asset-val">$1.4M</div>
+                                <div class="phone-asset-change up">+1.8%</div>
+                            </div>
+                            <div class="phone-asset">
+                                <div class="phone-asset-name">Business</div>
+                                <div class="phone-asset-val">$520K</div>
+                                <div class="phone-asset-change up">+5.1%</div>
+                            </div>
+                            <div class="phone-asset">
+                                <div class="phone-asset-name">Savings</div>
+                                <div class="phone-asset-val">$85K</div>
+                                <div class="phone-asset-change down">-0.3%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+    <div class="ticker">
+        <div class="ticker-item"><span class="symbol">AAPL</span><span class="price">$198.42</span><span class="up">+1.2%</span></div>
+        <div class="ticker-item"><span class="symbol">TSLA</span><span class="price">$312.08</span><span class="down">-0.8%</span></div>
+        <div class="ticker-item"><span class="symbol">AMZN</span><span class="price">$187.65</span><span class="up">+2.1%</span></div>
+        <div class="ticker-item"><span class="symbol">GOOGL</span><span class="price">$142.30</span><span class="up">+0.5%</span></div>
+        <div class="ticker-item"><span class="symbol">NFLX</span><span class="price">$485.20</span><span class="up">+3.4%</span></div>
+        <div class="ticker-item"><span class="symbol">BTC</span><span class="price">$67,842</span><span class="down">-1.1%</span></div>
+        <div class="ticker-item"><span class="symbol">MSFT</span><span class="price">$420.15</span><span class="up">+0.9%</span></div>
+        <div class="ticker-item"><span class="symbol">NVDA</span><span class="price">$875.30</span><span class="up">+4.2%</span></div>
+        <!-- duplicate for seamless loop -->
+        <div class="ticker-item"><span class="symbol">AAPL</span><span class="price">$198.42</span><span class="up">+1.2%</span></div>
+        <div class="ticker-item"><span class="symbol">TSLA</span><span class="price">$312.08</span><span class="down">-0.8%</span></div>
+        <div class="ticker-item"><span class="symbol">AMZN</span><span class="price">$187.65</span><span class="up">+2.1%</span></div>
+        <div class="ticker-item"><span class="symbol">GOOGL</span><span class="price">$142.30</span><span class="up">+0.5%</span></div>
+        <div class="ticker-item"><span class="symbol">NFLX</span><span class="price">$485.20</span><span class="up">+3.4%</span></div>
+        <div class="ticker-item"><span class="symbol">BTC</span><span class="price">$67,842</span><span class="down">-1.1%</span></div>
+        <div class="ticker-item"><span class="symbol">MSFT</span><span class="price">$420.15</span><span class="up">+0.9%</span></div>
+        <div class="ticker-item"><span class="symbol">NVDA</span><span class="price">$875.30</span><span class="up">+4.2%</span></div>
+    </div>
+</div>
+
+<!-- Features -->
+<section class="section" id="features">
+    <div class="container">
+        <div class="section-label">Gameplay</div>
+        <div class="section-title">Everything You Need to Build Wealth</div>
+        <div class="section-desc">A full-spectrum financial simulator that mirrors real-world money mechanics — from your first paycheque to your first million.</div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💼</div>
+                <h3>Career Progression</h3>
+                <p>Climb the corporate ladder, switch industries, gain qualifications, and negotiate your salary.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Stock Market</h3>
+                <p>Trade stocks with realistic price movements, market cycles, dividends, and portfolio analytics.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏠</div>
+                <h3>Real Estate</h3>
+                <p>Buy, renovate, rent, and flip properties. Navigate mortgages, tenants, and market booms.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏦</div>
+                <h3>Banking & Credit</h3>
+                <p>Manage savings accounts, credit cards, loans, and build your credit score strategically.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏢</div>
+                <h3>Business Empire</h3>
+                <p>Launch startups, hire employees, scale operations, and dominate your industry.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎓</div>
+                <h3>Education & Skills</h3>
+                <p>Invest in yourself — courses, certifications, and degrees unlock higher earning potential.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tagline -->
+<section class="tagline-band">
+    <div class="container">
+        <div class="tagline">
+            Earn<span class="sep">·</span>Invest<span class="sep">·</span>Expand
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-copy">&copy; 2025 Money Tycoon. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="https://play.google.com/store/apps/details?id=com.moneytycoon.app" target="_blank">Google Play</a>
+                <a href="mailto:support@moneytycoon.app">Contact</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
