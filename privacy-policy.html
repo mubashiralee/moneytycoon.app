@@ -17,25 +17,33 @@
         h1 { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 10px; }
         h2 { color: #4FC3F7; margin-top: 30px; }
         h3 { color: #81C784; }
+        h4 { color: #B0BEC5; margin-top: 18px; }
         a { color: #FFD700; }
         .effective-date { color: #888; font-style: italic; }
         .highlight { background-color: #2d2d44; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .note { background-color: #1f3a4d; padding: 12px; border-left: 4px solid #4FC3F7; margin: 12px 0; border-radius: 4px; }
         ul { padding-left: 20px; }
         li { margin-bottom: 8px; }
+        code { background: #2d2d44; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
     </style>
 </head>
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
-    <p><strong>Last Updated:</strong> April 19, 2026</p>
-    <p class="effective-date"><strong>Effective Date:</strong> April 19, 2026</p>
+    <p><strong>Last Updated:</strong> May 19, 2026</p>
+    <p class="effective-date"><strong>Effective Date:</strong> May 19, 2026</p>
+    <p class="effective-date"><strong>Version:</strong> v3.1.1 — adds Firestore cross-device save sync, anonymous Firebase Auth, Firebase Analytics, Crashlytics, Remote Config, Liftoff Monetize mediation, and optional Pro Trading external data feeds (Alpha Vantage, Finnhub, Alpaca). All third-party data processors consent-gated per TCF v2 / Consent Mode v2.</p>
 
     <h2>Introduction</h2>
     <p>Welcome to Money Tycoon ("we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application Money Tycoon (the "App"). Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the App.</p>
 
+    <div class="note">
+        <strong>What changed in v3.0.0+:</strong> Earlier versions of Money Tycoon stored all game data locally on your device. Starting with v3.0.0, optional cross-device cloud save sync is available, and optional rewarded ads use mediated waterfalls. Each of these is consent-gated, and Money Tycoon remains fully playable offline with all premium content unlocked through in-app purchases — cloud sync is opt-in convenience, not a requirement.
+    </div>
+
     <h2>Information We Collect</h2>
 
     <h3>Information Stored Locally on Your Device</h3>
-    <p>Money Tycoon is designed with your privacy in mind. <strong>All game data is stored locally on your device</strong> and is not transmitted to our servers. This includes:</p>
+    <p>The majority of game data is stored locally on your device:</p>
     <ul>
         <li>Player name and game progress</li>
         <li>In-game financial data (virtual cash, businesses, investments)</li>
@@ -50,62 +58,172 @@
         <li><strong>Device Information:</strong> Device type, operating system version, unique device identifiers</li>
         <li><strong>Usage Data:</strong> App feature usage, session duration, and crash reports</li>
         <li><strong>Purchase Information:</strong> Records of in-app purchases made through Google Play</li>
-        <li><strong>Advertising Identifiers:</strong> Google Advertising ID (AAID) and similar identifiers used by Google AdMob to serve ads, measure ad performance, and provide frequency capping. You can reset or opt out of personalized ads via your device's advertising settings.</li>
+        <li><strong>Advertising Identifiers:</strong> Google Advertising ID (AAID) and similar identifiers used by Unity Ads and (where mediated) Liftoff Monetize to serve ads, measure ad performance, and provide frequency capping. You can reset or opt out of personalized ads via your device's advertising settings or via the in-app "Manage Ad Preferences" sheet.</li>
     </ul>
 
+    <h2>Cloud Save and Account Sync (added v3.0.0)</h2>
+    <p>Starting with v3.0.0, Money Tycoon offers optional cross-device cloud save sync, powered by Firebase. The following Firebase services are used:</p>
+
+    <h4>Firebase Auth (anonymous)</h4>
+    <p>To support cross-device sync without requiring an email address, Money Tycoon creates an <strong>anonymous Firebase Auth account</strong> on first launch. This account holds no personally identifying information — it is a randomly generated UID. You may optionally link this account to a Google sign-in (Sign in with Google) or email/password if you wish to access your save from a different install. Unlinking a Google account is supported in the in-app Settings → Account screen. See <a href="https://firebase.google.com/support/privacy">Firebase Privacy and Security</a>.</p>
+
+    <h4>Firebase Firestore (cross-device save mirror)</h4>
+    <p>When cloud save is enabled, the App mirrors 14 system subcollections of your game state into Firebase Firestore under a document keyed to your Firebase Auth UID. The mirrored subcollections include:</p>
+    <ul>
+        <li>Player metadata (display name, country, current age)</li>
+        <li>Cash, bank, and credit card balances</li>
+        <li>Owned businesses, properties, and trading positions</li>
+        <li>Stock holdings and portfolio history</li>
+        <li>Achievement progress</li>
+        <li>Daily Hub state, season pass tier, prestige history</li>
+        <li>Tutorial / onboarding progress</li>
+        <li>Notification preferences and FCM token</li>
+        <li>Persona / lifestyle metrics</li>
+        <li>Trading and banking ledgers</li>
+    </ul>
+    <p>Cloud save is governed by Firestore security rules that enforce per-player isolation — only the device authenticated as your Firebase Auth UID can read or write your data. Sync is bandwidth-budgeted (≤50 KB per device per day under normal play) and is paused when the device is on cellular and "Wi-Fi only" is selected in Settings.</p>
+    <p>You can disable cloud save at any time in Settings → Account → Cloud Sync. Disabling unlinks the local install from the cloud copy but does not delete the cloud copy. To delete the cloud copy, use Settings → Account → Delete cloud data (described under "Data Deletion" below).</p>
+
+    <h4>Firebase Cloud Messaging (added v2.5.0)</h4>
+    <p>If you opt in to push notifications, the App registers a Firebase Cloud Messaging (FCM) registration token issued by Google. This token allows our backend to deliver streak reminders, leaderboard updates, daily challenge notifications, and major release announcements — each opt-in is granular and per-category in Settings → Notifications. The FCM token is not personally identifying on its own and is rotated periodically by the operating system. You can disable any push category at any time in the App's Settings, or revoke notification permission system-wide via OS settings.</p>
+    <p>Per-user frequency cap: ≤ 7 push notifications per week, server-enforced.</p>
+
+    <h4>Firebase Analytics, Crashlytics, and Remote Config (added v2.10.2 / consent-gated v3.1.1)</h4>
+    <p>To improve the App and diagnose stability issues, Money Tycoon uses three additional Firebase services. All three are <strong>off by default</strong> and only enabled when you grant explicit consent (TCF v2 / Google Consent Mode v2 signals):</p>
+    <ul>
+        <li><strong>Firebase Analytics:</strong> Aggregate, anonymous gameplay metrics (screen views, feature usage, session length). No personal data, no purchase amounts, no account identifiers. Used to identify features that need improvement.</li>
+        <li><strong>Firebase Crashlytics:</strong> Crash stack traces, device model, OS version, and app version. The custom user ID set on Crashlytics is your Firebase Auth UID (anonymous) — never your email, name, or device IMEI. Used to triage stability bugs.</li>
+        <li><strong>Firebase Remote Config:</strong> Server-side feature flags and balance-tuning values (e.g., event rewards). Reads only — no data is sent from your device to Remote Config.</li>
+    </ul>
+    <p>If you decline consent on the first-launch dialog or via Settings → Manage Ad Preferences, all three services remain disabled, and your device sends no analytics or crash data to Google. You can revisit and reverse your consent decision at any time.</p>
+
     <h3>Information from Third-Party Services</h3>
-    
+
     <h4>Google Play Billing</h4>
     <p>When you make in-app purchases, the transaction is processed by Google Play. We receive confirmation of your purchase but do not have access to your payment details (credit card numbers, bank account information, etc.). Please refer to <a href="https://policies.google.com/privacy">Google's Privacy Policy</a> for information on how Google handles your payment data.</p>
+
+    <h4>Google Play Games Services (added v2.5.0)</h4>
+    <p>If you sign in to Google Play Games (optional), we receive your Google Play Games Player ID and display name to render you on the global leaderboards. Money Tycoon submits the following non-personal game-state values to Google Play Games servers:</p>
+    <ul>
+        <li>Net worth (USD-converted)</li>
+        <li>Number of businesses owned</li>
+        <li>Number of properties owned</li>
+        <li>Monthly passive income (USD-converted)</li>
+        <li>Number of prestige resets</li>
+        <li>Number of achievements unlocked</li>
+        <li>Largest single-trade profit (USD-converted)</li>
+        <li>Lifetime tax paid (USD-converted)</li>
+    </ul>
+    <p>You can opt out by not signing in to Google Play Games — the game remains fully playable with anonymous (local-only) leaderboards. Google's data handling for Play Games is documented in <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</p>
+
+    <h4>Tycoon Card Image Sharing (added v2.5.0)</h4>
+    <p>The "Share Tycoon Card" feature renders a 1080×1920 PNG image on your device (containing your in-game stats — net worth, business count, property count, achievement count, prestige count) and lets you share it via Android's standard share sheet (iMessage relay, WhatsApp, Twitter, Instagram Stories, etc.). The image is generated on-device only — Money Tycoon does not upload, store, or transmit the rendered card. Once shared, the receiving app handles the image per its own privacy policy.</p>
+
+    <h2>Advertising (added v2.9.0, expanded v2.13.3)</h2>
+    <p>Money Tycoon displays optional rewarded video advertisements that you initiate yourself by tapping a "Watch Ad for Reward" button. Ads are never forced. Watching a rewarded ad delivers small in-game bonuses (e.g., speed boost, daily bonus claim, education accelerator). Mogul Premium subscribers receive an ad-free experience.</p>
+
+    <h4>Unity Ads SDK (primary ad network, added v2.9.0)</h4>
+    <p>Money Tycoon uses Unity Ads SDK 4.13.0 to serve rewarded video ads. Unity Ads may collect and process information including your device's advertising identifier (AAID), approximate location (based on IP address), and ad interaction data to serve relevant ads and measure their performance.</p>
+    <ul>
+        <li>Unity Ads serves personalized or non-personalized ads depending on your consent preferences and applicable regional laws.</li>
+        <li>See <a href="https://unity.com/legal/game-player-and-app-user-privacy-policy">Unity Game Player and App User Privacy Policy</a></li>
+        <li>See <a href="https://unity.com/legal/privacy-policy">Unity Privacy Policy</a></li>
+    </ul>
+
+    <h4>Liftoff Monetize / Vungle (mediation partner, added v2.13.3)</h4>
+    <p>For certain ad placements, Money Tycoon uses Liftoff Monetize (formerly Vungle) as a mediation partner alongside Unity Ads. Liftoff may collect device identifiers, IP-based approximate location, and ad interaction events to serve and measure ads. The same consent state you provided for Unity Ads applies to Liftoff.</p>
+    <ul>
+        <li>See <a href="https://liftoff.io/privacy-policy/">Liftoff Privacy Policy</a></li>
+    </ul>
+
+    <h4>Google User Messaging Platform (UMP, added v2.9.0)</h4>
+    <p>For users in the EEA, UK, Switzerland, and California, we use Google's User Messaging Platform (UMP) SDK to present a consent form on first launch. UMP collects your consent state per IAB TCF v2 / Google Consent Mode v2 signals and stores it in <code>SharedPreferences</code> on your device. The consent state is forwarded to Unity Ads, Liftoff, and our Firebase services. You can revisit and change your consent at any time via Settings → Manage Ad Preferences.</p>
+    <p><strong>Important:</strong> Until you have completed the UMP consent flow (or are outside a region where consent is required), Money Tycoon does not initialize Firebase Analytics or Crashlytics, does not serve personalized ads, and does not set Google's advertising cookies.</p>
+
+    <h2>Optional Pro Trading Data Feeds (added v2.6+)</h2>
+    <p>Money Tycoon's Pro Trading mode uses real-world stock and crypto market data to drive simulated trades. These feeds are read-only — Money Tycoon sends no data to them about you. The App requests price quotes anonymously via HTTPS:</p>
+    <ul>
+        <li><strong>Alpha Vantage</strong> — Daily/weekly equity quotes. <a href="https://www.alphavantage.co/privacy/">Privacy Policy</a></li>
+        <li><strong>Finnhub</strong> — Real-time and historical equity quotes. <a href="https://finnhub.io/privacy-policy">Privacy Policy</a></li>
+        <li><strong>Alpaca</strong> — Real-time market data via WebSocket. <a href="https://alpaca.markets/legal">Privacy Notice</a></li>
+    </ul>
+    <p>These feeds are activated only when you open the Pro Trading screen. If you have your own API keys (Alpha Vantage / Finnhub / Alpaca) and enter them in Settings → Pro Trading → API Keys, those keys are stored locally on your device only and used only for outgoing requests to the respective provider.</p>
 
     <h2>How We Use Your Information</h2>
     <p>We use the information we collect to:</p>
     <ul>
         <li>Provide, maintain, and improve the App</li>
         <li>Process and fulfill in-app purchases</li>
-        <li>Send you technical notices and support messages</li>
+        <li>Synchronize your game progress across devices (when you opt in to cloud save)</li>
+        <li>Send you the notifications you've opted in to</li>
         <li>Respond to your comments and questions</li>
-        <li>Analyze usage patterns to improve user experience</li>
-        <li>Detect, prevent, and address technical issues</li>
+        <li>Analyze usage patterns to improve user experience (consent-gated)</li>
+        <li>Detect, prevent, and address technical issues (consent-gated)</li>
     </ul>
 
     <h2>Data Storage and Security</h2>
 
     <h3>Local Storage</h3>
-    <p>All game progress and player data is stored locally on your device using encrypted local storage. This game data is:</p>
+    <p>The bulk of game progress is stored locally on your device using Android's <code>SharedPreferences</code>, Room database, and DataStore. This local data is:</p>
     <ul>
-        <li>Not transmitted to our servers</li>
+        <li>Not transmitted to our servers (except via the cloud-sync system above when you opt in)</li>
         <li>Not shared with third parties for marketing</li>
         <li>Deleted when you uninstall the App or clear App data</li>
     </ul>
-    <p><em>Note: This local-only storage rule applies to your game save data. Advertising identifiers, ad interaction data, and purchase records described above are processed by Google AdMob and Google Play in accordance with their respective privacy policies.</em></p>
+
+    <h3>Cloud Storage (Firestore)</h3>
+    <p>When you opt in to cloud save, your game state mirror is stored in Google Firebase Firestore (us-central1 region). Firestore encrypts data at rest and in transit. Access is governed by Firestore security rules that enforce per-player isolation.</p>
 
     <h3>Security Measures</h3>
     <p>We implement appropriate technical and organizational security measures to protect your information, including:</p>
     <ul>
-        <li>Local data encryption</li>
-        <li>Secure communication protocols for any network requests</li>
+        <li>HTTPS for all network traffic; cleartext traffic explicitly disabled</li>
+        <li>Firebase Auth UID per-row authorization on Firestore</li>
+        <li>Local data encryption at rest (Android's default protection)</li>
         <li>Regular security assessments</li>
+        <li>R8/ProGuard obfuscation in release builds</li>
     </ul>
 
-    <h2>Third-Party Services</h2>
-    <p>Our App may use the following third-party services:</p>
+    <h2>Third-Party Services Summary</h2>
+    <p>Money Tycoon integrates with the following third-party services:</p>
 
-    <h3>Google Play Services</h3>
-    <p>Used for in-app purchases and app distribution. Google may collect certain information as described in their privacy policy.</p>
+    <h3>Google Play Services (required)</h3>
+    <p>Used for in-app purchases and app distribution.</p>
     <ul>
         <li><a href="https://policies.google.com/privacy">Google Privacy Policy</a></li>
         <li><a href="https://play.google.com/about/play-terms/">Google Play Terms of Service</a></li>
     </ul>
 
-    <h3>Google AdMob</h3>
-    <p>We use Google AdMob to display rewarded advertisements within the App. AdMob may collect and process information including your device's advertising identifier, approximate location (based on IP address), and ad interaction data to serve relevant ads and measure their performance.</p>
+    <h3>Firebase platform (consent-gated where applicable)</h3>
     <ul>
-        <li>AdMob may serve personalized or non-personalized ads depending on your consent preferences and applicable regional laws (e.g., GDPR).</li>
-        <li>Ad identifiers can be reset or disabled in your device settings.</li>
-        <li>For users in the EEA, UK, and Switzerland, we use Google's User Messaging Platform (UMP) to obtain your consent before showing personalized ads.</li>
-        <li><a href="https://support.google.com/admob/answer/6128543">How Google uses information from AdMob partners</a></li>
-        <li><a href="https://policies.google.com/technologies/ads">Google Advertising Policies</a></li>
+        <li>Firebase Auth (anonymous + optional Google sign-in)</li>
+        <li>Firebase Firestore (cross-device save sync, opt-in)</li>
+        <li>Firebase Cloud Messaging (push notifications, opt-in)</li>
+        <li>Firebase Analytics (consent-gated, opt-in)</li>
+        <li>Firebase Crashlytics (consent-gated, opt-in)</li>
+        <li>Firebase Remote Config (server-side flags)</li>
+        <li><a href="https://firebase.google.com/support/privacy">Firebase Privacy and Security</a></li>
+    </ul>
+
+    <h3>Ad networks (consent-gated)</h3>
+    <ul>
+        <li>Unity Ads SDK (Unity Technologies) — primary ad provider</li>
+        <li>Liftoff Monetize (Vungle) — mediation partner</li>
+        <li>Google User Messaging Platform (UMP) — TCF v2 consent collection</li>
+    </ul>
+
+    <h3>Google Play Games Services (optional)</h3>
+    <p>Optional. Used for global leaderboards and achievements.</p>
+    <ul>
+        <li><a href="https://policies.google.com/privacy">Google Privacy Policy</a></li>
+        <li><a href="https://developers.google.com/games/services/common/concepts/privacy">Google Play Games Privacy Concepts</a></li>
+    </ul>
+
+    <h3>Pro Trading data feeds (activated on Pro Trading screen open)</h3>
+    <ul>
+        <li><a href="https://www.alphavantage.co/privacy/">Alpha Vantage Privacy Policy</a></li>
+        <li><a href="https://finnhub.io/privacy-policy">Finnhub Privacy Policy</a></li>
+        <li><a href="https://alpaca.markets/legal">Alpaca Privacy Notice</a></li>
     </ul>
 
     <h2>Children's Privacy</h2>
@@ -114,28 +232,32 @@
     <h2>Your Rights and Choices</h2>
 
     <h3>Data Deletion</h3>
-    <p>Since all game data is stored locally on your device, you can delete all your data at any time by:</p>
+    <p>You have multiple ways to delete your Money Tycoon data:</p>
     <ul>
-        <li>Uninstalling the App</li>
-        <li>Clearing the App's data through your device settings</li>
-        <li>Using the "Reset Game" feature within the App</li>
+        <li><strong>Uninstall the App</strong> — deletes all local data on your device. If you have cloud save enabled, the cloud copy is not affected by uninstall.</li>
+        <li><strong>Clear App Data</strong> — wipes all local data via your device's Settings → Apps → Money Tycoon → Storage → Clear data.</li>
+        <li><strong>Reset Game (in-app)</strong> — Settings → Account → Reset Game. Wipes all local data including SharedPreferences (CharitableGivingRepository, LeaderboardInstrumentation, MogulPassport, DailyHub, LiveEvents, FlashSale, season manager, prefs cache) and removes the cloud copy from Firestore.</li>
+        <li><strong>Delete Cloud Data only</strong> — Settings → Account → Delete cloud data. Removes your Firestore document while leaving local data intact. Useful if you want to keep playing offline.</li>
+        <li><strong>Email request</strong> — write to <code>capitalcraftgames@gmail.com</code> from the email associated with your linked Google sign-in (if any) and we will process the deletion within 30 days.</li>
     </ul>
 
     <h3>Opt-Out of Analytics and Personalized Ads</h3>
     <p>You have several options to limit data collection:</p>
     <ul>
+        <li><strong>UMP consent revoke:</strong> Settings → Manage Ad Preferences re-launches the consent form. Selecting "Reject all" disables Firebase Analytics, Crashlytics, and turns off personalized ads.</li>
         <li><strong>Personalized Ads:</strong> On Android, go to <em>Settings → Google → Ads</em> and toggle "Opt out of Ads Personalization", or use the "Delete advertising ID" option.</li>
-        <li><strong>GDPR Consent:</strong> Users in the EEA, UK, and Switzerland can revisit their consent choices via the App's privacy settings, which re-launches the consent form.</li>
-        <li><strong>Subscription:</strong> Upgrading to our premium Gold or Platinum subscription tier removes all advertisements from the App entirely.</li>
-        <li><strong>In-App Settings:</strong> You can also limit non-essential data collection via the App's Settings screen.</li>
+        <li><strong>Subscription:</strong> Upgrading to Mogul Premium removes all advertisements from the App entirely.</li>
+        <li><strong>Cloud Sync:</strong> Settings → Account → Cloud Sync toggles cloud save on/off.</li>
+        <li><strong>Notifications:</strong> Each notification category (streak reminders, daily challenges, leaderboard updates, releases) has a separate Settings toggle. OS-level notification permission overrides all in-app toggles.</li>
     </ul>
 
     <h2>In-App Purchases</h2>
     <p>Money Tycoon offers optional in-app purchases including:</p>
     <ul>
-        <li>Cash packs (virtual in-game currency)</li>
-        <li>Speed boost consumables</li>
-        <li>Premium subscription tiers (Dividend Society)</li>
+        <li>Gem packs (virtual in-game currency)</li>
+        <li>Speed boost consumables (24-hour cap per consumable)</li>
+        <li>Mogul Premium subscription tiers (Silver / Gold / Platinum)</li>
+        <li>Mogul Pass seasonal pass</li>
     </ul>
     <p>All purchases are processed securely through Google Play. We do not store or have access to your payment information.</p>
 
@@ -144,48 +266,78 @@
     <ul>
         <li>Posting the new Privacy Policy within the App</li>
         <li>Updating the "Last Updated" date at the top of this policy</li>
+        <li>For material changes, displaying an in-app notification or pop-up</li>
     </ul>
     <p>You are advised to review this Privacy Policy periodically for any changes. Changes are effective when posted.</p>
 
     <h2>International Users</h2>
-    <p>If you are accessing the App from outside the United States, please be aware that your information may be transferred to, stored, and processed in the United States where our servers may be located. By using the App, you consent to this transfer.</p>
+    <p>If you are accessing the App from outside the United States, please be aware that your information may be transferred to, stored, and processed in the United States (Firebase us-central1 region) where our servers may be located. By using the App, you consent to this transfer. For users in the EEA, UK, and Switzerland, transfers are made under the EU-US Data Privacy Framework or equivalent SCCs maintained by Google.</p>
 
     <h2>EU, UK, and Swiss Users (GDPR)</h2>
     <p>If you are located in the European Economic Area (EEA), United Kingdom, or Switzerland, you have rights under the General Data Protection Regulation (GDPR) or UK GDPR, including:</p>
     <ul>
         <li><strong>Right of Access:</strong> Request a copy of the personal data we process about you.</li>
         <li><strong>Right to Rectification:</strong> Request correction of inaccurate data.</li>
-        <li><strong>Right to Erasure:</strong> Request deletion of your data (uninstalling the App clears all local data).</li>
+        <li><strong>Right to Erasure:</strong> Request deletion of your data (Reset Game wipes both local and cloud data; uninstall wipes local only).</li>
         <li><strong>Right to Object and Restrict Processing:</strong> Object to processing based on legitimate interests.</li>
-        <li><strong>Right to Withdraw Consent:</strong> Withdraw consent for personalized advertising at any time via the App's privacy settings.</li>
+        <li><strong>Right to Withdraw Consent:</strong> Withdraw consent for personalized advertising, Firebase Analytics, and Crashlytics at any time via Settings → Manage Ad Preferences.</li>
+        <li><strong>Right to Data Portability:</strong> Request an export of your cloud save document.</li>
     </ul>
-    <p><strong>Legal Basis:</strong> We rely on your consent for personalized advertising (collected via Google's User Messaging Platform), the performance of a contract for in-app purchases, and legitimate interests for anonymous analytics and crash reporting.</p>
-    <p><strong>Data Controller:</strong> For personal data processed by Google AdMob, Google acts as a joint or independent controller depending on the processing activity. See <a href="https://business.safety.google/adscontrollerterms/">Google Ads Controller-Controller Data Protection Terms</a> for details.</p>
+    <p><strong>Legal Basis:</strong> We rely on your <em>consent</em> for personalized advertising, Firebase Analytics, and Crashlytics (collected via Google's User Messaging Platform with TCF v2 signals). We rely on <em>contract</em> for in-app purchases and core gameplay. We rely on <em>legitimate interests</em> for the strict-necessary cloud-save mirror you opt into.</p>
+    <p><strong>Data Controllers:</strong> Money Tycoon Development Team is the controller for your in-game data. For data processed by Google AdMob/Unity/Liftoff for cross-context behavioral advertising, the ad network and Money Tycoon act as joint controllers. See <a href="https://business.safety.google/adscontrollerterms/">Google Ads Controller-Controller Data Protection Terms</a> for details.</p>
     <p>To exercise any of these rights or lodge a complaint with a supervisory authority, please contact us using the details below.</p>
 
     <h2>California Privacy Rights (CCPA/CPRA)</h2>
     <p>If you are a California resident, you have specific rights under the California Consumer Privacy Act (CCPA) as amended by the California Privacy Rights Act (CPRA), including the right to know, delete, correct, and limit the use of sensitive personal information.</p>
-    <p><strong>"Sharing" of Personal Information:</strong> Under the CPRA's broad definition, the use of advertising identifiers by Google AdMob for cross-context behavioral advertising may constitute "sharing". California residents can opt out of this sharing by:</p>
+    <p><strong>"Sharing" of Personal Information:</strong> Under the CPRA's broad definition, the use of advertising identifiers by Unity Ads and Liftoff for cross-context behavioral advertising may constitute "sharing". California residents can opt out of this sharing by:</p>
     <ul>
+        <li>Selecting "Reject all" on the UMP consent form (re-accessible via Settings → Manage Ad Preferences)</li>
         <li>Enabling "Limit Ad Tracking" or "Opt out of Ads Personalization" in your device settings</li>
-        <li>Declining personalized ads in our consent prompt (where applicable)</li>
-        <li>Subscribing to Gold or Platinum tiers, which disables all advertising</li>
+        <li>Subscribing to Mogul Premium, which disables all advertising</li>
     </ul>
     <p>We do not sell personal information for monetary consideration. To exercise your rights, contact us using the information below.</p>
 
+    <h2>Data Processor Summary (for compliance audits)</h2>
+    <p>Money Tycoon engages the following data processors. Each is identified by category and consent-state:</p>
+    <table style="width:100%; border-collapse: collapse; margin-top: 12px; background: #2d2d44;">
+        <thead>
+            <tr style="background: #1f3a4d;">
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Processor</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Purpose</th>
+                <th style="padding: 8px; text-align: left; border-bottom: 1px solid #444;">Consent state</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td style="padding: 8px;">Google Play Billing</td><td style="padding: 8px;">IAP processing</td><td style="padding: 8px;">Contract</td></tr>
+            <tr><td style="padding: 8px;">Firebase Auth (anonymous)</td><td style="padding: 8px;">Account identity</td><td style="padding: 8px;">Legit. interest (anonymous)</td></tr>
+            <tr><td style="padding: 8px;">Firebase Firestore</td><td style="padding: 8px;">Cloud save sync</td><td style="padding: 8px;">Opt-in (Settings toggle)</td></tr>
+            <tr><td style="padding: 8px;">Firebase Cloud Messaging</td><td style="padding: 8px;">Push notifications</td><td style="padding: 8px;">Opt-in (per category)</td></tr>
+            <tr><td style="padding: 8px;">Firebase Analytics</td><td style="padding: 8px;">Aggregate usage analytics</td><td style="padding: 8px;">UMP consent (off by default)</td></tr>
+            <tr><td style="padding: 8px;">Firebase Crashlytics</td><td style="padding: 8px;">Crash diagnostics</td><td style="padding: 8px;">UMP consent (off by default)</td></tr>
+            <tr><td style="padding: 8px;">Firebase Remote Config</td><td style="padding: 8px;">Server-side flags (read-only)</td><td style="padding: 8px;">Legit. interest</td></tr>
+            <tr><td style="padding: 8px;">Google Play Games Services</td><td style="padding: 8px;">Leaderboards / achievements</td><td style="padding: 8px;">Opt-in sign-in</td></tr>
+            <tr><td style="padding: 8px;">Unity Ads SDK</td><td style="padding: 8px;">Rewarded video ads</td><td style="padding: 8px;">UMP consent</td></tr>
+            <tr><td style="padding: 8px;">Liftoff Monetize</td><td style="padding: 8px;">Ad mediation</td><td style="padding: 8px;">UMP consent</td></tr>
+            <tr><td style="padding: 8px;">Google UMP</td><td style="padding: 8px;">Consent collection</td><td style="padding: 8px;">Required for EEA/UK/CH/CA</td></tr>
+            <tr><td style="padding: 8px;">Alpha Vantage</td><td style="padding: 8px;">Stock quotes (Pro Trading)</td><td style="padding: 8px;">Activated on Pro Trading open</td></tr>
+            <tr><td style="padding: 8px;">Finnhub</td><td style="padding: 8px;">Stock quotes (Pro Trading)</td><td style="padding: 8px;">Activated on Pro Trading open</td></tr>
+            <tr><td style="padding: 8px;">Alpaca</td><td style="padding: 8px;">Live market data (Pro Trading)</td><td style="padding: 8px;">Activated on Pro Trading open</td></tr>
+        </tbody>
+    </table>
+
     <h2>Contact Us</h2>
     <p>If you have questions or concerns about this Privacy Policy or our practices, please contact us at:</p>
-    
+
     <div class="highlight">
         <p><strong>Email:</strong> capitalcraftgames@gmail.com</p>
         <p><strong>Developer:</strong> Money Tycoon Development Team</p>
     </div>
 
     <h2>Consent</h2>
-    <p>By using Money Tycoon, you consent to this Privacy Policy.</p>
+    <p>By using Money Tycoon, you consent to this Privacy Policy. For consent-gated processors (Firebase Analytics, Crashlytics, Unity Ads, Liftoff), explicit opt-in via the UMP consent flow is required.</p>
 
     <hr style="border-color: #333; margin: 40px 0;">
-    
+
     <p style="text-align: center; color: #666;">
         © 2026 Money Tycoon. All rights reserved.
     </p>
