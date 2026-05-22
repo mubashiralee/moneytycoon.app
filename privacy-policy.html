@@ -29,7 +29,7 @@
 </head>
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
-    <p><strong>Last Updated:</strong> May 19, 2026</p>
+    <p><strong>Last Updated:</strong> May 22, 2026</p>
     <p class="effective-date"><strong>Effective Date:</strong> May 19, 2026</p>
     <p class="effective-date"><strong>Version:</strong> v3.1.1 — adds Firestore cross-device save sync, anonymous Firebase Auth, Firebase Analytics, Crashlytics, Remote Config, Liftoff Monetize mediation, and optional Pro Trading external data feeds (Alpha Vantage, Finnhub, Alpaca). All third-party data processors consent-gated per TCF v2 / Consent Mode v2.</p>
 
@@ -236,7 +236,7 @@
     <ul>
         <li><strong>Uninstall the App</strong> — deletes all local data on your device. If you have cloud save enabled, the cloud copy is not affected by uninstall.</li>
         <li><strong>Clear App Data</strong> — wipes all local data via your device's Settings → Apps → Money Tycoon → Storage → Clear data.</li>
-        <li><strong>Reset Game (in-app)</strong> — Settings → Account → Reset Game. Wipes all local data including SharedPreferences (CharitableGivingRepository, LeaderboardInstrumentation, MogulPassport, DailyHub, LiveEvents, FlashSale, season manager, prefs cache) and removes the cloud copy from Firestore.</li>
+        <li><strong>Reset Game (in-app)</strong> — Settings → Account → Reset Game. Starts a fresh playthrough: wipes your current run's local data and SharedPreferences (CharitableGivingRepository, LeaderboardInstrumentation, MogulPassport, DailyHub, LiveEvents, FlashSale, season manager, prefs cache) and removes the cloud copy from Firestore. <strong>Note:</strong> cross-playthrough progression is intentionally retained across a Reset — specifically your prestige history and your Legacy &amp; Impact data (Legacy score, foundation name, and monumental-project names), since these are permanent achievements rather than run state. To erase this progression too, use <strong>Uninstall</strong> or <strong>Clear App Data</strong> (above), which remove everything.</li>
         <li><strong>Delete Cloud Data only</strong> — Settings → Account → Delete cloud data. Removes your Firestore document while leaving local data intact. Useful if you want to keep playing offline.</li>
         <li><strong>Email request</strong> — write to <code>capitalcraftgames@gmail.com</code> from the email associated with your linked Google sign-in (if any) and we will process the deletion within 30 days.</li>
     </ul>
@@ -278,7 +278,7 @@
     <ul>
         <li><strong>Right of Access:</strong> Request a copy of the personal data we process about you.</li>
         <li><strong>Right to Rectification:</strong> Request correction of inaccurate data.</li>
-        <li><strong>Right to Erasure:</strong> Request deletion of your data (Reset Game wipes both local and cloud data; uninstall wipes local only).</li>
+        <li><strong>Right to Erasure:</strong> Request deletion of your data. Uninstall or Clear App Data removes all local data — including prestige and Legacy &amp; Impact progression; Delete Cloud Data (or an email request) removes the cloud copy. (Reset Game is a new-playthrough reset that intentionally retains prestige and Legacy progression, so use Uninstall / Clear App Data for full local erasure.)</li>
         <li><strong>Right to Object and Restrict Processing:</strong> Object to processing based on legitimate interests.</li>
         <li><strong>Right to Withdraw Consent:</strong> Withdraw consent for personalized advertising, Firebase Analytics, and Crashlytics at any time via Settings → Manage Ad Preferences.</li>
         <li><strong>Right to Data Portability:</strong> Request an export of your cloud save document.</li>
