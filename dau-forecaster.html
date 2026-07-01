@@ -123,6 +123,7 @@
         <button data-mix="bal">Balanced growth</button>
         <button data-mix="prem">Premium push</button>
         <button data-mix="rev">Revenue-max</button>
+        <button data-mix="launch">↺ Launch replay</button>
       </div>
 
       <label style="margin-top:14px">Geo-tier split of budget %</label>
@@ -213,7 +214,10 @@
             <input class="mini" id="beta" type="number" min="0.5" step="0.01" value="1.07"/></div>
           <div style="flex:1"><div class="hint" style="margin:0 0 3px">Retention floor %</div>
             <input class="mini" id="floor" type="number" min="0" step="0.1" value="0"/></div>
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Ranking halo ×</div>
+            <input class="mini" id="halo" type="number" min="1" step="0.1" value="1.4"/></div>
         </div>
+        <div class="hint" style="margin-top:4px"><b>Ranking/organic halo ×</b> — extra installs your paid spend generates <i>indirectly</i> via Play-Store ranking &amp; organic discovery (installs = paid × halo). Strongest in cheap Tier-3 (applied ×1.0 T3 / ×0.6 T2 / ×0.3 T1). Your launch ran ~<b>1.6×</b> (£497 → ~15,600 real installs = £0.03 effective vs £0.05 floor); default 1.4 assumes some of that launch/ranking momentum persists but not all (Google policy-throttled it). Set to 1.0 for pure paid, no halo.</div>
         <div class="hint" style="margin:12px 0 3px"><b>Subscriptions</b> — recurring, modelled as a subscriber <i>stock</i> with its own churn (per-tier price)</div>
         <table style="font-size:11px">
           <thead><tr><th>Tier</th><th>Sub conv %*</th><th>Net £/sub/mo</th></tr></thead>
@@ -290,7 +294,8 @@
     <h2>Market breakdown — how the blend is built <span class="pill" id="mixEcho">—</span></h2>
     <table><thead><tr><th>Market</th><th>Spend/day</th><th>Eff. CPI £</th><th>Installs/d</th><th>Net ARPDAU £</th><th>Steady DAU</th><th>Rev/mo £</th><th>ROAS</th></tr></thead>
       <tbody id="mktBody"></tbody></table>
-    <div class="hint" style="margin-top:8px"><b>Eff. CPI</b> is spend ÷ installs (rises above the floor CPI as you approach a market's daily reach). Cheap Tier-3 installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept far fewer users. ROAS is lifetime paid-value ÷ spend at your chosen LTV horizon.</div>
+    <div class="hint" id="haloEcho" style="margin-top:8px;color:var(--gold)"></div>
+    <div class="hint" style="margin-top:6px"><b>Eff. CPI</b> is spend ÷ installs (incl. free halo installs), and rises above the floor CPI as you approach a market's daily reach. Cheap Tier-3 installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept far fewer users. ROAS is lifetime paid-value ÷ spend at your chosen LTV horizon.</div>
   </div>
 
   <!-- REVENUE -->
@@ -418,7 +423,7 @@ function readP(){
     spend:num('spend'), w:[a/s,b/s,c/s], iosShare:num('iosShare')/100, org:num('org'),
     currentDAU:num('currentDAU')||0, fee:num('fee')/100,
     beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
-    subFrac:num('subFrac')/100, churn:num('churn')/100,
+    subFrac:num('subFrac')/100, churn:num('churn')/100, halo:num('halo')||1,
     tiers:[
       {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100,sconv:num('sconv1')/100,sprice:num('sprice1')},
       {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100,sconv:num('sconv2')/100,sprice:num('sprice2')},
@@ -443,10 +448,14 @@ function buildMarkets(p,spend,cpiMult){
     if(iS>0) out.push({name:names[i]+' · iOS',plat:'ios',tier:i,spend:iS,
       cpi:t.cpi*p.ios.cpi*cpiMult,reach:t.reach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,t.reach*p.ios.reach),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
   }
-  const SLD=subLifeDays(p);
+  const SLD=subLifeDays(p), haloScale=[0.3,0.6,1.0];   // ranking/organic halo strongest in cheap Tier-3
   out.forEach(m=>{
     const t=p.tiers[m.tier], isIos=m.plat==='ios';
-    m.cpiEff=m.installs>0?m.spend/m.installs:0;
+    m.direct=m.installs;                                 // paid installs you buy (from the auction)
+    m.halo=1+(p.halo-1)*haloScale[m.tier];              // ranking/organic multiplier (tier-scaled)
+    m.installs=m.direct*m.halo;                          // total installs incl. halo (free extra)
+    m.directCpi=m.direct>0?m.spend/m.direct:0;          // £ per PAID install (auction price)
+    m.cpiEff=m.installs>0?m.spend/m.installs:0;         // £ per install incl. free halo (effective)
     m.steadyDAU=m.installs*Lval(m.ret,p);
     m.fAr=flowAr(t,p,isIos);                                   // ad+consumable per DAU-day (net)
     m.sconv=t.sconv; m.sprice=t.sprice*(isIos?p.ios.ar:1);     // iOS subscribers pay more (× iOS ARPDAU mult)
@@ -636,6 +645,11 @@ function recompute(){
     `<tr class="tot"><td>Blended / Total</td><td>£${spend.toFixed(2)}</td><td>${blendCpi>0?'£'+blendCpi.toFixed(3):'—'}</td>`+
     `<td>${fmt(totalInstalls)}</td><td>£${blendAr.toFixed(4)}</td><td>${fmt(steady)}</td>`+
     `<td>£${fmt(revDay*30)}</td><td>${spend>0?(revDay/spend).toFixed(2)+'×':'∞'}</td></tr>`);
+  // ranking/organic halo split
+  const totDirect=mk.reduce((s,m)=>s+m.direct,0), totHalo=paidInstalls-totDirect;
+  $('haloEcho').innerHTML = (p.halo>1 && totDirect>0)
+    ? `<b>Ranking/organic halo ×${p.halo}:</b> ${fmt(totDirect)} paid installs/day → +${fmt(totHalo)} free (ranking/discovery) = <b>${fmt(paidInstalls)} total</b>. Effective CPI <b>£${blendCpi.toFixed(3)}</b> vs paid-auction CPI £${(totDirect>0?spend/totDirect:0).toFixed(3)}.`
+    : '';
 
   // revenue KPIs
   const revMonth=revDay*30, net=revMonth-spend*30;
@@ -732,7 +746,7 @@ NUMPAIR.forEach(([r,n])=>{
 });
 ['t1','t2','t3','currentDAU','cpi1','cpi2','cpi3','reach1','reach2','reach3','ar1','ar2','ar3',
  'ret1','ret2','ret3','iap1','iap2','iap3','iosCpi','iosAr','iosRet','iosReach','beta','floor',
- 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn']
+ 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn','halo']
   .forEach(id=>$(id).addEventListener('input',recompute));
 
 $('horizonSeg').addEventListener('click',e=>{ if(e.target.dataset.h){
@@ -742,10 +756,12 @@ $('lifeSeg').addEventListener('click',e=>{ if(e.target.dataset.l){
   life=+e.target.dataset.l;
   [...$('lifeSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
-const MIX={ cur:[0,0,100,0], bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55] };
+const MIX={ cur:[0,0,100,0], bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   const m=MIX[e.target.dataset.mix];
   $('t1').value=m[0]; $('t2').value=m[1]; $('t3').value=m[2]; $('iosShare').value=m[3]; $('iosShareN').value=m[3];
+  if(m[4]!==undefined){ $('spend').value=m[4]; $('spendN').value=m[4]; }   // launch replay sets spend
+  $('halo').value = (m[5]!==undefined)? m[5] : 1.4;                        // launch → 1.7; planning presets reset to 1.4
   [...$('mixSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
 $('themeBtn').addEventListener('click',()=>{
