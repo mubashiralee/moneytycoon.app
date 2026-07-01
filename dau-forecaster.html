@@ -287,6 +287,15 @@
     <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — this is your ~£120/mo today and stays positive whenever organic + affordable paid outweigh spend. <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
 
+  <!-- MONTH ON MONTH -->
+  <div class="card" style="margin-top:20px">
+    <h2>Month-on-month revenue &amp; profit <span class="pill">sustained spend · 12 months</span></h2>
+    <div class="chartbox" style="height:300px"><canvas id="chart3"></canvas></div>
+    <table style="margin-top:10px"><thead><tr><th>Month</th><th>Avg DAU</th><th>Revenue</th><th>Ad spend</th><th>Net profit</th><th>Cumulative</th></tr></thead>
+      <tbody id="momBody"></tbody></table>
+    <div class="hint" style="margin-top:8px">Assumes you keep spending your current £/day <b>every month</b> at the current mix. Watch the <b>J-curve</b>: you pay full spend from month 1, but DAU (and revenue) ramp over the first ~6 weeks — so early months can run at a loss and <b>cumulative profit dips before it recovers</b>. Revenue includes free organic; net = revenue − ad spend. (For "spend a burst then stop", see the Campaign P&amp;L above.)</div>
+  </div>
+
   <!-- TABLES -->
   <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:20px">
     <div class="card">
@@ -348,7 +357,7 @@ function trajFromInstalls(inst,days,ret,hist,p){
 
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, life=365, chart, chart2;
+let horizon=180, life=365, chart, chart2, chart3;
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
@@ -404,6 +413,12 @@ function mixTraj(spend,days,p,cpiMult){
 const mixSteady=(spend,p,cpiMult)=>orgSteady(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.steadyDAU,0);
 const mixRevDay=(spend,p,cpiMult)=>orgSteady(p)*arT3Net(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.revDay,0);
 const paidLtvTotal=(spend,p,cpiMult)=>buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.installs*m.ltv,0);
+// daily NET revenue trajectory (per-market ARPDAU × that market's DAU, + organic) — index 0 = today
+function revTraj(spend,days,p){
+  const base=anchoredBase(days,p), at3=arT3Net(p), mk=buildMarkets(p,spend,1);
+  const paid=mk.map(m=>({t:trajFromInstalls(m.installs,days,m.ret,ZEROS,p),ar:m.arNet}));
+  return base.map((v,i)=>v*at3 + paid.reduce((s,pp)=>s+pp.t[i]*pp.ar,0));
+}
 
 // maintenance: bisect spend that holds current DAU flat over 90d (independent of the spend slider)
 function maintenanceSpend(p){
@@ -457,6 +472,37 @@ function renderCampaign(spend,p){
       plugins:{legend:{labels:{color:mut,boxWidth:14}},tooltip:{callbacks:{title:i=>'Day '+i[0].label,label:c=>c.dataset.label+': £'+fmt(c.parsed.y)}}},
       scales:{x:{title:{display:true,text:'Days from campaign start',color:mut},ticks:{color:mut,maxTicksLimit:10},grid:{color:gl}},
               y:{title:{display:true,text:'£ cumulative',color:mut},ticks:{color:mut},grid:{color:gl}}}}});
+}
+
+// ================= render: month-on-month (sustained spend) =================
+function renderMoM(spend,p){
+  const days=360, rv=revTraj(spend,days,p), traj=mixTraj(spend,days,p,1);
+  const rows=[]; let cum=0;
+  for(let mo=0;mo<12;mo++){
+    let rev=0,dau=0; for(let d=0;d<30;d++){ const idx=mo*30+d; rev+=rv[idx]; dau+=traj[idx]; }
+    const sp=spend*30, net=rev-sp; cum+=net;
+    rows.push({m:mo+1,dau:dau/30,rev,sp,net,cum});
+  }
+  const tb=$('momBody'); tb.innerHTML='';
+  const money=x=>(x>=0?'+£':'−£')+fmt(Math.abs(x)), col=x=>x>=0?'var(--emerald)':'var(--danger)';
+  rows.forEach(r=>tb.insertAdjacentHTML('beforeend',
+    `<tr><td>M${r.m}</td><td>${fmt(r.dau)}</td><td>£${fmt(r.rev)}</td><td>£${fmt(r.sp)}</td>`+
+    `<td style="color:${col(r.net)}">${money(r.net)}</td><td style="color:${col(r.cum)}">${money(r.cum)}</td></tr>`));
+  const labels=rows.map(r=>'M'+r.m);
+  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
+  const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
+  const ds=[
+    {type:'bar',label:'Revenue',data:rows.map(r=>r.rev),backgroundColor:'rgba(47,191,128,.55)',borderColor:'#2fbf80',borderWidth:1},
+    {type:'bar',label:'Ad spend',data:rows.map(r=>r.sp),backgroundColor:'rgba(143,176,163,.30)',borderColor:'#8fb0a3',borderWidth:1},
+    {type:'line',label:'Cumulative profit',data:rows.map(r=>r.cum),borderColor:'#e9c46a',backgroundColor:'rgba(233,196,106,.12)',borderWidth:2.5,tension:.2,pointRadius:0,fill:false,yAxisID:'y1'}
+  ];
+  if(chart3){chart3.data.labels=labels;chart3.data.datasets=ds;chart3.update();}
+  else chart3=new Chart($('chart3'),{data:{labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:mut,boxWidth:14}},tooltip:{callbacks:{label:c=>c.dataset.label+': £'+fmt(c.parsed.y)}}},
+      scales:{x:{ticks:{color:mut},grid:{color:gl}},
+              y:{title:{display:true,text:'£ / month',color:mut},ticks:{color:mut},grid:{color:gl},beginAtZero:true},
+              y1:{position:'right',title:{display:true,text:'£ cumulative',color:mut},ticks:{color:mut},grid:{display:false}}}}});
 }
 
 // ================= render: main =================
@@ -563,6 +609,7 @@ function recompute(){
   });
 
   renderCampaign(spend,p);
+  renderMoM(spend,p);
 
   // main chart with confidence band
   const trLow=mixTraj(spend,horizon,pLow,1.4), trHigh=mixTraj(spend,horizon,pHigh,0.8);
@@ -610,7 +657,7 @@ $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
 $('themeBtn').addEventListener('click',()=>{
   document.body.classList.toggle('light');
   $('themeBtn').textContent=document.body.classList.contains('light')?'🌙 Dark':'☀️ Light';
-  if(chart){chart.destroy();chart=null;} if(chart2){chart2.destroy();chart2=null;} recompute();});
+  if(chart){chart.destroy();chart=null;} if(chart2){chart2.destroy();chart2=null;} if(chart3){chart3.destroy();chart3=null;} recompute();});
 
 recompute();
 </script>
