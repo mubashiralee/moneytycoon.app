@@ -338,11 +338,19 @@
 
   <!-- MONTH ON MONTH -->
   <div class="card" style="margin-top:20px">
-    <h2>Month-on-month revenue &amp; profit <span class="pill">sustained spend · 12 months</span></h2>
+    <h2>Month-on-month revenue &amp; profit <span class="pill" id="momPill">sustained · 12 months</span></h2>
+    <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:4px">
+      <div style="min-width:230px">
+        <label style="margin-top:0">Spend for how many months, then stop</label>
+        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="12"/>
+          <input id="momStopN" type="number" min="1" max="12" step="1" value="12"/></div>
+      </div>
+      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px" id="momStopEcho">Spending <b>all 12 months</b>. Drag down to stop early and watch revenue coast on the retention tail while spend drops to £0.</div>
+    </div>
     <div class="chartbox" style="height:300px"><canvas id="chart3"></canvas></div>
     <table style="margin-top:10px"><thead><tr><th>Month</th><th>Avg DAU</th><th>Revenue</th><th>Ad spend</th><th>Net profit</th><th>Cumulative</th></tr></thead>
       <tbody id="momBody"></tbody></table>
-    <div class="hint" style="margin-top:8px">Assumes you keep spending your current £/day <b>every month</b> at the current mix. Watch the <b>J-curve</b>: you pay full spend from month 1, but DAU (and revenue) ramp over the first ~6 weeks — so early months can run at a loss and <b>cumulative profit dips before it recovers</b>. Revenue includes free organic; net = revenue − ad spend. (For "spend a burst then stop", see the Campaign P&amp;L above.)</div>
+    <div class="hint" style="margin-top:8px">Set <b>how many months you keep spending</b> (12 = never stop). Spend is charged <b>only while active</b> — £0 after you stop — and paid DAU + new subscribers then decay on the retention tail while <b>organic and already-bought users keep paying</b>. Watch the <b>J-curve</b>: DAU ramps over the first ~6 weeks so early months can run at a loss and <b>cumulative profit dips before it recovers</b>; after you stop, cumulative profit keeps climbing as the tail monetises. Revenue includes free organic; net = revenue − ad spend.</div>
   </div>
 
   <!-- TABLES -->
@@ -402,6 +410,15 @@ function trajFromInstalls(inst,days,ret,hist,p){
   const full=hist.concat(new Array(days).fill(inst)), n=full.length, out=new Array(n);
   for(let t=0;t<n;t++){ let s=0; for(let a=0;a<=t;a++) s+=full[t-a]*survival(a,p); out[t]=M*(ret||1)*s; }
   return out.slice(hist.length-1);
+}
+// Paid DAU trajectory when the install rate runs for [0,stopDay) days then stops (windowed convolution,
+// same 1-day lag as trajFromInstalls). stopDay≥days ⇒ sustained ⇒ falls back to the exact original path.
+function paidTraj(inst,days,ret,p,stopDay){
+  if(!(stopDay<days)) return trajFromInstalls(inst,days,ret,ZEROS,p);
+  const cs=new Array(days+1); { let s=0; for(let a=0;a<=days;a++){ s+=survival(a,p); cs[a]=s; } }
+  const csAt=a=>a<0?0:cs[a], out=new Array(days+1);
+  for(let i=0;i<=days;i++) out[i]=M*(ret||1)*inst*(csAt(i-1)-csAt(i-1-stopDay));
+  return out;
 }
 
 // ---- SUBSCRIPTIONS: recurring subscriber STOCK (own churn), not per-DAU ----
@@ -486,9 +503,10 @@ function anchoredBase(days,p){
   const k=legacy[0]>0?p.currentDAU/legacy[0]:0;
   return legacy.map((v,i)=>k*v+organic[i]);
 }
-function mixTraj(spend,days,p,cpiMult){
+function mixTraj(spend,days,p,cpiMult,stopDay){
+  if(stopDay===undefined) stopDay=Infinity;
   const base=anchoredBase(days,p), mk=buildMarkets(p,spend,cpiMult);
-  const paid=mk.map(m=>trajFromInstalls(m.installs,days,m.ret,ZEROS,p));
+  const paid=mk.map(m=>paidTraj(m.installs,days,m.ret,p,stopDay));   // paid (incl. halo) stops when spend stops; base keeps flowing
   return base.map((v,i)=>v+paid.reduce((sm,pp)=>sm+pp[i],0));
 }
 const mixSteady=(spend,p,cpiMult)=>orgSteady(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.steadyDAU,0);
@@ -496,17 +514,20 @@ const mixSteady=(spend,p,cpiMult)=>orgSteady(p)+buildMarkets(p,spend,cpiMult).re
 const mixRevDay=(spend,p,cpiMult)=>orgSteady(p)*flowArT3(p)+orgSubRev(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.revDay,0);
 const paidLtvTotal=(spend,p,cpiMult)=>buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.installs*m.ltv,0);
 // daily NET revenue trajectory — flow (DAU × flow-ARPDAU) + subscriptions (subscriber stock × price) — index 0 = today
-function revTraj(spend,days,p){
+function revTraj(spend,days,p,stopDay){
+  if(stopDay===undefined) stopDay=Infinity;
   const base=anchoredBase(days,p), fT3=flowArT3(p), mk=buildMarkets(p,spend,1);
-  const paidDAU=mk.map(m=>({t:trajFromInstalls(m.installs,days,m.ret,ZEROS,p),ar:m.fAr}));
+  const paidDAU=mk.map(m=>({t:paidTraj(m.installs,days,m.ret,p,stopDay),ar:m.fAr}));   // stops with spend
   const cs=cumSubArr(days,p), aSub=anchorSubRev(p);
+  const csAt=a=>a<0?0:cs[a];
+  const paidSubBuild=i=> stopDay<days ? (csAt(i)-csAt(i-stopDay)) : cs[i];   // paid subscriber stock stops building when spend stops
   const t3=p.tiers[2];
   return base.map((v,i)=>{
-    let r=v*fT3;                                                   // organic+legacy DAU flow revenue
-    paidDAU.forEach(pp=>r+=pp.t[i]*pp.ar);                         // paid DAU flow revenue
+    let r=v*fT3;                                                   // organic+legacy DAU flow revenue (organic keeps flowing)
+    paidDAU.forEach(pp=>r+=pp.t[i]*pp.ar);                         // paid DAU flow revenue (burst → decays after stop)
     r+=aSub*subSurv(i,p.churn);                                    // legacy subscribers decaying
-    r+=p.org*t3.sconv*cs[i]*t3.sprice/30;                          // organic new subscribers building
-    mk.forEach(m=>r+=m.installs*m.sconv*cs[i]*m.sprice/30);        // paid new subscribers building
+    r+=p.org*t3.sconv*cs[i]*t3.sprice/30;                          // organic new subscribers building (free, continues)
+    mk.forEach(m=>r+=m.installs*m.sconv*paidSubBuild(i)*m.sprice/30);   // paid new subscribers — stop after spend ends, then churn down
     return r;
   });
 }
@@ -572,13 +593,21 @@ function renderCampaign(spend,p){
 
 // ================= render: month-on-month (sustained spend) =================
 function renderMoM(spend,p){
-  const days=360, rv=revTraj(spend,days,p), traj=mixTraj(spend,days,p,1);
+  const days=360;
+  const stopMo=Math.min(12,Math.max(1,Math.round(num('momStop'))));   // spend for this many months, then stop (12 = sustained)
+  const stopDay=stopMo>=12?Infinity:stopMo*30;
+  const rv=revTraj(spend,days,p,stopDay), traj=mixTraj(spend,days,p,1,stopDay);
   const rows=[]; let cum=0;
   for(let mo=0;mo<12;mo++){
     let rev=0,dau=0; for(let d=0;d<30;d++){ const idx=mo*30+d; rev+=rv[idx]; dau+=traj[idx]; }
-    const sp=spend*30, net=rev-sp; cum+=net;
+    const sp=(mo<stopMo?spend:0)*30, net=rev-sp; cum+=net;          // spend only while active — £0 after you stop
     rows.push({m:mo+1,dau:dau/30,rev,sp,net,cum});
   }
+  $('momStopN').value=stopMo;
+  $('momPill').textContent = stopMo>=12 ? 'sustained · 12 months' : 'spend M1–M'+stopMo+', then £0';
+  $('momStopEcho').innerHTML = stopMo>=12
+    ? 'Spending <b>all 12 months</b>. Drag down to stop early and watch revenue coast on the retention tail while spend drops to £0.'
+    : 'Spending <b>£'+fmt(spend)+'/day for '+stopMo+' month'+(stopMo>1?'s':'')+'</b> (budget <b style="color:var(--gold)">£'+fmt(spend*stopMo*30)+'</b>), then <b>£0</b>. Paid DAU &amp; new subscribers decay after M'+stopMo+'; organic + already-bought users keep paying.';
   const tb=$('momBody'); tb.innerHTML='';
   const money=x=>(x>=0?'+£':'−£')+fmt(Math.abs(x)), col=x=>x>=0?'var(--emerald)':'var(--danger)';
   rows.forEach(r=>tb.insertAdjacentHTML('beforeend',
@@ -748,7 +777,7 @@ function recompute(){
 }
 
 // ================= wiring =================
-const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN']];
+const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN'],['momStop','momStopN']];
 NUMPAIR.forEach(([r,n])=>{
   $(r).addEventListener('input',()=>{$(n).value=$(r).value;recompute();});
   $(n).addEventListener('input',()=>{$(r).value=$(n).value;recompute();});
