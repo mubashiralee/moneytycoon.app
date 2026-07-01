@@ -817,6 +817,21 @@ function recompute(){
 }
 
 // ================= wiring =================
+// ONE plan, two panels: the Campaign P&L day-slider (cDays) and the Month-on-Month month-slider (momStop)
+// both answer "how long do I spend before stopping" — keep them in lockstep BOTH ways, so stopping at
+// 30 days in one panel means M2 onwards shows £0 spend in the other. Registered BEFORE the generic
+// pair-wiring below so recompute() (fired by that wiring) always reads the already-synced values.
+// momStop 12 = "sustained" in the MoM panel, so cDays ≥ 345 rounds up to it; setting momStop=12 sets cDays to 360 (12 × 30-day model months).
+// Each listener reads the control that FIRED (e.target) — the twin range/number input isn't synced yet at this point.
+['cDays','cDaysN'].forEach(id=>$(id).addEventListener('input',e=>{
+  const d=+e.target.value||1, mo=Math.min(12,Math.max(1,Math.round(d/30)));
+  $('momStop').value=mo; $('momStopN').value=mo;
+}));
+['momStop','momStopN'].forEach(id=>$(id).addEventListener('input',e=>{
+  const cd=Math.min(365,Math.max(1,Math.round(+e.target.value||1))*30);
+  $('cDays').value=cd; $('cDaysN').value=cd;
+}));
+
 const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN'],['momStop','momStopN'],['countryMult','countryMultN']];
 NUMPAIR.forEach(([r,n])=>{
   $(r).addEventListener('input',()=>{$(n).value=$(r).value;recompute();});
