@@ -181,19 +181,19 @@
             <tr><td>🟢 T1</td>
               <td><input class="mini" id="cpi1" type="number" min="0.01" step="0.05" value="2.60"/></td>
               <td><input class="mini" id="reach1" type="number" min="10" step="10" value="250"/></td>
-              <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.105"/></td>
+              <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.088"/></td>
               <td><input class="mini" id="ret1" type="number" min="0" step="0.05" value="1.40"/></td>
               <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="58"/></td></tr>
             <tr><td>🟡 T2</td>
               <td><input class="mini" id="cpi2" type="number" min="0.01" step="0.05" value="0.70"/></td>
               <td><input class="mini" id="reach2" type="number" min="10" step="10" value="500"/></td>
-              <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.045"/></td>
+              <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.037"/></td>
               <td><input class="mini" id="ret2" type="number" min="0" step="0.05" value="1.20"/></td>
               <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="54"/></td></tr>
             <tr><td>🔵 T3</td>
               <td><input class="mini" id="cpi3" type="number" min="0.005" step="0.01" value="0.05"/></td>
               <td><input class="mini" id="reach3" type="number" min="10" step="10" value="1200"/></td>
-              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.009"/></td>
+              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.012"/></td>
               <td><input class="mini" id="ret3" type="number" min="0" step="0.05" value="1.00"/></td>
               <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="54"/></td></tr>
           </tbody>
@@ -240,7 +240,7 @@
             <input class="mini" id="churn" type="number" min="1" step="1" value="14"/></div>
         </div>
         <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP ≈ 65%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
-        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. <b>T3 ARPDAU £0.009 &amp; IAP 54%</b> are the <b>authoritative</b> split from AdMob (actual ad payouts) + Play Console (IAP/subs) — <b>not</b> GA4, whose ad-revenue estimate was ~3–4× too high (£549 vs AdMob's real £225), which is why an earlier version wrongly showed IAP at only 24%. β and retention are measured. Tier-1/2 ARPDAU/CPI/reach are 2025 benchmark priors (no history there yet); their IAP share is set higher (T1 58% / T2 54%) as Tier-1 users monetise more via IAP. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
+        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. <b>T3 ARPDAU £0.012, IAP 54%</b> — <b>split</b> from authoritative AdMob (real ad payouts) + Play Console (IAP/subs), which show ~50/50 (not GA4's inflated 76/24). The <b>level</b> assumes <b>normal ad serving</b>: recently ARPDAU measured only ≈£0.006 because ad serving was <b>policy-limited</b> (impressions/user ~1.5 vs a normal ~4+), a temporary/fixable state — a forecast should use the restored rate (~£0.012, ≈ your normal ~£120/mo), not the throttled one. Lower ad ARPDAU toward £0.006 to see the still-limited case. β &amp; retention measured. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections; IAP share higher (T1 58%) as Tier-1 skews to IAP. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
       </details>
 
       <div class="hint" style="margin-top:16px">Engine: installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
@@ -311,12 +311,12 @@
       <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
       <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
     </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev figure now uses the authoritative AdMob+Play ARPDAU, ~£0.009, so it's lower than the earlier GA4-inflated ~£120/mo.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses ARPDAU £0.012 — the ad/IAP split is authoritative AdMob+Play (~50/50), and the level assumes normal ad serving, restoring your ~£120/mo; the recently-measured ~£0.006 was depressed by policy-limited ad serving, treated as temporary.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
 
   <!-- REVENUE COMPOSITION (three-way) -->
   <div class="card" style="margin-top:20px">
-    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">steady, current mix</span></h2>
+    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">your current mix</span></h2>
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
       <div class="kpi blue"><div class="v" id="cmpAd">—</div><div class="l">Ad revenue / mo</div><div class="rng" id="cmpAdPct"></div></div>
       <div class="kpi gold"><div class="v" id="cmpSub">—</div><div class="l">Subscription revenue / mo</div><div class="rng" id="cmpSubPct"></div></div>
@@ -325,7 +325,7 @@
       <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
       <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
     </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Current subscribers are anchored to your measured Play data (subscriptions ≈ 65% of IAP: Mogul Premium monthly/yearly + Dividend Society tiers); steady subscribers are what your current spend + mix sustains. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. This shows your <b>current</b> revenue mix (current DAU + existing subscribers) — ~50% IAP+subs, matching your dashboards. Note: if you <i>scale paid UA</i>, ads take a bigger share (more ad-viewing DAU arrives faster than the subscriber base builds), so the mix tilts toward ads at high spend. Current subscribers are anchored to your measured Play data (subs ≈ 65% of IAP); steady subscribers = what your current spend + mix sustains. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
   </div>
 
   <!-- MONTH ON MONTH -->
@@ -674,15 +674,15 @@ function recompute(){
   $('rBlendCard').style.borderColor=businessRoas>=1?'var(--emerald)':'var(--danger)';
   $('rRoasCard').style.borderColor=margRoas>=1?'var(--emerald)':'var(--danger)';
 
-  // revenue composition (steady, current mix): ads / subscriptions / consumables
+  // revenue composition — CURRENT state (your actual revenue mix now): current DAU flow + legacy subscribers
   const adRate=(t,ios)=>t.ar*(1-t.iap)*(ios?p.ios.ar:1);
   const consRate=(t,ios)=>t.ar*t.iap*(1-p.subFrac)*(1-p.fee)*(ios?p.ios.ar:1);
   const t3c=p.tiers[2];
-  let adM=orgSteady(p)*adRate(t3c,false), consM=orgSteady(p)*consRate(t3c,false), subM=orgSubRev(p), subsSteady=p.org*t3c.sconv*subLifeDays(p);
-  mk.forEach(m=>{ const t=p.tiers[m.tier], ios=m.plat==='ios';
-    adM+=m.steadyDAU*adRate(t,ios); consM+=m.steadyDAU*consRate(t,ios); subM+=m.subRevDay; subsSteady+=m.subsSteady; });
+  const adM=p.currentDAU*adRate(t3c,false), consM=p.currentDAU*consRate(t3c,false), subM=anchorSubRev(p);
   const totM=adM+consM+subM, pctOf=x=>totM>0?Math.round(x/totM*100)+'% of revenue':'—';
-  const curSubs=t3c.sprice>0?anchorSubRev(p)*30/t3c.sprice:0, blendSubArpu=subsSteady>0?subM*30/subsSteady:0;
+  const curSubs=t3c.sprice>0?anchorSubRev(p)*30/t3c.sprice:0;
+  let subsSteady=p.org*t3c.sconv*subLifeDays(p); mk.forEach(m=>subsSteady+=m.subsSteady);
+  const blendSubArpu=curSubs>0?subM*30/curSubs:0;
   $('cmpAd').textContent=gbp(adM*30);   $('cmpAdPct').textContent=pctOf(adM);
   $('cmpSub').textContent=gbp(subM*30); $('cmpSubPct').textContent=pctOf(subM);
   $('cmpCons').textContent=gbp(consM*30);$('cmpConsPct').textContent=pctOf(consM);
