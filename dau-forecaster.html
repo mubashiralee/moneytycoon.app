@@ -180,6 +180,19 @@
       </div>
       <div class="hint">Your app runs <b>rewarded ads only</b> today (impressions/user ≈2 in AdMob) — click <b>Rewarded only</b> for today's real ~50/50 mix. Adding interstitials ≈ <b>1.8×</b> ad revenue, + banners ≈ <b>2.1×</b> (eCPM ~£3, unbuilt inventory). Scales the <b>ad slice only</b> — raising ad share &amp; total revenue. The default is set to <b>+Interstitial+Banner</b> because that's the ad depth the optimiser's revenue-max plan assumes.</div>
 
+      <label style="margin-top:14px">UA network mix <span class="pill">default: Google only (today)</span></label>
+      <div class="seg" id="netSeg">
+        <button data-nm="1.0" class="on">Google only</button>
+        <button data-nm="1.25">+ Meta + TikTok</button>
+        <button data-nm="1.6">+ AppLovin/Unity/Mintegral</button>
+      </div>
+      <div class="hint">You buy installs on <b>Google Ads only</b> today. Running more networks in parallel raises the <b>reach ceiling</b> (each network has its own, separate audience pool) at roughly the <b>same CPI</b> — research found no reliable evidence other major networks are cheaper or pricier than Google at the margin (Unity Ads ≈$2.50, AppLovin+Vungle ≈$3.00 CPI, games-blended, vs. Google/Meta's own $1.50–4.50 blended range). <b>Low confidence</b> — no industry source publishes a reach multiplier for adding networks; these values (+25% / +60%) are a deliberately modest, illustrative estimate, not a measured figure. Mintegral specifically over-indexes on your genre (hyper-casual + puzzle + simulation ≈70% of its ad buys).</div>
+
+      <label style="margin-top:14px">Country/market expansion <span class="pill">default: named countries only</span></label>
+      <div class="row"><input id="countryMult" type="range" min="1" max="2" step="0.05" value="1"/>
+        <input id="countryMultN" type="number" min="1" max="2" step="0.05" value="1"/></div>
+      <div class="hint">Today's tiers only count a handful of named countries (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK). Sliding this up adds <b>more countries within the same cost bracket</b> — e.g. T1 + Canada/Australia/Japan/South&nbsp;Korea, T2 + Mexico/Poland/South&nbsp;Africa/Argentina, T3 + Vietnam/Nigeria/Egypt/Bangladesh/Indonesia/Colombia — raising each tier's <b>reach ceiling</b> by a different amount (population/Android-share-weighted: T1 ×1.40, T2 ×1.91, T3 ×1.52 at the slider's max, per DataReportal Jan-2025 + StatCounter Jun-2026 data). <b>Medium confidence</b> — reach itself is a population proxy (no installs-by-country benchmark exists publicly); floor CPI is held unchanged per tier, which is a simplification — real CPI varies 2–8× between countries in the same bracket and isn't modelled here. Russia is excluded (Google/Meta don't serve ads there since 2022).</div>
+
       <label style="margin-top:14px">User lifetime (LTV horizon) <span class="pill">caps the tail</span></label>
       <div class="seg" id="lifeSeg">
         <button data-l="90">90 days</button>
@@ -453,7 +466,7 @@ const orgSubRev=p=>p.org*p.tiers[2].sconv*subLifeDays(p)*p.tiers[2].sprice/30;
 
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, life=365, adMult=2.1, chart, chart2, chart3;   // adMult: ad-format monetisation (default 2.1 = optimiser target: +Interstitial+Banner; click "Rewarded only" for today's 1.0)
+let horizon=180, life=365, adMult=2.1, networkMult=1.0, chart, chart2, chart3;   // adMult: ad-format monetisation (default 2.1 = optimiser target: +Interstitial+Banner; click "Rewarded only" for today's 1.0). networkMult: UA network diversification (default 1.0 = Google only, today's reality).
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
@@ -465,6 +478,7 @@ function readP(){
     currentDAU:num('currentDAU')||0, fee:num('fee')/100,
     beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
     subFrac:num('subFrac')/100, churn:num('churn')/100, halo:num('halo')||1, adMult:adMult,
+    networkMult:networkMult, countryMult:num('countryMult')||1,
     tiers:[
       {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100,sconv:num('sconv1')/100,sprice:num('sprice1')},
       {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100,sconv:num('sconv2')/100,sprice:num('sprice2')},
@@ -476,18 +490,28 @@ function readP(){
 const withLife=(p,l)=>Object.assign({},p,{life:l});
 const withWeights=(p,w)=>Object.assign({},p,{w:w});
 
+// Multi-network + multi-country reach expansion (both default OFF = today's Google-only, named-countries reality).
+// countryScale: tier-scaled full-expansion ratio minus 1, derived from DataReportal Jan'25 internet-users ×
+// StatCounter Jun'26 Android-share for named vs candidate-additional countries per tier (see README for the list
+// and sources). CPI is held UNCHANGED for both levers — network CPI showed rough parity with Google in research
+// (not a clean discount or premium), and country-CPI data for most candidates was too thin/contradictory to
+// adjust responsibly (the few good data points, e.g. Germany/France/Japan, argued for a discount, not a premium,
+// so leaving CPI flat is the conservative, defensible choice — not an oversight).
+const countryScale=[0.401,0.906,0.524];   // T1,T2,T3 — reach ×1.40/×1.91/×1.52 at full expansion (countryMult=2)
+function effReach(t,tier,p){ return t.reach*p.networkMult*(1+(p.countryMult-1)*countryScale[tier]); }
+
 // build the active markets for a spend & CPI-stress multiplier
 function buildMarkets(p,spend,cpiMult){
   cpiMult=cpiMult||1; const names=['Tier-1','Tier-2','Tier-3'], out=[];
   for(let i=0;i<3;i++){
     if(p.w[i]<=0) continue;
-    const t=p.tiers[i], ts=spend*p.w[i], arFee=1-t.iap*p.fee;
+    const t=p.tiers[i], ts=spend*p.w[i], arFee=1-t.iap*p.fee, tReach=effReach(t,i,p);
     const aS=ts*(1-p.iosShare);
     if(aS>0) out.push({name:names[i]+' · Android',plat:'android',tier:i,spend:aS,
-      cpi:t.cpi*cpiMult,reach:t.reach,installs:installsFromSpend(aS,t.cpi*cpiMult,t.reach),arNet:t.ar*arFee,ret:t.ret});
+      cpi:t.cpi*cpiMult,reach:tReach,installs:installsFromSpend(aS,t.cpi*cpiMult,tReach),arNet:t.ar*arFee,ret:t.ret});
     const iS=ts*p.iosShare;
     if(iS>0) out.push({name:names[i]+' · iOS',plat:'ios',tier:i,spend:iS,
-      cpi:t.cpi*p.ios.cpi*cpiMult,reach:t.reach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,t.reach*p.ios.reach),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
+      cpi:t.cpi*p.ios.cpi*cpiMult,reach:tReach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,tReach*p.ios.reach),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
   }
   const SLD=subLifeDays(p), haloScale=[0.3,0.6,1.0];   // ranking/organic halo strongest in cheap Tier-3
   out.forEach(m=>{
@@ -660,7 +684,8 @@ function recompute(){
   bar[2].style.width=(w[2]*100)+'%'; bar[2].style.background='var(--blue)';
   const pct=x=>Math.round(x*100);
   $('allocEcho').textContent=`Now: ${pct(w[0])}% / ${pct(w[1])}% / ${pct(w[2])}%, iOS ${num('iosShare')}%`;
-  $('mixEcho').textContent=`T1 ${pct(w[0])}% · T2 ${pct(w[1])}% · T3 ${pct(w[2])}% · iOS ${num('iosShare')}% · life ${life}d`;
+  const reachEcho = (p.networkMult!==1||p.countryMult!==1) ? ' · reach expanded (illustrative)' : '';
+  $('mixEcho').textContent=`T1 ${pct(w[0])}% · T2 ${pct(w[1])}% · T3 ${pct(w[2])}% · iOS ${num('iosShare')}% · life ${life}d${reachEcho}`;
 
   const mk=buildMarkets(p,spend,1);
   const paidInstalls=mk.reduce((s,m)=>s+m.installs,0), totalInstalls=paidInstalls+p.org;
@@ -792,7 +817,7 @@ function recompute(){
 }
 
 // ================= wiring =================
-const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN'],['momStop','momStopN']];
+const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN'],['momStop','momStopN'],['countryMult','countryMultN']];
 NUMPAIR.forEach(([r,n])=>{
   $(r).addEventListener('input',()=>{$(n).value=$(r).value;recompute();});
   $(n).addEventListener('input',()=>{$(r).value=$(n).value;recompute();});
@@ -811,11 +836,14 @@ $('lifeSeg').addEventListener('click',e=>{ if(e.target.dataset.l){
 $('adSeg').addEventListener('click',e=>{ if(e.target.dataset.am){
   adMult=+e.target.dataset.am;
   [...$('adSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
+$('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
+  networkMult=+e.target.dataset.nm;
+  [...$('netSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
-// preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?]
+// preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?]
 const MIX={
-  opt:[0,0,100,60,46,1.4,2.1,10],     // ★ optimiser MAX-PROFIT point (assumes iOS + interstitial+banner)
-  cur:[0,0,100,0,0,1.4,1.0,12],       // today's reality: Android+rewarded-only max profit is £0/day paid spend (organic only)
+  opt:[0,0,100,60,46,1.4,2.1,10,1.0,1.0],     // ★ optimiser MAX-PROFIT point (assumes iOS + interstitial+banner; network/country expansion OFF — unmeasured, not baked into the default)
+  cur:[0,0,100,0,0,1.4,1.0,12,1.0,1.0],       // today's reality: Android+rewarded-only max profit is £0/day paid spend (organic only)
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   const m=MIX[e.target.dataset.mix];
@@ -825,6 +853,10 @@ $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   if(m[6]!==undefined){ adMult=m[6];                                        // preset sets ad-format depth
     [...$('adSeg').children].forEach(b=>b.classList.toggle('on',+b.dataset.am===adMult)); }
   if(m[7]!==undefined){ $('momStop').value=m[7]; $('momStopN').value=m[7]; } // preset sets spend duration
+  networkMult = (m[8]!==undefined)? m[8] : 1.0;                             // presets reset network expansion to OFF
+  [...$('netSeg').children].forEach(b=>b.classList.toggle('on',+b.dataset.nm===networkMult));
+  const cm = (m[9]!==undefined)? m[9] : 1.0;                                // presets reset country expansion to OFF
+  $('countryMult').value=cm; $('countryMultN').value=cm;
   [...$('mixSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
 $('themeBtn').addEventListener('click',()=>{
