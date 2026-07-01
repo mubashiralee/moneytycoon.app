@@ -45,13 +45,14 @@
   input[type=range]{width:100%;accent-color:var(--emerald)}
   input[type=number]{width:82px;background:var(--input);border:1px solid var(--line);color:var(--text);
        border-radius:8px;padding:7px 9px;font-size:14px;text-align:right}
-  input.mini{width:66px;padding:5px 7px;font-size:13px}
+  input.mini{width:60px;padding:5px 6px;font-size:12px}
   .hint{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
   .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:6px}
   @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
   .kpi{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}
   .kpi .v{font-size:26px;font-weight:700;line-height:1.1}
   .kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:6px}
+  .kpi .rng{font-size:11px;color:var(--muted);margin-top:4px;font-weight:400}
   .kpi.em .v{color:var(--emerald)} .kpi.gold .v{color:var(--gold)} .kpi.blue .v{color:var(--blue)}
   .chartbox{height:340px;margin-top:8px}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
@@ -83,7 +84,7 @@
     .card{padding:14px;overflow-x:auto} .banner{font-size:12px}
     table{font-size:12px} th,td{padding:6px 5px}
     .seg{gap:5px} .seg button{padding:7px 9px;font-size:11px}
-    input[type=number]{width:70px} input.mini{width:58px}
+    input[type=number]{width:70px} input.mini{width:54px}
     .chartbox{height:260px} label{font-size:12px}
   }
   @media(max-width:380px){ .kpis{grid-template-columns:1fr!important} }
@@ -94,17 +95,17 @@
   <header>
     <h1>Money Tycoon · DAU Forecaster</h1>
     <span class="tag">EARN · INVEST · EXPAND</span>
-    <span class="sub">Market-mix engine · fitted on GA4 + Google Ads · 10 May–29 Jun 2026 · OOS ≈ 5.5%</span>
+    <span class="sub">v3 · endogenous-CPI market-mix · fitted on GA4 + Google Ads · OOS ≈ 5.5%</span>
     <button id="themeBtn" class="themebtn">🌙 Dark</button>
   </header>
 
   <div class="banner">
-    <b>How this works.</b> You split your daily budget across <b>geo tiers</b> (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK)
-    and across <b>Android / iOS</b>. Each of the six markets has its own <b>CPI</b>, <b>ARPDAU</b> and <b>retention</b>, so your
-    <b>blended ARPDAU, CPI and ROAS are computed from the mix</b> — not a single guess. Tier-3 buys the cheapest users (and the most
-    DAU per £) but the lowest value; Tier-1 &amp; iOS cost far more yet retain ~1.4× longer and monetise several-fold higher. The
-    <b>installs→DAU retention engine</b> is fitted to your real data; the per-market CPI/ARPDAU are editable assumptions (open
-    <i>Advanced assumptions</i>). iOS is a <b>projection</b> (not launched yet).
+    <b>How this works.</b> Split your daily budget across <b>geo tiers</b> (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK) and
+    <b>Android / iOS</b> — six markets, each with its own economics. <b>CPI rises with spend</b>: as you exhaust a market's cheap
+    daily reach, your <b>effective CPI</b> climbs and ROAS degrades on its own (no manual edit needed). Blended ARPDAU/CPI/ROAS are
+    <b>computed from the mix</b>. The <b>installs→DAU retention engine</b> is fitted to your real data; everything else (floor CPI,
+    reach, ARPDAU, retention) is an <b>editable assumption</b> under <i>Advanced</i>. Shaded chart band + KPI ranges show the
+    <b>conservative→optimistic</b> spread — the honest answer is a range. iOS is a <b>projection</b> (not launched yet).
   </div>
 
   <div class="grid">
@@ -136,7 +137,7 @@
       </div>
       <div class="hint">Weights auto-normalise to 100%. <span id="allocEcho"></span></div>
 
-      <label style="margin-top:14px">iOS share of budget % <span class="pill">applies within each tier</span></label>
+      <label style="margin-top:14px">iOS share of budget % <span class="pill">within each tier</span></label>
       <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="0"/>
         <input id="iosShareN" type="number" min="0" max="100" step="5" value="0"/></div>
       <div class="hint">Splits each tier's budget between Android &amp; iOS. iOS organic = 0 until you launch it.</div>
@@ -144,14 +145,26 @@
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
       <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="25"/>
         <input id="orgN" type="number" min="0" max="3000" step="1" value="25"/></div>
-      <div class="hint">Recent organic ≈ 25/day — your floor with £0 ads. Assumed Tier-3 Android (where users come from today).</div>
+      <div class="hint">Recent organic ≈ 25/day — your floor with £0 ads.</div>
+
+      <label style="margin-top:14px">Current live DAU <span class="pill">anchors the model</span></label>
+      <div class="row"><input id="currentDAU" type="number" min="0" max="100000" step="1" value="327"/></div>
+      <div class="hint">Your real measured DAU today (default 327). The forecast starts here and the chart, current-revenue &amp; maintenance all use this single number.</div>
 
       <label style="margin-top:14px">Store fee on IAP %</label>
       <div class="row"><input id="fee" type="range" min="0" max="30" step="1" value="15"/>
         <input id="feeN" type="number" min="0" max="30" step="1" value="15"/></div>
-      <div class="hint">15% under £1M/yr (current). Applied only to the ~24% IAP slice of ARPDAU; ad revenue is already net.</div>
+      <div class="hint">15% under £1M/yr. Applied to each tier's IAP slice; ad revenue is already net.</div>
 
-      <label style="margin-top:14px">Forecast horizon</label>
+      <label style="margin-top:14px">User lifetime (LTV horizon) <span class="pill">caps the tail</span></label>
+      <div class="seg" id="lifeSeg">
+        <button data-l="90">90 days</button>
+        <button data-l="180">180 days</button>
+        <button data-l="365" class="on">365 days</button>
+      </div>
+      <div class="hint">How long a user keeps contributing to LTV. 365d is generous (fat power-law tail); pick 90–180d to be conservative.</div>
+
+      <label style="margin-top:14px">Chart horizon</label>
       <div class="seg" id="horizonSeg">
         <button data-h="90">90 days</button>
         <button data-h="180" class="on">180 days</button>
@@ -159,54 +172,67 @@
       </div>
 
       <details id="adv">
-        <summary>▸ Advanced assumptions (per-market CPI · ARPDAU · uplift)</summary>
-        <div class="hint" style="margin:8px 0">Android base values by tier (£). iOS is derived by the multipliers below. Edit any to match your own measurements.</div>
-        <table style="font-size:12px">
-          <thead><tr><th>Tier</th><th>CPI £</th><th>ARPDAU £ (gross)</th><th>Retention ×</th></tr></thead>
+        <summary>▸ Advanced assumptions (floor CPI · reach · ARPDAU · retention)</summary>
+        <div class="hint" style="margin:8px 0"><b>Floor CPI</b> = cheapest CPI at low volume; <b>reach</b> = daily installs a market yields before CPI climbs steeply (effective CPI = spend ÷ installs rises as you approach reach). Android base values; iOS derived by the multipliers below.</div>
+        <table style="font-size:11px">
+          <thead><tr><th>Tier</th><th>Floor CPI £</th><th>Reach/d</th><th>ARPDAU £</th><th>Ret ×</th><th>IAP %</th></tr></thead>
           <tbody>
-            <tr><td>🟢 Tier-1</td>
+            <tr><td>🟢 T1</td>
               <td><input class="mini" id="cpi1" type="number" min="0.01" step="0.05" value="2.60"/></td>
+              <td><input class="mini" id="reach1" type="number" min="10" step="10" value="250"/></td>
               <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.105"/></td>
-              <td><input class="mini" id="ret1" type="number" min="1" step="0.05" value="1.40"/></td></tr>
-            <tr><td>🟡 Tier-2</td>
+              <td><input class="mini" id="ret1" type="number" min="0" step="0.05" value="1.40"/></td>
+              <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="45"/></td></tr>
+            <tr><td>🟡 T2</td>
               <td><input class="mini" id="cpi2" type="number" min="0.01" step="0.05" value="0.70"/></td>
+              <td><input class="mini" id="reach2" type="number" min="10" step="10" value="500"/></td>
               <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.045"/></td>
-              <td><input class="mini" id="ret2" type="number" min="1" step="0.05" value="1.20"/></td></tr>
-            <tr><td>🔵 Tier-3</td>
+              <td><input class="mini" id="ret2" type="number" min="0" step="0.05" value="1.20"/></td>
+              <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="35"/></td></tr>
+            <tr><td>🔵 T3</td>
               <td><input class="mini" id="cpi3" type="number" min="0.005" step="0.01" value="0.05"/></td>
+              <td><input class="mini" id="reach3" type="number" min="10" step="10" value="1200"/></td>
               <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.0144"/></td>
-              <td><input class="mini" id="ret3" type="number" min="1" step="0.05" value="1.00"/></td></tr>
+              <td><input class="mini" id="ret3" type="number" min="0" step="0.05" value="1.00"/></td>
+              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="24"/></td></tr>
           </tbody>
         </table>
-        <div class="hint" style="margin:10px 0 3px">iOS vs Android multipliers (2025 benchmarks — editable)</div>
-        <div class="row" style="gap:8px">
-          <div style="flex:1"><div class="hint" style="margin:0 0 3px">CPI ×</div>
-            <input class="mini" id="iosCpi" type="number" min="1" step="0.05" value="1.80"/></div>
-          <div style="flex:1"><div class="hint" style="margin:0 0 3px">ARPDAU ×</div>
-            <input class="mini" id="iosAr" type="number" min="1" step="0.05" value="1.90"/></div>
-          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Retention ×</div>
-            <input class="mini" id="iosRet" type="number" min="1" step="0.05" value="1.15"/></div>
+        <div class="hint" style="margin:10px 0 3px">iOS × Android multipliers · retention decay · floor</div>
+        <div class="row" style="gap:6px;flex-wrap:wrap">
+          <div style="flex:1;min-width:60px"><div class="hint" style="margin:0 0 3px">iOS CPI×</div>
+            <input class="mini" id="iosCpi" type="number" min="0" step="0.05" value="1.80"/></div>
+          <div style="flex:1;min-width:60px"><div class="hint" style="margin:0 0 3px">iOS ARPDAU×</div>
+            <input class="mini" id="iosAr" type="number" min="0" step="0.05" value="1.90"/></div>
+          <div style="flex:1;min-width:60px"><div class="hint" style="margin:0 0 3px">iOS ret×</div>
+            <input class="mini" id="iosRet" type="number" min="0" step="0.05" value="1.15"/></div>
+          <div style="flex:1;min-width:60px"><div class="hint" style="margin:0 0 3px">iOS reach×</div>
+            <input class="mini" id="iosReach" type="number" min="0" step="0.05" value="0.50"/></div>
         </div>
-        <div class="hint" style="margin-top:8px"><b>T3 CPI £0.05</b> = your real effective cost (£497 → 36,750 Google installs → ~15,600 GA4 users ≈ £0.03, plus a small scaling buffer). This is why your cheap Tier-3 acquisition has been <i>profitable</i>. <b>To stress-test scaling</b>, raise it toward £0.15–0.20 (if the cheap, policy-limited traffic dries up at higher budgets). T3-Android ARPDAU £0.0144 &amp; retention are <b>measured</b>. iOS: CPI ≈1.8×, ARPU ≈1.9× (≈$138 vs $72), D1 retention ≈1.15×. Tier-1/2 CPI are 2025 market benchmarks (you have no history there yet); Tier-1 retention ≈1.4× Tier-3.</div>
+        <div class="row" style="gap:6px;margin-top:6px">
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Retention β (decay)</div>
+            <input class="mini" id="beta" type="number" min="0.5" step="0.01" value="1.07"/></div>
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Retention floor %</div>
+            <input class="mini" id="floor" type="number" min="0" step="0.1" value="0"/></div>
+        </div>
+        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. T3 ARPDAU £0.0144, β and retention are <b>measured</b> from your data. Tier-1/2 floor CPI, reach and iOS multipliers are 2025 benchmark priors (you have no history there yet) — corroborated in the audit's calibration section. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
       </details>
 
-      <div class="hint" style="margin-top:16px">Engine: DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c),
-        retention s(a)=(a+1)<sup>−β</sup>. Fitted β=1.07, m=1.07. Steady DAU per install/day = <span id="ltdBase">—</span> (T3 base).</div>
+      <div class="hint" style="margin-top:16px">Engine: installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
     </div>
 
     <!-- OUTPUTS -->
     <div>
       <div class="kpis">
         <div class="kpi em"><div class="v" id="kInstalls">—</div><div class="l">Total installs / day</div></div>
-        <div class="kpi"><div class="v" id="kBlendCpi">—</div><div class="l">Blended CPI (£/install)</div></div>
-        <div class="kpi gold"><div class="v" id="kSteady">—</div><div class="l">Steady-state DAU</div></div>
+        <div class="kpi"><div class="v" id="kBlendCpi">—</div><div class="l">Effective blended CPI</div></div>
+        <div class="kpi gold"><div class="v" id="kSteady">—</div><div class="l">Steady-state DAU</div><div class="rng" id="kSteadyRng"></div></div>
         <div class="kpi em"><div class="v" id="k30">—</div><div class="l">DAU in 30 days</div></div>
         <div class="kpi em"><div class="v" id="k90">—</div><div class="l">DAU in 90 days</div></div>
         <div class="kpi blue"><div class="v" id="kDays">—</div><div class="l">Days to 80% of gain</div></div>
       </div>
 
       <div class="card" style="margin-top:14px">
-        <h2>DAU trajectory from today</h2>
+        <h2>DAU trajectory from today <span class="pill">shaded = conservative→optimistic</span></h2>
         <div class="chartbox"><canvas id="chart"></canvas></div>
       </div>
     </div>
@@ -221,7 +247,7 @@
         <div class="row"><input id="cDays" type="range" min="1" max="180" step="1" value="30"/>
           <input id="cDaysN" type="number" min="1" max="365" step="1" value="30"/></div>
       </div>
-      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day (slider above) at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from the users you already bought — shown over 12 months.</div>
+      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months.</div>
     </div>
     <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
       <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
@@ -234,15 +260,15 @@
       <div class="kpi em"><div class="v" id="cTailPct">—</div><div class="l">…the tail, as % of revenue</div></div>
     </div>
     <div class="chartbox" style="margin-top:12px"><canvas id="chart2"></canvas></div>
-    <div class="hint" style="margin-top:8px">This is the <b>burst</b> question — "spend £X, then stop" — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). The <b>profit line keeps climbing after spend stops</b> (flat spend, rising revenue): that's the retention tail monetising users you already paid for, and it's why lifetime profitability beats the monthly snapshot. Paid cohorts only — organic revenue is extra on top.</div>
+    <div class="hint" style="margin-top:8px">The <b>burst</b> question — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). Profit keeps climbing after spend stops: the retention tail monetising users you already paid for. <b>Caveat:</b> the "spread budget over more days beats one big burst" effect is largely driven by the <i>reach/saturation</i> assumption (a short burst hits the daily-reach ceiling and pays a higher effective CPI) — it's real but assumption-sensitive, not a universal law. Paid cohorts only; organic is extra.</div>
   </div>
 
   <!-- MARKET BREAKDOWN -->
   <div class="card" style="margin-top:20px">
     <h2>Market breakdown — how the blend is built <span class="pill" id="mixEcho">—</span></h2>
-    <table><thead><tr><th>Market</th><th>Spend/day</th><th>CPI £</th><th>Installs/d</th><th>Net ARPDAU £</th><th>Steady DAU</th><th>Rev/mo £</th><th>ROAS</th></tr></thead>
+    <table><thead><tr><th>Market</th><th>Spend/day</th><th>Eff. CPI £</th><th>Installs/d</th><th>Net ARPDAU £</th><th>Steady DAU</th><th>Rev/mo £</th><th>ROAS</th></tr></thead>
       <tbody id="mktBody"></tbody></table>
-    <div class="hint" style="margin-top:8px">Each active market contributes installs, DAU and revenue at its own economics; the <b>Blended</b> row is what you actually get. Notice how Tier-3's cheap installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept far fewer users.</div>
+    <div class="hint" style="margin-top:8px"><b>Eff. CPI</b> is spend ÷ installs (rises above the floor CPI as you approach a market's daily reach). Cheap Tier-3 installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept far fewer users. ROAS is lifetime paid-value ÷ spend at your chosen LTV horizon.</div>
   </div>
 
   <!-- REVENUE -->
@@ -251,28 +277,29 @@
     <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
       <div class="kpi gold"><div class="v" id="rArpdau">—</div><div class="l">Blended ARPDAU (net)</div></div>
       <div class="kpi gold"><div class="v" id="rRevMonth">—</div><div class="l">Total revenue / month (steady)</div></div>
-      <div class="kpi" id="rNetCard"><div class="v" id="rNet">—</div><div class="l">Net / month (rev − spend)</div></div>
-      <div class="kpi" id="rBlendCard"><div class="v" id="rBlend">—</div><div class="l">Blended ROAS (rev ÷ spend)</div></div>
+      <div class="kpi" id="rNetCard"><div class="v" id="rNet">—</div><div class="l">Net / month (rev − spend)</div><div class="rng" id="rNetRng"></div></div>
+      <div class="kpi" id="rBlendCard"><div class="v" id="rBlend">—</div><div class="l">Business ROAS (incl. organic)</div></div>
       <div class="kpi" id="rRoasCard"><div class="v" id="rRoas">—</div><div class="l">Marginal ROAS (paid LTV ÷ spend)</div></div>
       <div class="kpi em"><div class="v" id="rCurRev">—</div><div class="l">Current rev / month (£0 ads)</div></div>
-      <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (blended)</div></div>
-      <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div></div>
+      <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
+      <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
     </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Blended ROAS</b> = the business reality, including your <i>free organic</i> users — this is your ~£120/mo today and stays positive whenever organic + affordable paid outweigh spend. <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while your blended CPI &lt; break-even. Revenue counts <b>ads + IAP</b>, net of the store fee.</div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — this is your ~£120/mo today and stays positive whenever organic + affordable paid outweigh spend. <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
 
   <!-- TABLES -->
   <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:20px">
     <div class="card">
       <h2>Spend scenarios <span class="pill">@ current mix</span></h2>
-      <table><thead><tr><th>£/day</th><th>Installs/d</th><th>DAU 90d</th><th>Steady</th><th>Rev/mo £</th></tr></thead>
+      <table><thead><tr><th>£/day</th><th>Installs/d*</th><th>Eff. CPI</th><th>DAU 90d</th><th>Steady</th><th>Rev/mo £</th></tr></thead>
         <tbody id="scenBody"></tbody></table>
+      <div class="hint" style="margin-top:8px">*incl. organic. Watch effective CPI rise and returns diminish as spend scales — that's the endogenous-CPI curve.</div>
     </div>
     <div class="card">
       <h2>Allocation sensitivity <span class="pill">@ current spend</span></h2>
       <table><thead><tr><th>% to Tier-1</th><th>Blended ARPDAU</th><th>Steady DAU</th><th>Rev/mo £</th><th>ROAS</th></tr></thead>
         <tbody id="allocBody"></tbody></table>
-      <div class="hint" style="margin-top:8px">Shifting budget upmarket lifts <b>value per user</b> but shrinks <b>DAU volume</b> — the core trade-off. (iOS share held at your current setting.)</div>
+      <div class="hint" style="margin-top:8px">Shifting budget upmarket lifts <b>value per user</b> but shrinks <b>DAU volume</b> — the core trade-off. (iOS share held.)</div>
     </div>
   </div>
 
@@ -280,151 +307,132 @@
   <div class="card" style="margin-top:20px">
     <h2>Maintenance — minimum to hold the line</h2>
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi"><div class="v">327</div><div class="l">Current DAU</div></div>
+      <div class="kpi"><div class="v" id="mCur">—</div><div class="l">Current DAU</div></div>
       <div class="kpi gold"><div class="v" id="mInst">—</div><div class="l">Paid installs/day to hold flat</div></div>
-      <div class="kpi em"><div class="v" id="mSpend">—</div><div class="l">≈ £/day to hold flat (@ mix CPI)</div></div>
+      <div class="kpi em"><div class="v" id="mSpend">—</div><div class="l">≈ £/day to hold flat</div></div>
     </div>
-    <div class="hint">With £0 ads, organic alone settles you near <b id="orgEq">—</b> DAU. To stay at 327 you must replace daily churn with the installs above, bought at your current mix's blended CPI.</div>
+    <div class="hint">With £0 ads, organic alone settles you near <b id="orgEq">—</b> DAU. To stay at your current DAU you must replace daily churn with the installs above (solved independently of the spend slider, at the mix's effective CPI).</div>
   </div>
 
   <div class="foot">
     <b>How the maths answers your questions.</b><br>
-    • <b>"£X/day → how much DAU?"</b> per market: installs = spend ÷ CPI (mild saturation); DAU = retention-weighted accumulation of every cohort. Each sustained <code>1 install/day ≈ 5–6 DAU</code> (T3) up to <code>≈ 8–9 DAU</code> (Tier-1 iOS) at steady state.<br>
-    • <b>"For how long?"</b> the curve climbs and plateaus; "days→80%" shows how fast it gets most of the way (same ramp shape across markets).<br>
-    • <b>"How much to maintain?"</b> hold-flat installs = DAU ÷ steady-per-install, minus organic, priced at your mix's blended CPI.<br>
-    • <b>"Does spending more upmarket help ARPDAU?"</b> yes — blended ARPDAU is DAU-weighted, so it rises as premium markets take a bigger DAU share; see the breakdown &amp; allocation-sensitivity tables.<br>
-    • <b>"What if I spend a burst then stop?"</b> the Campaign P&amp;L integrates every cohort's revenue over 12 months, including the long retention tail <i>after</i> spend ends — so cumulative profit keeps rising at zero further cost. This is why lifetime profitability exceeds the steady-state monthly snapshot.<br>
-    <span style="color:#6f8f82">Retention engine (β, m) is fitted to your data. Per-market CPI/ARPDAU/uplift are planning assumptions you can edit under Advanced.</span>
+    • <b>"£X/day → how much DAU, and does it still work at higher £X?"</b> installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); <b>effective CPI rises</b> as you exhaust a market, so ROAS degrades automatically — no manual edit. Each sustained 1 install/day ≈ 5–6 DAU (T3) up to ≈ 8–9 (T1 iOS) at a 365-day lifetime.<br>
+    • <b>"For how long?"</b> the curve climbs to a plateau; "days→80%" is measured against the steady-state asymptote (horizon-invariant).<br>
+    • <b>"How much to maintain?"</b> solved by bisection to hold your current DAU flat, at the mix's effective CPI.<br>
+    • <b>"What if I spend a burst then stop?"</b> the Campaign P&amp;L integrates every cohort's revenue over 12 months incl. the retention tail after spend ends.<br>
+    <span style="color:#6f8f82">Retention engine (β, m) fitted to your data. Floor CPI, reach, ARPDAU, iOS multipliers &amp; lifetime are editable planning assumptions. Ranges/bands reflect CPI-scaling and lifetime uncertainty — the honest answer is a range. Independently audited (see AUDIT.md).</span>
   </div>
 </div>
 
 <script>
-// ================= fitted retention engine (from model.py) =================
-const BETA=1.0699, M=1.0672, B0=0.0, SAT=2500, CURRENT_DAU=327;
+// ================= fitted retention engine =================
+const M=1.0672;
 // real daily install history (GA4 new users, 10 May–29 Jun 2026) — all Tier-3 Android
 const HIST=[420,1661,1003,753,1009,899,1021,1002,1061,830,783,706,1547,376,150,102,151,133,74,227,168,112,126,61,139,116,49,46,54,52,51,36,37,39,64,63,46,36,41,53,35,39,32,18,25,21,40,30,26,32,19];
-const ZEROS=new Array(HIST.length).fill(0);   // paid markets have no legacy history
-const IAP_SHARE=0.24;                          // measured IAP share of gross revenue (rest is already-net ad rev)
+const ZEROS=new Array(HIST.length).fill(0);
 
-function survival(a){ return a===0?1.0:Math.pow(a+1,-BETA); }
-function installsFromSpend(spend,cpi){ const raw=cpi>0?spend/cpi:0; return SAT*(1-Math.exp(-raw/SAT)); }
-// steady DAU produced by 1 sustained install/day, given a retention uplift
-function Lval(ret){ let s=0; for(let a=0;a<365;a++) s+=survival(a); return M*(ret||1)*s; }
-
-// DAU trajectory (index 0 = today) for a constant future install rate, with legacy history
-function trajFromInstalls(installsPerDay, days, ret, hist){
-  ret=ret||1; hist=hist||ZEROS;
-  const full=hist.concat(Array(days).fill(installsPerDay));
-  const n=full.length, out=new Array(n);
-  for(let t=0;t<n;t++){ let s=0; for(let a=0;a<=t;a++) s+=full[t-a]*survival(a); out[t]=B0+M*ret*s; }
+// survival at cohort-age a, given params p (beta, floor, life cap)
+function survival(a,p){ if(a>=p.life) return 0; if(a===0) return 1; const s=Math.pow(a+1,-p.beta); return p.floor>0?Math.max(p.floor,s):s; }
+// Σ survival over a lifetime (retention-days per install)
+function Lsum(p,life){ const L=life||p.life; let s=0; for(let a=0;a<L;a++) s+=survival(a,p); return s; }
+// steady DAU per sustained install/day, given retention uplift & lifetime
+function Lval(ret,p,life){ return M*(ret||1)*Lsum(p,life); }
+// endogenous CPI: installs saturate toward `reach`; effective CPI = spend/installs rises with spend
+function installsFromSpend(spend,cpi,reach){ if(cpi<=0||reach<=0||spend<=0) return 0; return reach*(1-Math.exp(-spend/(cpi*reach))); }
+// DAU trajectory (index 0 = today) for a constant future install rate, with a history prefix
+function trajFromInstalls(inst,days,ret,hist,p){
+  const full=hist.concat(new Array(days).fill(inst)), n=full.length, out=new Array(n);
+  for(let t=0;t<n;t++){ let s=0; for(let a=0;a<=t;a++) s+=full[t-a]*survival(a,p); out[t]=M*(ret||1)*s; }
   return out.slice(hist.length-1);
 }
-function ltvPerInstall(arNet,ret){ return arNet*Lval(ret); }
 
-// cumulative survival: cumS[k] = Σ_{a=0}^{k} s(a) — steady DAU-days accrued after k days
-function cumSurv(H){ const c=new Array(H+1); let s=0; for(let a=0;a<=H;a++){ s+=survival(a); c[a]=s; } return c; }
-
-// BURST campaign: spend S/day for `spendDays`, then STOP. Paid cohorts only, over horizon H days.
-// After spend stops, the acquired users keep producing DAU (and revenue) as they decay — the tail.
-function simulateCampaign(S, spendDays, H){
-  const mk=buildMarkets(S), cs=cumSurv(H);
-  const dau=new Array(H+1).fill(0), rev=new Array(H+1).fill(0);
-  mk.forEach(m=>{ const k=M*m.ret*m.installs;
-    for(let t=0;t<=H;t++){
-      const acc = (t<spendDays) ? cs[t] : cs[t]-cs[t-spendDays];  // DAU-days from cohorts still alive
-      const d=k*acc; dau[t]+=d; rev[t]+=d*m.arNet;                 // daily revenue = DAU × ARPDAU
-    }});
-  const cumRev=[],cumSpend=[],cumProfit=[]; let cr=0;
-  for(let t=0;t<=H;t++){ cr+=rev[t]; const sp=Math.min(t+1,spendDays)*S; cumRev.push(cr); cumSpend.push(sp); cumProfit.push(cr-sp); }
-  const totalInstalls=mk.reduce((s,m)=>s+m.installs,0)*spendDays;
-  return {dau,rev,cumRev,cumSpend,cumProfit,totalInstalls};
-}
-
-// ================= read inputs & build the six-market mix =================
+// ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, chart, chart2;
+let horizon=180, life=365, chart, chart2;
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
+const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
 
-function normWeights(){
-  let a=Math.max(0,+$('t1').value||0), b=Math.max(0,+$('t2').value||0), c=Math.max(0,+$('t3').value||0);
-  let sum=a+b+c; if(sum<=0){c=100;sum=100;}
-  return [a/sum,b/sum,c/sum];
+function readP(){
+  let a=Math.max(0,num('t1')), b=Math.max(0,num('t2')), c=Math.max(0,num('t3')); let s=a+b+c; if(s<=0){c=100;s=100;}
+  return {
+    spend:num('spend'), w:[a/s,b/s,c/s], iosShare:num('iosShare')/100, org:num('org'),
+    currentDAU:num('currentDAU')||0, fee:num('fee')/100,
+    beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
+    tiers:[
+      {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100},
+      {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100},
+      {cpi:num('cpi3'),reach:num('reach3'),ar:num('ar3'),ret:num('ret3'),iap:num('iap3')/100}
+    ],
+    ios:{cpi:num('iosCpi'),ar:num('iosAr'),ret:num('iosRet'),reach:num('iosReach')}
+  };
 }
+const withLife=(p,l)=>Object.assign({},p,{life:l});
+const withWeights=(p,w)=>Object.assign({},p,{w:w});
 
-// returns array of active market objects for a given total spend
-function buildMarkets(totalSpend){
-  const w=normWeights(), iosShare=(+$('iosShare').value||0)/100, fee=(+$('fee').value||0)/100;
-  const feeAdj=1-IAP_SHARE*fee;               // store fee applied to IAP slice only
-  const cpiA=[+$('cpi1').value,+$('cpi2').value,+$('cpi3').value];
-  const arA =[+$('ar1').value, +$('ar2').value, +$('ar3').value];
-  const retA=[+$('ret1').value,+$('ret2').value,+$('ret3').value];
-  const iCpi=+$('iosCpi').value, iAr=+$('iosAr').value, iRet=+$('iosRet').value;
-  const tierName=['Tier-1','Tier-2','Tier-3'];
-  const out=[];
+// build the active markets for a spend & CPI-stress multiplier
+function buildMarkets(p,spend,cpiMult){
+  cpiMult=cpiMult||1; const names=['Tier-1','Tier-2','Tier-3'], out=[];
   for(let i=0;i<3;i++){
-    if(w[i]<=0) continue;
-    const tierSpend=totalSpend*w[i];
-    // Android leg
-    const aSpend=tierSpend*(1-iosShare);
-    if(aSpend>0 || w[i]>0){
-      out.push({name:tierName[i]+' · Android', plat:'android', tier:i, spend:aSpend,
-        cpi:cpiA[i], arNet:arA[i]*feeAdj, ret:retA[i], hist:ZEROS});
-    }
-    // iOS leg
-    const iSpend=tierSpend*iosShare;
-    if(iSpend>0){
-      out.push({name:tierName[i]+' · iOS', plat:'ios', tier:i, spend:iSpend,
-        cpi:cpiA[i]*iCpi, arNet:arA[i]*iAr*feeAdj, ret:retA[i]*iRet, hist:ZEROS});
-    }
+    if(p.w[i]<=0) continue;
+    const t=p.tiers[i], ts=spend*p.w[i], arFee=1-t.iap*p.fee;
+    const aS=ts*(1-p.iosShare);
+    if(aS>0) out.push({name:names[i]+' · Android',plat:'android',tier:i,spend:aS,
+      cpi:t.cpi*cpiMult,reach:t.reach,installs:installsFromSpend(aS,t.cpi*cpiMult,t.reach),arNet:t.ar*arFee,ret:t.ret});
+    const iS=ts*p.iosShare;
+    if(iS>0) out.push({name:names[i]+' · iOS',plat:'ios',tier:i,spend:iS,
+      cpi:t.cpi*p.ios.cpi*cpiMult,reach:t.reach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,t.reach*p.ios.reach),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
   }
-  // compute installs per market
-  out.forEach(m=>{ m.installs=installsFromSpend(m.spend,m.cpi); m.steadyDAU=m.installs*Lval(m.ret); m.revDay=m.steadyDAU*m.arNet; });
-  return out.filter(m=>m.spend>0);
+  out.forEach(m=>{ m.cpiEff=m.installs>0?m.spend/m.installs:0; m.steadyDAU=m.installs*Lval(m.ret,p); m.revDay=m.steadyDAU*m.arNet; m.ltv=m.arNet*Lval(m.ret,p); });
+  return out;
 }
+const orgSteady=p=>p.org*Lval(p.tiers[2].ret,p);
+const arT3Net=p=>p.tiers[2].ar*(1-p.tiers[2].iap*p.fee);
 
-// base track = legacy cohorts + ongoing organic (Tier-3 Android)
-function baseTraj(days){ const org=+$('org').value||0; return trajFromInstalls(org,days,retTier3(),HIST); }
-function retTier3(){ return +$('ret3').value||1; }
-function arTier3Net(){ const fee=(+$('fee').value||0)/100; return (+$('ar3').value)*(1-IAP_SHARE*fee); }
+// base track: legacy cohorts (anchored to current DAU) + ongoing organic
+function anchoredBase(days,p){
+  const rT3=p.tiers[2].ret;
+  const legacy=trajFromInstalls(0,days,rT3,HIST,p), organic=trajFromInstalls(p.org,days,rT3,ZEROS,p);
+  const k=legacy[0]>0?p.currentDAU/legacy[0]:0;
+  return legacy.map((v,i)=>k*v+organic[i]);
+}
+function mixTraj(spend,days,p,cpiMult){
+  const base=anchoredBase(days,p), mk=buildMarkets(p,spend,cpiMult);
+  const paid=mk.map(m=>trajFromInstalls(m.installs,days,m.ret,ZEROS,p));
+  return base.map((v,i)=>v+paid.reduce((sm,pp)=>sm+pp[i],0));
+}
+const mixSteady=(spend,p,cpiMult)=>orgSteady(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.steadyDAU,0);
+const mixRevDay=(spend,p,cpiMult)=>orgSteady(p)*arT3Net(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.revDay,0);
+const paidLtvTotal=(spend,p,cpiMult)=>buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.installs*m.ltv,0);
 
-// total DAU trajectory for an arbitrary spend, using the CURRENT mix shape
-function mixTraj(totalSpend,days){
-  const base=baseTraj(days), mk=buildMarkets(totalSpend);
-  const paid=mk.map(m=>trajFromInstalls(m.installs,days,m.ret,ZEROS));
-  const L=base.length;
-  return Array.from({length:L},(_,k)=>base[k]+paid.reduce((s,p)=>s+p[k],0));
-}
-// steady-state DAU for arbitrary spend under current mix
-function mixSteady(totalSpend){
-  const org=+$('org').value||0, mk=buildMarkets(totalSpend);
-  return org*Lval(retTier3()) + mk.reduce((s,m)=>s+m.steadyDAU,0);
-}
-// steady revenue/day incl. organic, for arbitrary spend under current mix
-function mixRevDay(totalSpend){
-  const org=+$('org').value||0, mk=buildMarkets(totalSpend);
-  return org*Lval(retTier3())*arTier3Net() + mk.reduce((s,m)=>s+m.revDay,0);
-}
-
-// maintenance: bisect the total spend that holds 327 DAU flat over 90d (current mix)
-function maintenanceSpend(){
-  const dev=S=>mixTraj(S,90)[90]-CURRENT_DAU;
+// maintenance: bisect spend that holds current DAU flat over 90d (independent of the spend slider)
+function maintenanceSpend(p){
+  const dev=S=>mixTraj(S,90,p,1)[90]-p.currentDAU;
   if(dev(0)>=0) return 0;
-  let lo=0,hi=2000; for(let i=0;i<44;i++){ const mid=(lo+hi)/2; if(dev(mid)<0)lo=mid; else hi=mid; }
+  let lo=0,hi=3000; for(let i=0;i<46;i++){ const mid=(lo+hi)/2; if(dev(mid)<0)lo=mid; else hi=mid; }
   return (lo+hi)/2;
 }
 
-// ================= render: burst-campaign P&L =================
-function renderCampaign(spend){
-  const D=Math.max(1,Math.round(+$('cDays').value||1)), H=365;
+// BURST campaign: spend S/day for D days then stop; paid cohorts only, over H days
+function simulateCampaign(spend,D,H,p){
+  const mk=buildMarkets(p,spend,1), cs=new Array(H+1); { let s=0; for(let a=0;a<=H;a++){ s+=survival(a,p); cs[a]=s; } }
+  const dau=new Array(H+1).fill(0), rev=new Array(H+1).fill(0);
+  mk.forEach(m=>{ const kk=M*m.ret*m.installs;
+    for(let t=0;t<=H;t++){ const acc=t<D?cs[t]:cs[t]-cs[t-D]; const d=kk*acc; dau[t]+=d; rev[t]+=d*m.arNet; } });
+  let cr=0; const cumRev=[],cumSpend=[],cumProfit=[];
+  for(let t=0;t<=H;t++){ cr+=rev[t]; const sp=Math.min(t+1,D)*spend; cumRev.push(cr); cumSpend.push(sp); cumProfit.push(cr-sp); }
+  return {dau,cumRev,cumSpend,cumProfit,totalInstalls:mk.reduce((s,m)=>s+m.installs,0)*D};
+}
+
+// ================= render: campaign =================
+function renderCampaign(spend,p){
+  const D=Math.min(365,Math.max(1,Math.round(num('cDays')))), H=365;
   $('cDaysN').value=D; $('cSpendEcho').textContent='£'+spend; $('cBudget').textContent='£'+fmt(spend*D);
-  const sim=simulateCampaign(spend,D,H);
+  const sim=simulateCampaign(spend,D,H,p);
   const peak=sim.dau.reduce((a,b)=>b>a?b:a,0);
   let payback=null; for(let t=0;t<=H;t++){ if(sim.cumProfit[t]>=0){payback=t;break;} }
-  const budget=spend*D, rev12=sim.cumRev[H], profit12=sim.cumProfit[H];
-  const roas12=budget>0?rev12/budget:Infinity;
-  const revDuring=sim.cumRev[Math.min(D-1,H)], revAfter=rev12-revDuring;
-  const tailPct=rev12>0?revAfter/rev12*100:0;
+  const budget=spend*D, rev12=sim.cumRev[H], profit12=sim.cumProfit[H], roas12=budget>0?rev12/budget:Infinity;
+  const revAfter=rev12-sim.cumRev[Math.min(D-1,H)], tailPct=rev12>0?revAfter/rev12*100:0;
   $('cInstalls').textContent=fmt(sim.totalInstalls);
   $('cPeak').textContent=fmt(peak);
   $('cPayback').textContent=payback===null?'>365d':payback+'d';
@@ -435,75 +443,71 @@ function renderCampaign(spend){
   $('cTailPct').textContent=Math.round(tailPct)+'%';
   $('cProfitCard').style.borderColor=profit12>=0?'var(--emerald)':'var(--danger)';
   $('cPayCard').style.borderColor=(payback!==null&&payback<=D)?'var(--emerald)':(payback===null?'var(--danger)':'var(--gold)');
-
   const labels=Array.from({length:H+1},(_,i)=>i);
   const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
   const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
   const ds=[
     {label:'Cumulative revenue',data:sim.cumRev,borderColor:'#2fbf80',backgroundColor:'rgba(47,191,128,.10)',fill:true,tension:.15,pointRadius:0,borderWidth:2},
-    {label:'Cumulative spend (stops on day '+D+')',data:sim.cumSpend,borderColor:'#8fb0a3',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
+    {label:'Cumulative spend (stops day '+D+')',data:sim.cumSpend,borderColor:'#8fb0a3',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
     {label:'Cumulative profit',data:sim.cumProfit,borderColor:'#e9c46a',fill:false,tension:.15,pointRadius:0,borderWidth:2.5}
   ];
   if(chart2){chart2.data.labels=labels;chart2.data.datasets=ds;chart2.update();}
-  else{ chart2=new Chart($('chart2'),{type:'line',data:{labels,datasets:ds},
+  else chart2=new Chart($('chart2'),{type:'line',data:{labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       plugins:{legend:{labels:{color:mut,boxWidth:14}},tooltip:{callbacks:{title:i=>'Day '+i[0].label,label:c=>c.dataset.label+': £'+fmt(c.parsed.y)}}},
       scales:{x:{title:{display:true,text:'Days from campaign start',color:mut},ticks:{color:mut,maxTicksLimit:10},grid:{color:gl}},
-              y:{title:{display:true,text:'£ cumulative',color:mut},ticks:{color:mut},grid:{color:gl}}}}}); }
+              y:{title:{display:true,text:'£ cumulative',color:mut},ticks:{color:mut},grid:{color:gl}}}}});
 }
 
-// ================= render =================
+// ================= render: main =================
 function recompute(){
-  const spend=+$('spend').value||0;
+  const p=readP(), spend=p.spend;
   $('spendN').value=spend; $('spendPill').textContent='£'+spend+'/day';
-  $('orgN').value=+$('org').value; $('feeN').value=+$('fee').value; $('iosShareN').value=+$('iosShare').value;
-  $('ltdBase').textContent=Lval(1).toFixed(2)+' DAU';
+  $('orgN').value=num('org'); $('feeN').value=num('fee'); $('iosShareN').value=num('iosShare');
+  $('ltdBase').textContent=Lval(1,p).toFixed(2)+' DAU';
+  const pLow=withLife(p,Math.min(p.life,120)), pHigh=withLife(p,365);
 
   // allocation bar + echo
-  const w=normWeights();
-  const bar=$('allocBar').children;
+  const w=p.w, bar=$('allocBar').children;
   bar[0].style.width=(w[0]*100)+'%'; bar[0].style.background='var(--emerald)';
   bar[1].style.width=(w[1]*100)+'%'; bar[1].style.background='var(--gold)';
   bar[2].style.width=(w[2]*100)+'%'; bar[2].style.background='var(--blue)';
-  $('allocEcho').textContent=`Now: ${Math.round(w[0]*100)}% / ${Math.round(w[1]*100)}% / ${Math.round(w[2]*100)}%, iOS ${+$('iosShare').value}%`;
-  $('mixEcho').textContent=`T1 ${Math.round(w[0]*100)}% · T2 ${Math.round(w[1]*100)}% · T3 ${Math.round(w[2]*100)}% · iOS ${+$('iosShare').value}%`;
+  const pct=x=>Math.round(x*100);
+  $('allocEcho').textContent=`Now: ${pct(w[0])}% / ${pct(w[1])}% / ${pct(w[2])}%, iOS ${num('iosShare')}%`;
+  $('mixEcho').textContent=`T1 ${pct(w[0])}% · T2 ${pct(w[1])}% · T3 ${pct(w[2])}% · iOS ${num('iosShare')}% · life ${life}d`;
 
-  const mk=buildMarkets(spend);
-  const tr=mixTraj(spend,horizon), base=mixTraj(0,horizon), len=tr.length;
-  const totalInstalls=mk.reduce((s,m)=>s+m.installs,0)+(+$('org').value||0);
-  const totalPaidInstalls=mk.reduce((s,m)=>s+m.installs,0);
-  const blendCpi=totalPaidInstalls>0?spend/totalPaidInstalls:0;
-  const steady=mixSteady(spend);
+  const mk=buildMarkets(p,spend,1);
+  const paidInstalls=mk.reduce((s,m)=>s+m.installs,0), totalInstalls=paidInstalls+p.org;
+  const blendCpi=paidInstalls>0?spend/paidInstalls:0, steady=mixSteady(spend,p,1);
 
   // top KPIs
   $('kInstalls').textContent=fmt(totalInstalls);
-  $('kBlendCpi').textContent=totalPaidInstalls>0?'£'+blendCpi.toFixed(3):'—';
+  $('kBlendCpi').textContent=paidInstalls>0?'£'+blendCpi.toFixed(3):'—';
   $('kSteady').textContent=fmt(steady);
-  $('k30').textContent=fmt(tr[Math.min(30,len-1)]);
-  $('k90').textContent=fmt(tr[Math.min(90,len-1)]);
-  const gain=tr[len-1]-tr[0]; let d80=null;
-  if(gain>0){ for(let i=0;i<len;i++){ if(tr[i]>=tr[0]+0.8*gain){d80=i;break;} } }
-  $('kDays').textContent=d80===null?'—':d80+'d';
+  $('kSteadyRng').textContent='range '+fmt(mixSteady(spend,pLow,1.4))+'–'+fmt(mixSteady(spend,pHigh,0.8));
+  const tr=mixTraj(spend,horizon,p,1), base0=mixTraj(0,horizon,p,1);
+  $('k30').textContent=fmt(tr[Math.min(30,tr.length-1)]);
+  $('k90').textContent=fmt(tr[Math.min(90,tr.length-1)]);
+  // days→80% vs steady asymptote (horizon-invariant, over 365d)
+  const t365=mixTraj(spend,365,p,1), today=t365[0], gain=steady-today; let d80=null;
+  if(gain>1){ for(let i=0;i<t365.length;i++){ if(t365[i]>=today+0.8*gain){d80=i;break;} } }
+  $('kDays').textContent=gain<=1?'—':(d80===null?'>365d':d80+'d');
 
-  // market breakdown table
+  // market breakdown
   const mb=$('mktBody'); mb.innerHTML='';
   mk.forEach(m=>{
-    const roas=m.spend>0?(m.installs*ltvPerInstall(m.arNet,m.ret))/m.spend:0;
-    const cls=m.plat==='ios'?'mkt-ios':'mkt-android';
+    const roas=m.spend>0?(m.installs*m.ltv)/m.spend:0, cls=m.plat==='ios'?'mkt-ios':'mkt-android';
     mb.insertAdjacentHTML('beforeend',
-      `<tr><td class="${cls}">${m.name}</td><td>£${m.spend.toFixed(2)}</td><td>£${m.cpi.toFixed(2)}</td>`+
+      `<tr><td class="${cls}">${m.name}</td><td>£${m.spend.toFixed(2)}</td><td>£${m.cpiEff.toFixed(3)}</td>`+
       `<td>${fmt(m.installs)}</td><td>£${m.arNet.toFixed(4)}</td><td>${fmt(m.steadyDAU)}</td>`+
       `<td>£${fmt(m.revDay*30)}</td><td style="color:${roas>=1?'var(--emerald)':'var(--danger)'}">${roas.toFixed(2)}×</td></tr>`);
   });
-  // organic row
-  const org=+$('org').value||0, orgDAU=org*Lval(retTier3()), orgRev=orgDAU*arTier3Net();
+  const oDAU=orgSteady(p), oRev=oDAU*arT3Net(p);
   mb.insertAdjacentHTML('beforeend',
-    `<tr><td class="mkt-android">Organic · T3 Android</td><td>£0.00</td><td>—</td><td>${fmt(org)}</td>`+
-    `<td>£${arTier3Net().toFixed(4)}</td><td>${fmt(orgDAU)}</td><td>£${fmt(orgRev*30)}</td><td style="color:var(--emerald)">∞</td></tr>`);
-  // blended total row
-  const revDay=mixRevDay(spend), blendAr=steady>0?revDay/steady:0;
-  const paidLtv=mk.reduce((s,m)=>s+m.installs*ltvPerInstall(m.arNet,m.ret),0);
-  const blendLtvPer=totalPaidInstalls>0?paidLtv/totalPaidInstalls:0;
+    `<tr><td class="mkt-android">Organic · T3 Android</td><td>£0.00</td><td>—</td><td>${fmt(p.org)}</td>`+
+    `<td>£${arT3Net(p).toFixed(4)}</td><td>${fmt(oDAU)}</td><td>£${fmt(oRev*30)}</td><td style="color:var(--emerald)">∞</td></tr>`);
+  const revDay=mixRevDay(spend,p,1), blendAr=steady>0?revDay/steady:0;
+  const paidLtv=paidLtvTotal(spend,p,1), blendLtvPer=paidInstalls>0?paidLtv/paidInstalls:0;
   mb.insertAdjacentHTML('beforeend',
     `<tr class="tot"><td>Blended / Total</td><td>£${spend.toFixed(2)}</td><td>${blendCpi>0?'£'+blendCpi.toFixed(3):'—'}</td>`+
     `<td>${fmt(totalInstalls)}</td><td>£${blendAr.toFixed(4)}</td><td>${fmt(steady)}</td>`+
@@ -511,69 +515,73 @@ function recompute(){
 
   // revenue KPIs
   const revMonth=revDay*30, net=revMonth-spend*30;
-  const blendRoas=spend>0?revDay/spend:Infinity;              // total rev incl organic ÷ spend
-  const margRoas=spend>0?paidLtv/spend:Infinity;              // paid lifetime value ÷ spend
-  const curRev=CURRENT_DAU*arTier3Net()*30;
-  const breakeven=blendLtvPer;                                 // CPI at which marginal ROAS = 1
+  const businessRoas=spend>0?revDay/spend:Infinity, margRoas=spend>0?paidLtv/spend:Infinity;
+  const curRev=p.currentDAU*arT3Net(p)*30;
+  const netLow=mixRevDay(spend,pLow,1.4)*30-spend*30, netHigh=mixRevDay(spend,pHigh,0.8)*30-spend*30;
+  const sgn=x=>(x>=0?'+£':'−£')+fmt(Math.abs(x));
   $('rArpdau').textContent='£'+blendAr.toFixed(4);
   $('rRevMonth').textContent=gbp(revMonth);
-  $('rNet').textContent=(net>=0?'+£':'−£')+fmt(Math.abs(net));
-  $('rBlend').textContent=(isFinite(blendRoas)?blendRoas.toFixed(2):'∞')+'×';
+  $('rNet').textContent=sgn(net);
+  $('rNetRng').textContent='range '+sgn(netLow)+' … '+sgn(netHigh);
+  $('rBlend').textContent=(isFinite(businessRoas)?businessRoas.toFixed(2):'∞')+'×';
   $('rRoas').textContent=(isFinite(margRoas)?margRoas.toFixed(2):'∞')+'×';
   $('rCurRev').textContent=gbp(curRev);
-  $('rBreak').textContent=breakeven>0?'£'+breakeven.toFixed(3):'—';
+  $('rBreak').textContent=blendLtvPer>0?'£'+blendLtvPer.toFixed(3):'—';
   $('rLtv').textContent='£'+blendLtvPer.toFixed(3);
+  // 90-day LTV for tail transparency
+  const paidLtv90=mk.reduce((s,m)=>s+m.installs*(m.arNet*Lval(m.ret,p,90)),0), ltv90=paidInstalls>0?paidLtv90/paidInstalls:0;
+  $('rLtvRng').textContent='£'+ltv90.toFixed(3)+' at 90-day lifetime';
   $('rNetCard').style.borderColor=net>=0?'var(--emerald)':'var(--danger)';
-  $('rBlendCard').style.borderColor=blendRoas>=1?'var(--emerald)':'var(--danger)';
+  $('rBlendCard').style.borderColor=businessRoas>=1?'var(--emerald)':'var(--danger)';
   $('rRoasCard').style.borderColor=margRoas>=1?'var(--emerald)':'var(--danger)';
 
-  // maintenance
-  const holdInstalls=Math.max(0,CURRENT_DAU/Lval(retTier3())-org);
-  $('mInst').textContent=fmt(holdInstalls);
-  $('mSpend').textContent='£'+(holdInstalls*(blendCpi>0?blendCpi:+$('cpi3').value)).toFixed(2);
-  $('orgEq').textContent=fmt(org*Lval(retTier3()));
+  // maintenance (independent bisection)
+  const mS=maintenanceSpend(p), mInst=buildMarkets(p,mS,1).reduce((s,m)=>s+m.installs,0);
+  $('mCur').textContent=fmt(p.currentDAU);
+  $('mInst').textContent=fmt(mInst);
+  $('mSpend').textContent='£'+mS.toFixed(2);
+  $('orgEq').textContent=fmt(orgSteady(p));
 
-  // spend scenarios (current mix)
+  // spend scenarios (current mix, endogenous CPI visible)
   const sb=$('scenBody'); sb.innerHTML='';
   [0,25,50,100,200,300].forEach(S=>{
-    const t=mixTraj(S,180);
+    const smk=buildMarkets(p,S,1), inst=smk.reduce((s,m)=>s+m.installs,0), eff=inst>0?S/inst:0;
+    const t=mixTraj(S,180,p,1);
     sb.insertAdjacentHTML('beforeend',
-      `<tr><td>£${S}</td><td>${fmt(buildMarkets(S).reduce((s,m)=>s+m.installs,0)+org)}</td>`+
-      `<td>${fmt(t[90])}</td><td>${fmt(t[t.length-1])}</td><td>£${fmt(mixRevDay(S)*30)}</td></tr>`);
+      `<tr><td>£${S}</td><td>${fmt(inst+p.org)}</td><td>${eff>0?'£'+eff.toFixed(3):'—'}</td>`+
+      `<td>${fmt(t[Math.min(90,t.length-1)])}</td><td>${fmt(mixSteady(S,p,1))}</td><td>£${fmt(mixRevDay(S,p,1)*30)}</td></tr>`);
   });
 
-  // allocation sensitivity: shift % to Tier-1 (rest to Tier-3), iOS share held
+  // allocation sensitivity (parameterised — no DOM mutation)
   const ab=$('allocBody'); ab.innerHTML='';
-  const savedT1=$('t1').value, savedT2=$('t2').value, savedT3=$('t3').value;
-  [0,25,50,75,100].forEach(pc=>{
-    $('t1').value=pc; $('t2').value=0; $('t3').value=100-pc;
-    const st=mixSteady(spend), rev=mixRevDay(spend), ar=st>0?rev/st:0;
-    const roas=spend>0?rev/spend:Infinity;
+  [0,25,50,75,100].forEach(pcT1=>{
+    const p2=withWeights(p,[pcT1/100,0,(100-pcT1)/100]);
+    const st=mixSteady(spend,p2,1), rev=mixRevDay(spend,p2,1), ar=st>0?rev/st:0, roas=spend>0?rev/spend:Infinity;
     ab.insertAdjacentHTML('beforeend',
-      `<tr><td>${pc}%</td><td>£${ar.toFixed(4)}</td><td>${fmt(st)}</td><td>£${fmt(rev*30)}</td>`+
+      `<tr><td>${pcT1}%</td><td>£${ar.toFixed(4)}</td><td>${fmt(st)}</td><td>£${fmt(rev*30)}</td>`+
       `<td style="color:${roas>=1?'var(--emerald)':'var(--danger)'}">${isFinite(roas)?roas.toFixed(2)+'×':'∞'}</td></tr>`);
   });
-  $('t1').value=savedT1; $('t2').value=savedT2; $('t3').value=savedT3;  // restore
 
-  // burst-campaign P&L (spend then stop)
-  renderCampaign(spend);
+  renderCampaign(spend,p);
 
-  // chart
-  const labels=Array.from({length:len},(_,i)=>i);
+  // main chart with confidence band
+  const trLow=mixTraj(spend,horizon,pLow,1.4), trHigh=mixTraj(spend,horizon,pHigh,0.8);
+  const labels=Array.from({length:tr.length},(_,i)=>i);
+  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
+  const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
   const ds=[
-    {label:`Mix · £${spend}/day`,data:tr,borderColor:'#2fbf80',backgroundColor:'rgba(47,191,128,.12)',fill:true,tension:.25,pointRadius:0,borderWidth:2.5},
-    {label:'£0 (organic only)',data:base,borderColor:'#6f8f82',borderDash:[6,5],fill:false,tension:.25,pointRadius:0,borderWidth:1.5}
+    {label:'_low',data:trLow,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(0,0,0,0)',pointRadius:0,fill:false,borderWidth:0},
+    {label:'Range (conservative→optimistic)',data:trHigh,borderColor:'rgba(47,191,128,0.28)',backgroundColor:'rgba(47,191,128,0.13)',pointRadius:0,fill:'-1',borderWidth:0,tension:.25},
+    {label:`Mix · £${spend}/day`,data:tr,borderColor:'#2fbf80',backgroundColor:'rgba(0,0,0,0)',fill:false,tension:.25,pointRadius:0,borderWidth:2.5},
+    {label:'£0 (organic only)',data:base0,borderColor:'#6f8f82',borderDash:[6,5],fill:false,tension:.25,pointRadius:0,borderWidth:1.5}
   ];
-  const cs=getComputedStyle(document.body), mut=(cs.getPropertyValue('--muted')||'#8fb0a3').trim(),
-        gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
   if(chart){chart.data.labels=labels;chart.data.datasets=ds;chart.update();}
-  else{
-    chart=new Chart($('chart'),{type:'line',data:{labels,datasets:ds},
-      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-        plugins:{legend:{labels:{color:mut,boxWidth:14}},tooltip:{callbacks:{title:i=>'Day '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.parsed.y)+' DAU'}}},
-        scales:{x:{title:{display:true,text:'Days from today',color:mut},ticks:{color:mut,maxTicksLimit:10},grid:{color:gl}},
-                y:{title:{display:true,text:'DAU',color:mut},ticks:{color:mut},grid:{color:gl},beginAtZero:true}}}});
-  }
+  else chart=new Chart($('chart'),{type:'line',data:{labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:mut,boxWidth:14,filter:it=>!it.text.startsWith('_')}},
+        tooltip:{filter:it=>!it.dataset.label.startsWith('_'),callbacks:{title:i=>'Day '+i[0].label,label:c=>c.dataset.label+': '+fmt(c.parsed.y)+' DAU'}}},
+      scales:{x:{title:{display:true,text:'Days from today',color:mut},ticks:{color:mut,maxTicksLimit:10},grid:{color:gl}},
+              y:{title:{display:true,text:'DAU',color:mut},ticks:{color:mut},grid:{color:gl},beginAtZero:true}}}});
 }
 
 // ================= wiring =================
@@ -582,20 +590,21 @@ NUMPAIR.forEach(([r,n])=>{
   $(r).addEventListener('input',()=>{$(n).value=$(r).value;recompute();});
   $(n).addEventListener('input',()=>{$(r).value=$(n).value;recompute();});
 });
-['t1','t2','t3','cpi1','cpi2','cpi3','ar1','ar2','ar3','ret1','ret2','ret3','iosCpi','iosAr','iosRet']
+['t1','t2','t3','currentDAU','cpi1','cpi2','cpi3','reach1','reach2','reach3','ar1','ar2','ar3',
+ 'ret1','ret2','ret3','iap1','iap2','iap3','iosCpi','iosAr','iosRet','iosReach','beta','floor']
   .forEach(id=>$(id).addEventListener('input',recompute));
 
 $('horizonSeg').addEventListener('click',e=>{ if(e.target.dataset.h){
   horizon=+e.target.dataset.h;
   [...$('horizonSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
+$('lifeSeg').addEventListener('click',e=>{ if(e.target.dataset.l){
+  life=+e.target.dataset.l;
+  [...$('lifeSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
-const MIX={ // [t1,t2,t3,iosShare]
-  cur:[0,0,100,0], bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55]
-};
+const MIX={ cur:[0,0,100,0], bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   const m=MIX[e.target.dataset.mix];
-  $('t1').value=m[0]; $('t2').value=m[1]; $('t3').value=m[2];
-  $('iosShare').value=m[3]; $('iosShareN').value=m[3];
+  $('t1').value=m[0]; $('t2').value=m[1]; $('t3').value=m[2]; $('iosShare').value=m[3]; $('iosShareN').value=m[3];
   [...$('mixSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
 $('themeBtn').addEventListener('click',()=>{
