@@ -212,6 +212,31 @@
     </div>
   </div>
 
+  <!-- CAMPAIGN P&L -->
+  <div class="card" style="margin-top:20px">
+    <h2>Campaign P&amp;L — spend a burst, then stop <span class="pill">the decay tail</span></h2>
+    <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
+      <div style="min-width:230px">
+        <label style="margin-top:0">Spend for how many days, then stop</label>
+        <div class="row"><input id="cDays" type="range" min="1" max="180" step="1" value="30"/>
+          <input id="cDaysN" type="number" min="1" max="365" step="1" value="30"/></div>
+      </div>
+      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day (slider above) at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from the users you already bought — shown over 12 months.</div>
+    </div>
+    <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
+      <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
+      <div class="kpi blue"><div class="v" id="cPeak">—</div><div class="l">Peak DAU</div></div>
+      <div class="kpi" id="cPayCard"><div class="v" id="cPayback">—</div><div class="l">Payback day</div></div>
+      <div class="kpi gold"><div class="v" id="cRoas">—</div><div class="l">12-mo ROAS (rev ÷ budget)</div></div>
+      <div class="kpi gold"><div class="v" id="cRev">—</div><div class="l">12-mo total revenue</div></div>
+      <div class="kpi" id="cProfitCard"><div class="v" id="cProfit">—</div><div class="l">12-mo profit (rev − budget)</div></div>
+      <div class="kpi em"><div class="v" id="cTail">—</div><div class="l">Revenue AFTER spend stops</div></div>
+      <div class="kpi em"><div class="v" id="cTailPct">—</div><div class="l">…the tail, as % of revenue</div></div>
+    </div>
+    <div class="chartbox" style="margin-top:12px"><canvas id="chart2"></canvas></div>
+    <div class="hint" style="margin-top:8px">This is the <b>burst</b> question — "spend £X, then stop" — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). The <b>profit line keeps climbing after spend stops</b> (flat spend, rising revenue): that's the retention tail monetising users you already paid for, and it's why lifetime profitability beats the monthly snapshot. Paid cohorts only — organic revenue is extra on top.</div>
+  </div>
+
   <!-- MARKET BREAKDOWN -->
   <div class="card" style="margin-top:20px">
     <h2>Market breakdown — how the blend is built <span class="pill" id="mixEcho">—</span></h2>
@@ -268,6 +293,7 @@
     • <b>"For how long?"</b> the curve climbs and plateaus; "days→80%" shows how fast it gets most of the way (same ramp shape across markets).<br>
     • <b>"How much to maintain?"</b> hold-flat installs = DAU ÷ steady-per-install, minus organic, priced at your mix's blended CPI.<br>
     • <b>"Does spending more upmarket help ARPDAU?"</b> yes — blended ARPDAU is DAU-weighted, so it rises as premium markets take a bigger DAU share; see the breakdown &amp; allocation-sensitivity tables.<br>
+    • <b>"What if I spend a burst then stop?"</b> the Campaign P&amp;L integrates every cohort's revenue over 12 months, including the long retention tail <i>after</i> spend ends — so cumulative profit keeps rising at zero further cost. This is why lifetime profitability exceeds the steady-state monthly snapshot.<br>
     <span style="color:#6f8f82">Retention engine (β, m) is fitted to your data. Per-market CPI/ARPDAU/uplift are planning assumptions you can edit under Advanced.</span>
   </div>
 </div>
@@ -295,9 +321,28 @@ function trajFromInstalls(installsPerDay, days, ret, hist){
 }
 function ltvPerInstall(arNet,ret){ return arNet*Lval(ret); }
 
+// cumulative survival: cumS[k] = Σ_{a=0}^{k} s(a) — steady DAU-days accrued after k days
+function cumSurv(H){ const c=new Array(H+1); let s=0; for(let a=0;a<=H;a++){ s+=survival(a); c[a]=s; } return c; }
+
+// BURST campaign: spend S/day for `spendDays`, then STOP. Paid cohorts only, over horizon H days.
+// After spend stops, the acquired users keep producing DAU (and revenue) as they decay — the tail.
+function simulateCampaign(S, spendDays, H){
+  const mk=buildMarkets(S), cs=cumSurv(H);
+  const dau=new Array(H+1).fill(0), rev=new Array(H+1).fill(0);
+  mk.forEach(m=>{ const k=M*m.ret*m.installs;
+    for(let t=0;t<=H;t++){
+      const acc = (t<spendDays) ? cs[t] : cs[t]-cs[t-spendDays];  // DAU-days from cohorts still alive
+      const d=k*acc; dau[t]+=d; rev[t]+=d*m.arNet;                 // daily revenue = DAU × ARPDAU
+    }});
+  const cumRev=[],cumSpend=[],cumProfit=[]; let cr=0;
+  for(let t=0;t<=H;t++){ cr+=rev[t]; const sp=Math.min(t+1,spendDays)*S; cumRev.push(cr); cumSpend.push(sp); cumProfit.push(cr-sp); }
+  const totalInstalls=mk.reduce((s,m)=>s+m.installs,0)*spendDays;
+  return {dau,rev,cumRev,cumSpend,cumProfit,totalInstalls};
+}
+
 // ================= read inputs & build the six-market mix =================
 const $=id=>document.getElementById(id);
-let horizon=180, chart;
+let horizon=180, chart, chart2;
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 
@@ -367,6 +412,44 @@ function maintenanceSpend(){
   if(dev(0)>=0) return 0;
   let lo=0,hi=2000; for(let i=0;i<44;i++){ const mid=(lo+hi)/2; if(dev(mid)<0)lo=mid; else hi=mid; }
   return (lo+hi)/2;
+}
+
+// ================= render: burst-campaign P&L =================
+function renderCampaign(spend){
+  const D=Math.max(1,Math.round(+$('cDays').value||1)), H=365;
+  $('cDaysN').value=D; $('cSpendEcho').textContent='£'+spend; $('cBudget').textContent='£'+fmt(spend*D);
+  const sim=simulateCampaign(spend,D,H);
+  const peak=sim.dau.reduce((a,b)=>b>a?b:a,0);
+  let payback=null; for(let t=0;t<=H;t++){ if(sim.cumProfit[t]>=0){payback=t;break;} }
+  const budget=spend*D, rev12=sim.cumRev[H], profit12=sim.cumProfit[H];
+  const roas12=budget>0?rev12/budget:Infinity;
+  const revDuring=sim.cumRev[Math.min(D-1,H)], revAfter=rev12-revDuring;
+  const tailPct=rev12>0?revAfter/rev12*100:0;
+  $('cInstalls').textContent=fmt(sim.totalInstalls);
+  $('cPeak').textContent=fmt(peak);
+  $('cPayback').textContent=payback===null?'>365d':payback+'d';
+  $('cRoas').textContent=(isFinite(roas12)?roas12.toFixed(2):'∞')+'×';
+  $('cRev').textContent=gbp(rev12);
+  $('cProfit').textContent=(profit12>=0?'+£':'−£')+fmt(Math.abs(profit12));
+  $('cTail').textContent=gbp(revAfter);
+  $('cTailPct').textContent=Math.round(tailPct)+'%';
+  $('cProfitCard').style.borderColor=profit12>=0?'var(--emerald)':'var(--danger)';
+  $('cPayCard').style.borderColor=(payback!==null&&payback<=D)?'var(--emerald)':(payback===null?'var(--danger)':'var(--gold)');
+
+  const labels=Array.from({length:H+1},(_,i)=>i);
+  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
+  const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
+  const ds=[
+    {label:'Cumulative revenue',data:sim.cumRev,borderColor:'#2fbf80',backgroundColor:'rgba(47,191,128,.10)',fill:true,tension:.15,pointRadius:0,borderWidth:2},
+    {label:'Cumulative spend (stops on day '+D+')',data:sim.cumSpend,borderColor:'#8fb0a3',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
+    {label:'Cumulative profit',data:sim.cumProfit,borderColor:'#e9c46a',fill:false,tension:.15,pointRadius:0,borderWidth:2.5}
+  ];
+  if(chart2){chart2.data.labels=labels;chart2.data.datasets=ds;chart2.update();}
+  else{ chart2=new Chart($('chart2'),{type:'line',data:{labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:mut,boxWidth:14}},tooltip:{callbacks:{title:i=>'Day '+i[0].label,label:c=>c.dataset.label+': £'+fmt(c.parsed.y)}}},
+      scales:{x:{title:{display:true,text:'Days from campaign start',color:mut},ticks:{color:mut,maxTicksLimit:10},grid:{color:gl}},
+              y:{title:{display:true,text:'£ cumulative',color:mut},ticks:{color:mut},grid:{color:gl}}}}}); }
 }
 
 // ================= render =================
@@ -472,6 +555,9 @@ function recompute(){
   });
   $('t1').value=savedT1; $('t2').value=savedT2; $('t3').value=savedT3;  // restore
 
+  // burst-campaign P&L (spend then stop)
+  renderCampaign(spend);
+
   // chart
   const labels=Array.from({length:len},(_,i)=>i);
   const ds=[
@@ -491,7 +577,7 @@ function recompute(){
 }
 
 // ================= wiring =================
-const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN']];
+const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN']];
 NUMPAIR.forEach(([r,n])=>{
   $(r).addEventListener('input',()=>{$(n).value=$(r).value;recompute();});
   $(n).addEventListener('input',()=>{$(r).value=$(n).value;recompute();});
@@ -515,7 +601,7 @@ $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
 $('themeBtn').addEventListener('click',()=>{
   document.body.classList.toggle('light');
   $('themeBtn').textContent=document.body.classList.contains('light')?'🌙 Dark':'☀️ Light';
-  if(chart){chart.destroy();chart=null;recompute();}});
+  if(chart){chart.destroy();chart=null;} if(chart2){chart2.destroy();chart2=null;} recompute();});
 
 recompute();
 </script>
