@@ -214,6 +214,28 @@
           <div style="flex:1"><div class="hint" style="margin:0 0 3px">Retention floor %</div>
             <input class="mini" id="floor" type="number" min="0" step="0.1" value="0"/></div>
         </div>
+        <div class="hint" style="margin:12px 0 3px"><b>Subscriptions</b> — recurring, modelled as a subscriber <i>stock</i> with its own churn (per-tier price)</div>
+        <table style="font-size:11px">
+          <thead><tr><th>Tier</th><th>Sub conv %*</th><th>Net £/sub/mo</th></tr></thead>
+          <tbody>
+            <tr><td>🟢 T1</td>
+              <td><input class="mini" id="sconv1" type="number" min="0" step="0.05" value="0.35"/></td>
+              <td><input class="mini" id="sprice1" type="number" min="0" step="0.25" value="5.00"/></td></tr>
+            <tr><td>🟡 T2</td>
+              <td><input class="mini" id="sconv2" type="number" min="0" step="0.02" value="0.22"/></td>
+              <td><input class="mini" id="sprice2" type="number" min="0" step="0.25" value="3.00"/></td></tr>
+            <tr><td>🔵 T3</td>
+              <td><input class="mini" id="sconv3" type="number" min="0" step="0.01" value="0.10"/></td>
+              <td><input class="mini" id="sprice3" type="number" min="0" step="0.1" value="1.80"/></td></tr>
+          </tbody>
+        </table>
+        <div class="row" style="gap:6px;margin-top:6px">
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Sub % of IAP rev</div>
+            <input class="mini" id="subFrac" type="number" min="0" max="100" step="1" value="64"/></div>
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Sub churn %/mo</div>
+            <input class="mini" id="churn" type="number" min="1" step="1" value="14"/></div>
+        </div>
+        <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP = 64%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
         <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. T3 ARPDAU £0.0144, β and retention are <b>measured</b> from your data. Tier-1/2 floor CPI, reach and iOS multipliers are 2025 benchmark priors (you have no history there yet) — corroborated in the audit's calibration section. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
       </details>
 
@@ -287,6 +309,20 @@
     <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — this is your ~£120/mo today and stays positive whenever organic + affordable paid outweigh spend. <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
 
+  <!-- REVENUE COMPOSITION (three-way) -->
+  <div class="card" style="margin-top:20px">
+    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">steady, current mix</span></h2>
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi blue"><div class="v" id="cmpAd">—</div><div class="l">Ad revenue / mo</div><div class="rng" id="cmpAdPct"></div></div>
+      <div class="kpi gold"><div class="v" id="cmpSub">—</div><div class="l">Subscription revenue / mo</div><div class="rng" id="cmpSubPct"></div></div>
+      <div class="kpi em"><div class="v" id="cmpCons">—</div><div class="l">Consumable IAP / mo</div><div class="rng" id="cmpConsPct"></div></div>
+      <div class="kpi"><div class="v" id="cmpSubsNow">—</div><div class="l">Current subscribers</div></div>
+      <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
+      <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
+    </div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Current subscribers are anchored to your measured Play data (subscriptions = 64% of IAP: Mogul Premium monthly/yearly + Dividend Society tiers); steady subscribers are what your current spend + mix sustains. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+  </div>
+
   <!-- MONTH ON MONTH -->
   <div class="card" style="margin-top:20px">
     <h2>Month-on-month revenue &amp; profit <span class="pill">sustained spend · 12 months</span></h2>
@@ -355,6 +391,20 @@ function trajFromInstalls(inst,days,ret,hist,p){
   return out.slice(hist.length-1);
 }
 
+// ---- SUBSCRIPTIONS: recurring subscriber STOCK (own churn), not per-DAU ----
+// fraction of a subscriber cohort still subscribed after `a` days (monthly churn)
+function subSurv(a,churn){ return a<=0?1:Math.pow(1-churn,a/30); }
+// Σ subSurv over ~2yr = steady active subscribers produced per sustained 1 install/day (avg sub-life in days)
+function subLifeDays(p){ let s=0; for(let a=0;a<730;a++) s+=subSurv(a,p.churn); return s; }
+function cumSubArr(days,p){ const c=new Array(days+1); let s=0; for(let a=0;a<=days;a++){ s+=subSurv(a,p.churn); c[a]=s; } return c; }
+// net flow ARPDAU (ads + consumable IAP, per DAU-day) — EXCLUDES subscriptions, which are modelled as a stock
+function flowAr(t,p,ios){ const m=ios?p.ios.ar:1; return (t.ar*(1-t.iap) + t.ar*t.iap*(1-p.subFrac)*(1-p.fee))*m; }
+const flowArT3=p=>flowAr(p.tiers[2],p,false);
+// current legacy subscription revenue/day (net), anchored to measured data (currentDAU × ARPDAU × IAP% × sub% of IAP)
+const anchorSubRev=p=>p.currentDAU*p.tiers[2].ar*p.tiers[2].iap*p.subFrac*(1-p.fee);
+// steady organic subscription revenue/day (net): organic installs → subscribers, at T3 economics
+const orgSubRev=p=>p.org*p.tiers[2].sconv*subLifeDays(p)*p.tiers[2].sprice/30;
+
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
 let horizon=180, life=365, chart, chart2, chart3;
@@ -368,10 +418,11 @@ function readP(){
     spend:num('spend'), w:[a/s,b/s,c/s], iosShare:num('iosShare')/100, org:num('org'),
     currentDAU:num('currentDAU')||0, fee:num('fee')/100,
     beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
+    subFrac:num('subFrac')/100, churn:num('churn')/100,
     tiers:[
-      {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100},
-      {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100},
-      {cpi:num('cpi3'),reach:num('reach3'),ar:num('ar3'),ret:num('ret3'),iap:num('iap3')/100}
+      {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100,sconv:num('sconv1')/100,sprice:num('sprice1')},
+      {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100,sconv:num('sconv2')/100,sprice:num('sprice2')},
+      {cpi:num('cpi3'),reach:num('reach3'),ar:num('ar3'),ret:num('ret3'),iap:num('iap3')/100,sconv:num('sconv3')/100,sprice:num('sprice3')}
     ],
     ios:{cpi:num('iosCpi'),ar:num('iosAr'),ret:num('iosRet'),reach:num('iosReach')}
   };
@@ -392,11 +443,23 @@ function buildMarkets(p,spend,cpiMult){
     if(iS>0) out.push({name:names[i]+' · iOS',plat:'ios',tier:i,spend:iS,
       cpi:t.cpi*p.ios.cpi*cpiMult,reach:t.reach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,t.reach*p.ios.reach),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
   }
-  out.forEach(m=>{ m.cpiEff=m.installs>0?m.spend/m.installs:0; m.steadyDAU=m.installs*Lval(m.ret,p); m.revDay=m.steadyDAU*m.arNet; m.ltv=m.arNet*Lval(m.ret,p); });
+  const SLD=subLifeDays(p);
+  out.forEach(m=>{
+    const t=p.tiers[m.tier], isIos=m.plat==='ios';
+    m.cpiEff=m.installs>0?m.spend/m.installs:0;
+    m.steadyDAU=m.installs*Lval(m.ret,p);
+    m.fAr=flowAr(t,p,isIos);                                   // ad+consumable per DAU-day (net)
+    m.sconv=t.sconv; m.sprice=t.sprice*(isIos?p.ios.ar:1);     // iOS subscribers pay more (× iOS ARPDAU mult)
+    m.flowRevDay=m.steadyDAU*m.fAr;
+    m.subRevDay=m.installs*m.sconv*SLD*m.sprice/30;            // steady subscription revenue/day
+    m.subsSteady=m.installs*m.sconv*SLD;                       // steady active subscribers
+    m.revDay=m.flowRevDay+m.subRevDay;
+    m.arNet=m.steadyDAU>0?m.revDay/m.steadyDAU:0;              // total effective ARPDAU (incl subs)
+    m.ltv=m.fAr*Lval(m.ret,p)+m.sconv*m.sprice*SLD/30;        // total LTV per install (flow + sub)
+  });
   return out;
 }
 const orgSteady=p=>p.org*Lval(p.tiers[2].ret,p);
-const arT3Net=p=>p.tiers[2].ar*(1-p.tiers[2].iap*p.fee);
 
 // base track: legacy cohorts (anchored to current DAU) + ongoing organic
 function anchoredBase(days,p){
@@ -411,13 +474,23 @@ function mixTraj(spend,days,p,cpiMult){
   return base.map((v,i)=>v+paid.reduce((sm,pp)=>sm+pp[i],0));
 }
 const mixSteady=(spend,p,cpiMult)=>orgSteady(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.steadyDAU,0);
-const mixRevDay=(spend,p,cpiMult)=>orgSteady(p)*arT3Net(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.revDay,0);
+// steady NET revenue/day = organic flow + organic subs + Σ market (flow + subs). (legacy subs have decayed to 0)
+const mixRevDay=(spend,p,cpiMult)=>orgSteady(p)*flowArT3(p)+orgSubRev(p)+buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.revDay,0);
 const paidLtvTotal=(spend,p,cpiMult)=>buildMarkets(p,spend,cpiMult).reduce((s,m)=>s+m.installs*m.ltv,0);
-// daily NET revenue trajectory (per-market ARPDAU × that market's DAU, + organic) — index 0 = today
+// daily NET revenue trajectory — flow (DAU × flow-ARPDAU) + subscriptions (subscriber stock × price) — index 0 = today
 function revTraj(spend,days,p){
-  const base=anchoredBase(days,p), at3=arT3Net(p), mk=buildMarkets(p,spend,1);
-  const paid=mk.map(m=>({t:trajFromInstalls(m.installs,days,m.ret,ZEROS,p),ar:m.arNet}));
-  return base.map((v,i)=>v*at3 + paid.reduce((s,pp)=>s+pp.t[i]*pp.ar,0));
+  const base=anchoredBase(days,p), fT3=flowArT3(p), mk=buildMarkets(p,spend,1);
+  const paidDAU=mk.map(m=>({t:trajFromInstalls(m.installs,days,m.ret,ZEROS,p),ar:m.fAr}));
+  const cs=cumSubArr(days,p), aSub=anchorSubRev(p);
+  const t3=p.tiers[2];
+  return base.map((v,i)=>{
+    let r=v*fT3;                                                   // organic+legacy DAU flow revenue
+    paidDAU.forEach(pp=>r+=pp.t[i]*pp.ar);                         // paid DAU flow revenue
+    r+=aSub*subSurv(i,p.churn);                                    // legacy subscribers decaying
+    r+=p.org*t3.sconv*cs[i]*t3.sprice/30;                          // organic new subscribers building
+    mk.forEach(m=>r+=m.installs*m.sconv*cs[i]*m.sprice/30);        // paid new subscribers building
+    return r;
+  });
 }
 
 // maintenance: bisect spend that holds current DAU flat over 90d (independent of the spend slider)
@@ -429,11 +502,16 @@ function maintenanceSpend(p){
 }
 
 // BURST campaign: spend S/day for D days then stop; paid cohorts only, over H days
+// revenue = DAU flow (ads+consumable) + subscription stock (own churn) — both decay after spend stops
 function simulateCampaign(spend,D,H,p){
-  const mk=buildMarkets(p,spend,1), cs=new Array(H+1); { let s=0; for(let a=0;a<=H;a++){ s+=survival(a,p); cs[a]=s; } }
+  const mk=buildMarkets(p,spend,1);
+  const csDAU=new Array(H+1), csSub=new Array(H+1); { let s=0,ss=0; for(let a=0;a<=H;a++){ s+=survival(a,p); csDAU[a]=s; ss+=subSurv(a,p.churn); csSub[a]=ss; } }
   const dau=new Array(H+1).fill(0), rev=new Array(H+1).fill(0);
-  mk.forEach(m=>{ const kk=M*m.ret*m.installs;
-    for(let t=0;t<=H;t++){ const acc=t<D?cs[t]:cs[t]-cs[t-D]; const d=kk*acc; dau[t]+=d; rev[t]+=d*m.arNet; } });
+  mk.forEach(m=>{ const kk=M*m.ret*m.installs, subK=m.installs*m.sconv*m.sprice/30;
+    for(let t=0;t<=H;t++){
+      const accD=t<D?csDAU[t]:csDAU[t]-csDAU[t-D]; const d=kk*accD; dau[t]+=d; rev[t]+=d*m.fAr;   // flow
+      const accS=t<D?csSub[t]:csSub[t]-csSub[t-D]; rev[t]+=subK*accS;                              // subscriptions
+    } });
   let cr=0; const cumRev=[],cumSpend=[],cumProfit=[];
   for(let t=0;t<=H;t++){ cr+=rev[t]; const sp=Math.min(t+1,D)*spend; cumRev.push(cr); cumSpend.push(sp); cumProfit.push(cr-sp); }
   return {dau,cumRev,cumSpend,cumProfit,totalInstalls:mk.reduce((s,m)=>s+m.installs,0)*D};
@@ -548,10 +626,10 @@ function recompute(){
       `<td>${fmt(m.installs)}</td><td>£${m.arNet.toFixed(4)}</td><td>${fmt(m.steadyDAU)}</td>`+
       `<td>£${fmt(m.revDay*30)}</td><td style="color:${roas>=1?'var(--emerald)':'var(--danger)'}">${roas.toFixed(2)}×</td></tr>`);
   });
-  const oDAU=orgSteady(p), oRev=oDAU*arT3Net(p);
+  const oDAU=orgSteady(p), oRevDay=oDAU*flowArT3(p)+orgSubRev(p), oAr=oDAU>0?oRevDay/oDAU:0;
   mb.insertAdjacentHTML('beforeend',
     `<tr><td class="mkt-android">Organic · T3 Android</td><td>£0.00</td><td>—</td><td>${fmt(p.org)}</td>`+
-    `<td>£${arT3Net(p).toFixed(4)}</td><td>${fmt(oDAU)}</td><td>£${fmt(oRev*30)}</td><td style="color:var(--emerald)">∞</td></tr>`);
+    `<td>£${oAr.toFixed(4)}</td><td>${fmt(oDAU)}</td><td>£${fmt(oRevDay*30)}</td><td style="color:var(--emerald)">∞</td></tr>`);
   const revDay=mixRevDay(spend,p,1), blendAr=steady>0?revDay/steady:0;
   const paidLtv=paidLtvTotal(spend,p,1), blendLtvPer=paidInstalls>0?paidLtv/paidInstalls:0;
   mb.insertAdjacentHTML('beforeend',
@@ -562,7 +640,7 @@ function recompute(){
   // revenue KPIs
   const revMonth=revDay*30, net=revMonth-spend*30;
   const businessRoas=spend>0?revDay/spend:Infinity, margRoas=spend>0?paidLtv/spend:Infinity;
-  const curRev=p.currentDAU*arT3Net(p)*30;
+  const curRev=(p.currentDAU*flowArT3(p)+anchorSubRev(p))*30;   // current flow + legacy subscribers
   const netLow=mixRevDay(spend,pLow,1.4)*30-spend*30, netHigh=mixRevDay(spend,pHigh,0.8)*30-spend*30;
   const sgn=x=>(x>=0?'+£':'−£')+fmt(Math.abs(x));
   $('rArpdau').textContent='£'+blendAr.toFixed(4);
@@ -574,12 +652,27 @@ function recompute(){
   $('rCurRev').textContent=gbp(curRev);
   $('rBreak').textContent=blendLtvPer>0?'£'+blendLtvPer.toFixed(3):'—';
   $('rLtv').textContent='£'+blendLtvPer.toFixed(3);
-  // 90-day LTV for tail transparency
-  const paidLtv90=mk.reduce((s,m)=>s+m.installs*(m.arNet*Lval(m.ret,p,90)),0), ltv90=paidInstalls>0?paidLtv90/paidInstalls:0;
+  // 90-day LTV for tail transparency (flow at 90d + subscriptions at 90d)
+  const sld90=(()=>{let s=0;for(let a=0;a<90;a++)s+=subSurv(a,p.churn);return s;})();
+  const paidLtv90=mk.reduce((s,m)=>s+m.installs*(m.fAr*Lval(m.ret,p,90)+m.sconv*m.sprice*sld90/30),0), ltv90=paidInstalls>0?paidLtv90/paidInstalls:0;
   $('rLtvRng').textContent='£'+ltv90.toFixed(3)+' at 90-day lifetime';
   $('rNetCard').style.borderColor=net>=0?'var(--emerald)':'var(--danger)';
   $('rBlendCard').style.borderColor=businessRoas>=1?'var(--emerald)':'var(--danger)';
   $('rRoasCard').style.borderColor=margRoas>=1?'var(--emerald)':'var(--danger)';
+
+  // revenue composition (steady, current mix): ads / subscriptions / consumables
+  const adRate=(t,ios)=>t.ar*(1-t.iap)*(ios?p.ios.ar:1);
+  const consRate=(t,ios)=>t.ar*t.iap*(1-p.subFrac)*(1-p.fee)*(ios?p.ios.ar:1);
+  const t3c=p.tiers[2];
+  let adM=orgSteady(p)*adRate(t3c,false), consM=orgSteady(p)*consRate(t3c,false), subM=orgSubRev(p), subsSteady=p.org*t3c.sconv*subLifeDays(p);
+  mk.forEach(m=>{ const t=p.tiers[m.tier], ios=m.plat==='ios';
+    adM+=m.steadyDAU*adRate(t,ios); consM+=m.steadyDAU*consRate(t,ios); subM+=m.subRevDay; subsSteady+=m.subsSteady; });
+  const totM=adM+consM+subM, pctOf=x=>totM>0?Math.round(x/totM*100)+'% of revenue':'—';
+  const curSubs=t3c.sprice>0?anchorSubRev(p)*30/t3c.sprice:0, blendSubArpu=subsSteady>0?subM*30/subsSteady:0;
+  $('cmpAd').textContent=gbp(adM*30);   $('cmpAdPct').textContent=pctOf(adM);
+  $('cmpSub').textContent=gbp(subM*30); $('cmpSubPct').textContent=pctOf(subM);
+  $('cmpCons').textContent=gbp(consM*30);$('cmpConsPct').textContent=pctOf(consM);
+  $('cmpSubsNow').textContent=fmt(curSubs); $('cmpSubsSteady').textContent=fmt(subsSteady); $('cmpArpu').textContent='£'+blendSubArpu.toFixed(2);
 
   // maintenance (independent bisection)
   const mS=maintenanceSpend(p), mInst=buildMarkets(p,mS,1).reduce((s,m)=>s+m.installs,0);
@@ -638,7 +731,8 @@ NUMPAIR.forEach(([r,n])=>{
   $(n).addEventListener('input',()=>{$(r).value=$(n).value;recompute();});
 });
 ['t1','t2','t3','currentDAU','cpi1','cpi2','cpi3','reach1','reach2','reach3','ar1','ar2','ar3',
- 'ret1','ret2','ret3','iap1','iap2','iap3','iosCpi','iosAr','iosRet','iosReach','beta','floor']
+ 'ret1','ret2','ret3','iap1','iap2','iap3','iosCpi','iosAr','iosRet','iosReach','beta','floor',
+ 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn']
   .forEach(id=>$(id).addEventListener('input',recompute));
 
 $('horizonSeg').addEventListener('click',e=>{ if(e.target.dataset.h){
