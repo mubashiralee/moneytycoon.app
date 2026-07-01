@@ -306,8 +306,8 @@
     <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
       <div style="min-width:230px">
         <label style="margin-top:0">Spend for how many days, then stop</label>
-        <div class="row"><input id="cDays" type="range" min="1" max="180" step="1" value="30"/>
-          <input id="cDaysN" type="number" min="1" max="365" step="1" value="30"/></div>
+        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="300"/>
+          <input id="cDaysN" type="number" min="1" max="365" step="1" value="300"/></div>
       </div>
       <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months.</div>
     </div>
@@ -852,7 +852,8 @@ $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   $('halo').value = (m[5]!==undefined)? m[5] : 1.4;                        // launch → 1.7; planning presets reset to 1.4
   if(m[6]!==undefined){ adMult=m[6];                                        // preset sets ad-format depth
     [...$('adSeg').children].forEach(b=>b.classList.toggle('on',+b.dataset.am===adMult)); }
-  if(m[7]!==undefined){ $('momStop').value=m[7]; $('momStopN').value=m[7]; } // preset sets spend duration
+  if(m[7]!==undefined){ $('momStop').value=m[7]; $('momStopN').value=m[7];   // preset sets spend duration
+    const cd=Math.min(365,m[7]*30); $('cDays').value=cd; $('cDaysN').value=cd; } // keep Campaign P&L's day-duration in sync — same plan, two panels
   networkMult = (m[8]!==undefined)? m[8] : 1.0;                             // presets reset network expansion to OFF
   [...$('netSeg').children].forEach(b=>b.classList.toggle('on',+b.dataset.nm===networkMult));
   const cm = (m[9]!==undefined)? m[9] : 1.0;                                // presets reset country expansion to OFF
