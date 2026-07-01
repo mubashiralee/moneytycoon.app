@@ -157,6 +157,14 @@
         <input id="feeN" type="number" min="0" max="30" step="1" value="15"/></div>
       <div class="hint">15% under £1M/yr. Applied to each tier's IAP slice; ad revenue is already net.</div>
 
+      <label style="margin-top:14px">Ad formats (monetisation depth) <span class="pill">rewarded-only today</span></label>
+      <div class="seg" id="adSeg">
+        <button data-am="1.0">Rewarded only</button>
+        <button data-am="1.8" class="on">+ Interstitial</button>
+        <button data-am="2.1">+ Interstitial + Banner</button>
+      </div>
+      <div class="hint">Your app runs <b>rewarded ads only</b> today (impressions/user ≈2 in AdMob). Adding interstitials ≈ <b>1.8×</b> ad revenue, + banners ≈ <b>2.1×</b> (eCPM ~£3, unbuilt inventory). Scales the <b>ad slice only</b> — raising ad share &amp; total revenue. "Rewarded only" = your current ~50/50 mix.</div>
+
       <label style="margin-top:14px">User lifetime (LTV horizon) <span class="pill">caps the tail</span></label>
       <div class="seg" id="lifeSeg">
         <button data-l="90">90 days</button>
@@ -316,7 +324,7 @@
 
   <!-- REVENUE COMPOSITION (three-way) -->
   <div class="card" style="margin-top:20px">
-    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">your current mix</span></h2>
+    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">current DAU · selected ad-formats</span></h2>
     <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
       <div class="kpi blue"><div class="v" id="cmpAd">—</div><div class="l">Ad revenue / mo</div><div class="rng" id="cmpAdPct"></div></div>
       <div class="kpi gold"><div class="v" id="cmpSub">—</div><div class="l">Subscription revenue / mo</div><div class="rng" id="cmpSubPct"></div></div>
@@ -325,7 +333,7 @@
       <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
       <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
     </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. This shows your <b>current</b> revenue mix (current DAU + existing subscribers) — ~50% IAP+subs, matching your dashboards. Note: if you <i>scale paid UA</i>, ads take a bigger share (more ad-viewing DAU arrives faster than the subscriber base builds), so the mix tilts toward ads at high spend. Current subscribers are anchored to your measured Play data (subs ≈ 65% of IAP); steady subscribers = what your current spend + mix sustains. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. At <b>Rewarded only</b> (your literal setup today) it's ~50/50 IAP:ad — matching your dashboards; the default <b>+Interstitial</b> roughly doubles ad revenue so ads take a larger share and <b>total revenue rises</b> (flip the Ad-formats buttons to see the impact). Scaling paid UA also tilts the mix toward ads. Current subscribers anchored to measured Play data (subs ≈ 65% of IAP). Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
   </div>
 
   <!-- MONTH ON MONTH -->
@@ -402,8 +410,9 @@ function subSurv(a,churn){ return a<=0?1:Math.pow(1-churn,a/30); }
 // Σ subSurv over ~2yr = steady active subscribers produced per sustained 1 install/day (avg sub-life in days)
 function subLifeDays(p){ let s=0; for(let a=0;a<730;a++) s+=subSurv(a,p.churn); return s; }
 function cumSubArr(days,p){ const c=new Array(days+1); let s=0; for(let a=0;a<=days;a++){ s+=subSurv(a,p.churn); c[a]=s; } return c; }
-// net flow ARPDAU (ads + consumable IAP, per DAU-day) — EXCLUDES subscriptions, which are modelled as a stock
-function flowAr(t,p,ios){ const m=ios?p.ios.ar:1; return (t.ar*(1-t.iap) + t.ar*t.iap*(1-p.subFrac)*(1-p.fee))*m; }
+// net flow ARPDAU (ads + consumable IAP, per DAU-day) — EXCLUDES subscriptions (modelled as a stock).
+// adMult scales ONLY the ad portion (Rewarded-only=1 · +Interstitial≈1.8 · +Interstitial+Banner≈2.1).
+function flowAr(t,p,ios){ const m=ios?p.ios.ar:1; return (t.ar*(1-t.iap)*p.adMult + t.ar*t.iap*(1-p.subFrac)*(1-p.fee))*m; }
 const flowArT3=p=>flowAr(p.tiers[2],p,false);
 // current legacy subscription revenue/day (net), anchored to measured data (currentDAU × ARPDAU × IAP% × sub% of IAP)
 const anchorSubRev=p=>p.currentDAU*p.tiers[2].ar*p.tiers[2].iap*p.subFrac*(1-p.fee);
@@ -412,7 +421,7 @@ const orgSubRev=p=>p.org*p.tiers[2].sconv*subLifeDays(p)*p.tiers[2].sprice/30;
 
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, life=365, chart, chart2, chart3;
+let horizon=180, life=365, adMult=1.8, chart, chart2, chart3;   // adMult: ad-format monetisation (1.8 = +Interstitial)
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
@@ -423,7 +432,7 @@ function readP(){
     spend:num('spend'), w:[a/s,b/s,c/s], iosShare:num('iosShare')/100, org:num('org'),
     currentDAU:num('currentDAU')||0, fee:num('fee')/100,
     beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
-    subFrac:num('subFrac')/100, churn:num('churn')/100, halo:num('halo')||1,
+    subFrac:num('subFrac')/100, churn:num('churn')/100, halo:num('halo')||1, adMult:adMult,
     tiers:[
       {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100,sconv:num('sconv1')/100,sprice:num('sprice1')},
       {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100,sconv:num('sconv2')/100,sprice:num('sprice2')},
@@ -675,7 +684,7 @@ function recompute(){
   $('rRoasCard').style.borderColor=margRoas>=1?'var(--emerald)':'var(--danger)';
 
   // revenue composition — CURRENT state (your actual revenue mix now): current DAU flow + legacy subscribers
-  const adRate=(t,ios)=>t.ar*(1-t.iap)*(ios?p.ios.ar:1);
+  const adRate=(t,ios)=>t.ar*(1-t.iap)*p.adMult*(ios?p.ios.ar:1);
   const consRate=(t,ios)=>t.ar*t.iap*(1-p.subFrac)*(1-p.fee)*(ios?p.ios.ar:1);
   const t3c=p.tiers[2];
   const adM=p.currentDAU*adRate(t3c,false), consM=p.currentDAU*consRate(t3c,false), subM=anchorSubRev(p);
@@ -755,6 +764,9 @@ $('horizonSeg').addEventListener('click',e=>{ if(e.target.dataset.h){
 $('lifeSeg').addEventListener('click',e=>{ if(e.target.dataset.l){
   life=+e.target.dataset.l;
   [...$('lifeSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
+$('adSeg').addEventListener('click',e=>{ if(e.target.dataset.am){
+  adMult=+e.target.dataset.am;
+  [...$('adSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
 const MIX={ cur:[0,0,100,0], bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
