@@ -183,19 +183,19 @@
               <td><input class="mini" id="reach1" type="number" min="10" step="10" value="250"/></td>
               <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.105"/></td>
               <td><input class="mini" id="ret1" type="number" min="0" step="0.05" value="1.40"/></td>
-              <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="45"/></td></tr>
+              <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="58"/></td></tr>
             <tr><td>🟡 T2</td>
               <td><input class="mini" id="cpi2" type="number" min="0.01" step="0.05" value="0.70"/></td>
               <td><input class="mini" id="reach2" type="number" min="10" step="10" value="500"/></td>
               <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.045"/></td>
               <td><input class="mini" id="ret2" type="number" min="0" step="0.05" value="1.20"/></td>
-              <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="35"/></td></tr>
+              <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="54"/></td></tr>
             <tr><td>🔵 T3</td>
               <td><input class="mini" id="cpi3" type="number" min="0.005" step="0.01" value="0.05"/></td>
               <td><input class="mini" id="reach3" type="number" min="10" step="10" value="1200"/></td>
-              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.0144"/></td>
+              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.009"/></td>
               <td><input class="mini" id="ret3" type="number" min="0" step="0.05" value="1.00"/></td>
-              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="24"/></td></tr>
+              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="54"/></td></tr>
           </tbody>
         </table>
         <div class="hint" style="margin:10px 0 3px">iOS × Android multipliers · retention decay · floor</div>
@@ -235,12 +235,12 @@
         </table>
         <div class="row" style="gap:6px;margin-top:6px">
           <div style="flex:1"><div class="hint" style="margin:0 0 3px">Sub % of IAP rev</div>
-            <input class="mini" id="subFrac" type="number" min="0" max="100" step="1" value="64"/></div>
+            <input class="mini" id="subFrac" type="number" min="0" max="100" step="1" value="65"/></div>
           <div style="flex:1"><div class="hint" style="margin:0 0 3px">Sub churn %/mo</div>
             <input class="mini" id="churn" type="number" min="1" step="1" value="14"/></div>
         </div>
-        <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP = 64%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
-        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. T3 ARPDAU £0.0144, β and retention are <b>measured</b> from your data. Tier-1/2 floor CPI, reach and iOS multipliers are 2025 benchmark priors (you have no history there yet) — corroborated in the audit's calibration section. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
+        <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP ≈ 65%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
+        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. <b>T3 ARPDAU £0.009 &amp; IAP 54%</b> are the <b>authoritative</b> split from AdMob (actual ad payouts) + Play Console (IAP/subs) — <b>not</b> GA4, whose ad-revenue estimate was ~3–4× too high (£549 vs AdMob's real £225), which is why an earlier version wrongly showed IAP at only 24%. β and retention are measured. Tier-1/2 ARPDAU/CPI/reach are 2025 benchmark priors (no history there yet); their IAP share is set higher (T1 58% / T2 54%) as Tier-1 users monetise more via IAP. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
       </details>
 
       <div class="hint" style="margin-top:16px">Engine: installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
@@ -311,7 +311,7 @@
       <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
       <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
     </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — this is your ~£120/mo today and stays positive whenever organic + affordable paid outweigh spend. <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev figure now uses the authoritative AdMob+Play ARPDAU, ~£0.009, so it's lower than the earlier GA4-inflated ~£120/mo.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
 
   <!-- REVENUE COMPOSITION (three-way) -->
@@ -325,7 +325,7 @@
       <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
       <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
     </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Current subscribers are anchored to your measured Play data (subscriptions = 64% of IAP: Mogul Premium monthly/yearly + Dividend Society tiers); steady subscribers are what your current spend + mix sustains. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Current subscribers are anchored to your measured Play data (subscriptions ≈ 65% of IAP: Mogul Premium monthly/yearly + Dividend Society tiers); steady subscribers are what your current spend + mix sustains. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
   </div>
 
   <!-- MONTH ON MONTH -->
