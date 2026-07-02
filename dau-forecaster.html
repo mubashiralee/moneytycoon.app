@@ -112,14 +112,16 @@
     <b>★ This opens on the MAX-PROFIT target, not today's reality.</b> A brute-force search of 500k+ combinations
     (<code>optimizer.py</code>) — spend, geo-tier split, iOS share, spend duration, at every ad-format depth —
     found the settings that <b>maximise 12-month net profit</b> (revenue − spend, not just revenue):
-    <b>£46/day · Tier-3 100% · iOS 60% · +Interstitial+Banner ads · spend 10 months</b> → <b>£17,906</b> 12-mo revenue,
-    <b>£4,106 profit</b> (ROAS 1.30×). <b>It assumes two things you haven't shipped yet: iOS launched and interstitial+banner ads live.</b>
-    Richer ad formats always win on pure profit (more revenue at the same spend), so the optimiser separately verified
-    <b>+Interstitial-only</b> tops out at £2,483 profit and <b>rewarded-only</b> (today's real ad setup) at just £500 —
-    confirming monetisation depth, not spend, is what's holding profit back. To see <b>today's actual position</b>, click
-    <b>Current (T3 Android)</b> — with only Android + rewarded ads live, the brute-force optimum for that setup is
-    <b>£0/day paid spend</b> (iOS forced to 0%, since it isn't launched): every pound of paid UA underperforms letting
-    organic carry the app on its own. Every number here is editable — this is a <i>target to build toward</i>, not a measured state.
+    <b>£83/day · Tier-3 100% · iOS 55% · +Interstitial+Banner ads · spend 11 months</b> → <b>£41,596</b> 12-mo revenue,
+    <b>£14,206 profit</b> (ROAS 1.52×). Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily
+    data with the policy-limited stretches — 9–20 May &amp; 7–12 Jun — excluded); it therefore <b>assumes ad serving stays
+    healthy</b>, plus two things you haven't shipped yet: <b>iOS launched and interstitial+banner ads live</b>.
+    Richer ad formats always win on pure profit, verified level-by-level: <b>rewarded-only</b> (today's real ad setup)
+    tops out at <b>£1,472</b> profit (£26/day, iOS 65%, stop M8), <b>+Interstitial</b> at <b>£9,593</b> (£69/day) —
+    monetisation depth, not spend, is the main profit lever. To see <b>today's actual position</b>, click
+    <b>Current (T3 Android)</b> — with only Android + rewarded ads live, the brute-force optimum is now
+    <b>£11/day, stop after 6 months → +£758 profit</b> (ROAS 1.38×): at normal serving, even today's setup pays for
+    modest paid UA. Every number here is editable — this is a <i>target to build toward</i>, not a measured state.
   </div>
 
   <div class="grid">
@@ -127,9 +129,9 @@
     <div class="card">
       <h2>Inputs</h2>
 
-      <label>Total daily ad spend &nbsp;<span class="pill" id="spendPill">£46/day</span></label>
-      <div class="row"><input id="spend" type="range" min="0" max="500" step="1" value="46"/>
-        <input id="spendN" type="number" min="0" max="5000" step="1" value="46"/></div>
+      <label>Total daily ad spend &nbsp;<span class="pill" id="spendPill">£83/day</span></label>
+      <div class="row"><input id="spend" type="range" min="0" max="500" step="1" value="83"/>
+        <input id="spendN" type="number" min="0" max="5000" step="1" value="83"/></div>
 
       <label style="margin-top:18px">Where you spend it — presets</label>
       <div class="seg" id="mixSeg">
@@ -154,8 +156,8 @@
       <div class="hint">Weights auto-normalise to 100%. <span id="allocEcho"></span></div>
 
       <label style="margin-top:14px">iOS share of budget % <span class="pill">within each tier</span></label>
-      <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="60"/>
-        <input id="iosShareN" type="number" min="0" max="100" step="5" value="60"/></div>
+      <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="55"/>
+        <input id="iosShareN" type="number" min="0" max="100" step="5" value="55"/></div>
       <div class="hint">Splits each tier's budget between Android &amp; iOS. iOS organic = 0 until you launch it.</div>
 
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
@@ -178,7 +180,7 @@
         <button data-am="1.8">+ Interstitial</button>
         <button data-am="2.1" class="on">+ Interstitial + Banner</button>
       </div>
-      <div class="hint">Your app runs <b>rewarded ads only</b> today (impressions/user ≈2 in AdMob) — click <b>Rewarded only</b> for today's real ~50/50 mix. Adding interstitials ≈ <b>1.8×</b> ad revenue, + banners ≈ <b>2.1×</b> (eCPM ~£3, unbuilt inventory). Scales the <b>ad slice only</b> — raising ad share &amp; total revenue. The default is set to <b>+Interstitial+Banner</b> because that's the ad depth the optimiser's revenue-max plan assumes.</div>
+      <div class="hint">Your app runs <b>rewarded ads only</b> today (impressions/user ≈2 in AdMob) — click <b>Rewarded only</b> for today's real mix (~64% ads at normal serving). Adding interstitials ≈ <b>1.8×</b> ad revenue, + banners ≈ <b>2.1×</b> (eCPM ~£3 measured, unbuilt inventory). Scales the <b>ad slice only</b> — raising ad share &amp; total revenue. The default is set to <b>+Interstitial+Banner</b> because that's the ad depth the optimiser's max-profit plan assumes.</div>
 
       <label style="margin-top:14px">UA network mix <span class="pill">default: Google only (today)</span></label>
       <div class="seg" id="netSeg">
@@ -217,21 +219,21 @@
             <tr><td>🟢 T1</td>
               <td><input class="mini" id="cpi1" type="number" min="0.01" step="0.05" value="2.60"/></td>
               <td><input class="mini" id="reach1" type="number" min="10" step="10" value="250"/></td>
-              <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.051"/></td>
+              <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.062"/></td>
               <td><input class="mini" id="ret1" type="number" min="0" step="0.05" value="1.40"/></td>
-              <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="58"/></td></tr>
+              <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="44"/></td></tr>
             <tr><td>🟡 T2</td>
               <td><input class="mini" id="cpi2" type="number" min="0.01" step="0.05" value="0.70"/></td>
               <td><input class="mini" id="reach2" type="number" min="10" step="10" value="500"/></td>
-              <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.022"/></td>
+              <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.027"/></td>
               <td><input class="mini" id="ret2" type="number" min="0" step="0.05" value="1.20"/></td>
-              <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="54"/></td></tr>
+              <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="40"/></td></tr>
             <tr><td>🔵 T3</td>
               <td><input class="mini" id="cpi3" type="number" min="0.005" step="0.01" value="0.05"/></td>
               <td><input class="mini" id="reach3" type="number" min="10" step="10" value="1200"/></td>
-              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.007"/></td>
+              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.0085"/></td>
               <td><input class="mini" id="ret3" type="number" min="0" step="0.05" value="1.00"/></td>
-              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="54"/></td></tr>
+              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="40"/></td></tr>
           </tbody>
         </table>
         <div class="hint" style="margin:10px 0 3px">iOS × Android multipliers · retention decay · floor</div>
@@ -276,7 +278,7 @@
             <input class="mini" id="churn" type="number" min="1" step="1" value="14"/></div>
         </div>
         <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP ≈ 65%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
-        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. <b>T3 ARPDAU £0.007, IAP 54%</b> — the <b>authoritative measured</b> rate: split from AdMob (real ad payouts) + Play (IAP/subs) shows ~50/50 (not GA4's inflated 76/24), and the level (~£0.006–0.007/DAU) is what your data actually shows recently. This is the <b>honest current baseline</b> (rewarded-only). Ad <b>upside</b> — fixing the policy-limited serving and adding interstitials/banners — is applied via the <b>Ad formats</b> lever (raises ad share &amp; total), not baked into this number, to avoid double-counting. β &amp; retention measured. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections; IAP share higher (T1 58%) as Tier-1 skews to IAP. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
+        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. <b>T3 ARPDAU £0.0085, IAP 40%</b> — the <b>measured normal-serving</b> rate (AdMob daily, DAU-weighted, <b>policy-limited days excluded</b>): clean window 22 May–6 Jun = ad £0.0060 + IAP ~£0.0035 ≈ £0.0095 gross; all 32 normal-serving days ≈ £0.0092; June restored window £0.0078 → central £0.0085. During normal serving the mix is ~<b>64% ads / 36% IAP</b> — the earlier "50/50" was an artifact of the limited stretches (ads forced to £0 while IAP kept flowing). Assumes serving <b>stays healthy</b>; if it gets limited again, drop toward £0.003–0.005. Interstitial/banner upside stays in the <b>Ad formats</b> lever, not this number. β &amp; retention measured. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections; IAP share higher (T1 44%) as Tier-1 skews to IAP. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
       </details>
 
       <div class="hint" style="margin-top:16px">Engine: installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
@@ -306,8 +308,8 @@
     <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
       <div style="min-width:230px">
         <label style="margin-top:0">Spend for how many days, then stop</label>
-        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="300"/>
-          <input id="cDaysN" type="number" min="1" max="365" step="1" value="300"/></div>
+        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="330"/>
+          <input id="cDaysN" type="number" min="1" max="365" step="1" value="330"/></div>
       </div>
       <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months.</div>
     </div>
@@ -347,7 +349,7 @@
       <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
       <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
     </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the honest measured ARPDAU ~£0.007 at rewarded-only — the ad/IAP split is authoritative AdMob+Play (~50/50). The earlier GA4-based ~£120/mo was ad-inflated; use the <b>Ad formats</b> lever to model the interstitial/banner + serving-fix upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the <b>measured normal-serving</b> ARPDAU £0.0085 at rewarded-only — AdMob daily data, limited-serving days excluded; mix ~64% ads / 36% IAP. Assumes serving stays healthy — if it gets policy-limited again, actuals drop toward £0.003–0.005. Use the <b>Ad formats</b> lever for the interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
 
   <!-- REVENUE COMPOSITION (three-way) -->
@@ -361,7 +363,7 @@
       <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
       <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
     </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. The default <b>Rewarded only</b> is your literal setup today — ~50/50 IAP:ad, matching your dashboards. Flip to <b>+Interstitial</b> / <b>+Banner</b> to see the ad upside: ad revenue roughly doubles, ads take a larger share and <b>total revenue rises</b> (~£63 → ~£88 → ~£96/mo at current DAU). Scaling paid UA also tilts the mix toward ads. Current subscribers anchored to measured Play data (subs ≈ 65% of IAP, ~11 subs now). Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. <b>Rewarded only</b> is your literal setup today — at <b>normal serving</b> the measured mix is ~<b>64% ads / 24% subs / 13% consumables</b> (the earlier "50/50" was an artifact of the policy-limited stretches). Flip to <b>+Interstitial</b> / <b>+Banner</b> to see the ad upside: ads take a larger share and <b>total revenue rises</b> (~£78 → ~£118 → ~£133/mo at current DAU, normal serving). Scaling paid UA also tilts the mix toward ads. Current subscribers anchored to measured Play data (subs ≈ 65% of IAP, ~10 subs now). Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
   </div>
 
   <!-- MONTH ON MONTH -->
@@ -370,8 +372,8 @@
     <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:4px">
       <div style="min-width:230px">
         <label style="margin-top:0">Spend for how many months, then stop</label>
-        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="10"/>
-          <input id="momStopN" type="number" min="1" max="12" step="1" value="10"/></div>
+        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="11"/>
+          <input id="momStopN" type="number" min="1" max="12" step="1" value="11"/></div>
       </div>
       <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px" id="momStopEcho">Spending <b>all 12 months</b>. Drag down to stop early and watch revenue coast on the retention tail while spend drops to £0.</div>
     </div>
@@ -857,8 +859,8 @@ $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
 
 // preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?]
 const MIX={
-  opt:[0,0,100,60,46,1.4,2.1,10,1.0,1.0],     // ★ optimiser MAX-PROFIT point (assumes iOS + interstitial+banner; network/country expansion OFF — unmeasured, not baked into the default)
-  cur:[0,0,100,0,0,1.4,1.0,12,1.0,1.0],       // today's reality: Android+rewarded-only max profit is £0/day paid spend (organic only)
+  opt:[0,0,100,55,83,1.4,2.1,11,1.0,1.0],     // ★ optimiser MAX-PROFIT point @ normal-serving ARPDAU (assumes iOS + interstitial+banner; network/country expansion OFF — unmeasured, not baked in)
+  cur:[0,0,100,0,11,1.4,1.0,6,1.0,1.0],       // today's reality: Android+rewarded-only max profit = £11/day, stop M6 (+£758) at normal-serving ARPDAU
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   const m=MIX[e.target.dataset.mix];
