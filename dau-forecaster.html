@@ -335,7 +335,7 @@
   <div class="card" style="margin-top:20px">
     <h2>Capital deployment &amp; the retention tail <span class="pill">paid cohorts · 12 months</span></h2>
     <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
-      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months.</div>
+      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months. At the default (sustained near-full-year spend) there's barely any tail to see — drag this down to 30–90 days to see the burst-then-stop story this card is built for.</div>
     </div>
     <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
       <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
@@ -370,16 +370,19 @@
     <b>★ This opens on the BEST plan at a £75/day budget — not the unconstrained optimum, and not today's reality.</b>
     Your spend is fixed at <b>£75/day</b>; a brute-force search of 500k+ combinations (<code>optimizer.py</code>) then
     found the best <b>geo-tier split, iOS share and spend duration</b> for that exact budget: <b>Tier-3 100% · iOS
-    60% · +Interstitial+Banner ads · full country expansion · spend 11 months</b> → <b>£44,795</b> 12-mo revenue,
-    <b>£20,045 profit</b> (ROAS 1.81×) — matching the P&amp;L statement above to the pound. <b>Note: the true unconstrained max-profit spend is £126/day → £22,919
-    profit (ROAS 1.55×)</b> — more total profit but less capital-efficient; £75/day is the better pound-for-pound
-    return, just a smaller total. Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily data
-    with the policy-limited stretches excluded), <b>organic at 100/day</b> (assumption/target — measured recent was
-    ~25/day), and <b>country/market expansion at full (2.0×)</b> — reach computed from real population data, T1
-    ×1.40 / T2 ×1.91 / T3 ×1.52. It assumes ad serving stays healthy plus three things you haven't shipped yet:
-    <b>iOS launched, interstitial+banner ads live, and UA running across the expanded country set</b>. To see
-    <b>today's actual position</b>, click <b>Current (T3 Android)</b> — Android + rewarded ads only, named countries
-    only — the brute-force optimum there is <b>£11/day, stop after 6 months → +£1,763 profit</b> (ROAS 1.89×). Every
+    65% · +Interstitial+Banner ads · full network + country expansion · sustained (never stop)</b> → <b>£50,591</b>
+    12-mo revenue, <b>£23,591 profit</b> (ROAS 1.87×) — matching the P&amp;L statement above to the pound, breaking
+    even in <b>month 1</b>. <b>Note: the true unconstrained max-profit spend is £202/day → £35,039 profit (ROAS
+    1.53×)</b> — more total profit but less capital-efficient; £75/day is the better pound-for-pound return, just a
+    smaller total. Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily data with the
+    policy-limited stretches excluded), <b>organic at 100/day</b> (assumption/target — measured recent was ~25/day),
+    <b>UA network mix at full expansion</b> (+AppLovin/Unity/Mintegral, illustrative reach +60%, low confidence — no
+    industry source publishes this multiplier), and <b>country/market expansion at full (2.0×)</b> — reach computed
+    from real population data, T1 ×1.40 / T2 ×1.91 / T3 ×1.52. It assumes ad serving stays healthy plus four things
+    you haven't shipped yet: <b>iOS launched, interstitial+banner ads live, UA running across the expanded country
+    set, and the wider network mix live</b>. To see <b>today's actual position</b>, click <b>Current (T3 Android)</b>
+    — Android + rewarded ads only, Google only, named countries only — the brute-force optimum there is <b>£11/day,
+    stop after 6 months → +£1,763 profit</b> (ROAS 1.89×). Every
     number here is editable — this is a <i>target to build toward</i>, not a measured state.
   
   <div class="banner">
@@ -407,12 +410,12 @@
         <input id="spendN" type="number" min="0" max="5000" step="1" value="75"/></div>
 
       <label style="margin-top:14px">Spend duration — months, then stop <span class="pill">12 = sustained</span></label>
-        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="11"/>
-          <input id="momStopN" type="number" min="1" max="12" step="1" value="11"/></div>
+        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="12"/>
+          <input id="momStopN" type="number" min="1" max="12" step="1" value="12"/></div>
       <div class="hint">The plan runs this many months, then spend goes to £0 and the model coasts on the retention tail. Mirrored in days below.</div>
       <label style="margin-top:10px">Spend duration — days <span class="pill">synced with months</span></label>
-        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="330"/>
-          <input id="cDaysN" type="number" min="1" max="365" step="1" value="330"/></div>
+        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="360"/>
+          <input id="cDaysN" type="number" min="1" max="365" step="1" value="360"/></div>
 
       <label style="margin-top:14px">Geo-tier split of budget %</label>
       <div class="allocbar" id="allocBar"><span></span><span></span><span></span></div>
@@ -426,8 +429,8 @@
       </div>
       <div class="hint">Weights auto-normalise to 100%. <span id="allocEcho"></span></div>
       <label style="margin-top:14px">iOS share of budget % <span class="pill">within each tier</span></label>
-      <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="60"/>
-        <input id="iosShareN" type="number" min="0" max="100" step="5" value="60"/></div>
+      <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="65"/>
+        <input id="iosShareN" type="number" min="0" max="100" step="5" value="65"/></div>
       <div class="hint">Splits each tier's budget between Android &amp; iOS. iOS organic = 0 until you launch it.</div>
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
       <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="100"/>
@@ -450,13 +453,13 @@
         <button data-am="2.1" class="on">+ Interstitial + Banner</button>
       </div>
       <div class="hint">Your app runs <b>rewarded ads only</b> today (impressions/user ≈2 in AdMob) — click <b>Rewarded only</b> for today's real mix (~64% ads at normal serving). Adding interstitials ≈ <b>1.8×</b> ad revenue, + banners ≈ <b>2.1×</b> (eCPM ~£3 measured, unbuilt inventory). Scales the <b>ad slice only</b> — raising ad share &amp; total revenue. The default is set to <b>+Interstitial+Banner</b> because that's the ad depth the optimiser's max-profit plan assumes.</div>
-      <label style="margin-top:14px">UA network mix <span class="pill">default: Google only (today)</span></label>
+      <label style="margin-top:14px">UA network mix <span class="pill">default: full expansion (target)</span></label>
       <div class="seg" id="netSeg">
-        <button data-nm="1.0" class="on">Google only</button>
+        <button data-nm="1.0">Google only</button>
         <button data-nm="1.25">+ Meta + TikTok</button>
-        <button data-nm="1.6">+ AppLovin/Unity/Mintegral</button>
+        <button data-nm="1.6" class="on">+ AppLovin/Unity/Mintegral</button>
       </div>
-      <div class="hint">You buy installs on <b>Google Ads only</b> today. Running more networks in parallel raises the <b>reach ceiling</b> (each network has its own, separate audience pool) at roughly the <b>same CPI</b> — research found no reliable evidence other major networks are cheaper or pricier than Google at the margin (Unity Ads ≈$2.50, AppLovin+Vungle ≈$3.00 CPI, games-blended, vs. Google/Meta's own $1.50–4.50 blended range). <b>Low confidence</b> — no industry source publishes a reach multiplier for adding networks; these values (+25% / +60%) are a deliberately modest, illustrative estimate, not a measured figure. Mintegral specifically over-indexes on your genre (hyper-casual + puzzle + simulation ≈70% of its ad buys).</div>
+      <div class="hint">You buy installs on <b>Google Ads only</b> today — click <b>Google only</b> for that baseline. Running more networks in parallel raises the <b>reach ceiling</b> (each network has its own, separate audience pool) at roughly the <b>same CPI</b> — research found no reliable evidence other major networks are cheaper or pricier than Google at the margin (Unity Ads ≈$2.50, AppLovin+Vungle ≈$3.00 CPI, games-blended, vs. Google/Meta's own $1.50–4.50 blended range). <b>Low confidence</b> — no industry source publishes a reach multiplier for adding networks; these values (+25% / +60%) are a deliberately modest, illustrative estimate, not a measured figure. Mintegral specifically over-indexes on your genre (hyper-casual + puzzle + simulation ≈70% of its ad buys). <b>Default is now the full-expansion target</b> (like country expansion, iOS and ad-formats) — click <b>Google only</b> for today's shipped reality.</div>
       <label style="margin-top:14px">Country/market expansion <span class="pill">default: full expansion (target)</span></label>
       <div class="row"><input id="countryMult" type="range" min="1" max="2" step="0.05" value="2"/>
         <input id="countryMultN" type="number" min="1" max="2" step="0.05" value="2"/></div>
@@ -646,7 +649,7 @@ const orgSubRev=p=>p.org*p.tiers[2].sconv*subLifeDays(p)*p.tiers[2].sprice/30;
 
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, life=365, adMult=2.1, networkMult=1.0, chart, chart2, chart3;   // adMult: ad-format monetisation (default 2.1 = optimiser target: +Interstitial+Banner; click "Rewarded only" for today's 1.0). networkMult: UA network diversification (default 1.0 = Google only, today's reality).
+let horizon=180, life=365, adMult=2.1, networkMult=1.6, chart, chart2, chart3;   // adMult: ad-format monetisation (default 2.1 = optimiser target: +Interstitial+Banner; click "Rewarded only" for today's 1.0). networkMult: UA network diversification (default 1.6 = full expansion target; click "Google only" for today's 1.0).
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
@@ -848,7 +851,9 @@ function renderMoM(spend,p){
     $('xRoas').textContent=totSp>0?(totRev/totSp).toFixed(2)+'×':'∞';
     $('xPayback').textContent=bk?('Month '+bk):'>12 mo';
     $('xPeak').textContent=fmt(peak);
-    $('xPlan').innerHTML = `The selected plan deploys <b>£${fmt(spend)}/day</b> ${stopMo>=12?'sustained across all 12 months':'for <b>'+stopMo+' months</b>, then £0'} — total capital <b>£${fmt(totSp)}</b>. Revenue keeps flowing after spend stops: users already acquired continue paying on the retention tail. Every figure in this document recomputes live.`;
+    $('xPlan').innerHTML = stopMo>=12
+      ? `The selected plan deploys <b>£${fmt(spend)}/day, sustained across all 12 months</b> — total capital <b>£${fmt(totSp)}</b>. At this budget the model finds it's still worth spending every month: returns haven't diminished enough to justify stopping. Every figure in this document recomputes live.`
+      : `The selected plan deploys <b>£${fmt(spend)}/day</b> for <b>${stopMo} months</b>, then £0 — total capital <b>£${fmt(totSp)}</b>. Revenue keeps flowing after spend stops: users already acquired continue paying on the retention tail. Every figure in this document recomputes live.`;
   }
   const labels=rows.map(r=>'M'+r.m);
   const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8FA89A').trim();
@@ -1055,7 +1060,7 @@ $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
 
 // preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?]
 const MIX={
-  opt:[0,0,100,60,75,1.4,2.1,11,1.0,2.0],      // ★ BEST AT A £75/day BUDGET (user-fixed spend cap) — tier/iOS/duration re-optimised conditional on that spend; unconstrained max-profit is £126/day -> £22,919 (higher profit, lower ROAS) — see banner
+  opt:[0,0,100,65,75,1.4,2.1,12,1.6,2.0],      // ★ BEST AT A £75/day BUDGET (user-fixed spend cap) — tier/iOS/duration re-optimised conditional on that spend, full network+country expansion; unconstrained max-profit is £202/day -> £35,039 (higher profit, lower ROAS) — see banner
   cur:[0,0,100,0,11,1.4,1.0,6,1.0,1.0],       // today's reality: Android+rewarded-only max profit = £11/day, stop M6 (+£1,763 at org=100) at normal-serving ARPDAU
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
