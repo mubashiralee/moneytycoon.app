@@ -112,15 +112,16 @@
     <b>★ This opens on the MAX-PROFIT target, not today's reality.</b> A brute-force search of 500k+ combinations
     (<code>optimizer.py</code>) — spend, geo-tier split, iOS share, spend duration, at every ad-format depth —
     found the settings that <b>maximise 12-month net profit</b> (revenue − spend, not just revenue):
-    <b>£83/day · Tier-3 100% · iOS 55% · +Interstitial+Banner ads · spend 11 months</b> → <b>£41,596</b> 12-mo revenue,
-    <b>£14,206 profit</b> (ROAS 1.52×). Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily
-    data with the policy-limited stretches — 9–20 May &amp; 7–12 Jun — excluded); it therefore <b>assumes ad serving stays
-    healthy</b>, plus two things you haven't shipped yet: <b>iOS launched and interstitial+banner ads live</b>.
+    <b>£83/day · Tier-3 100% · iOS 55% · +Interstitial+Banner ads · spend 11 months</b> → <b>£43,363</b> 12-mo revenue,
+    <b>£15,973 profit</b> (ROAS 1.58×). Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily
+    data with the policy-limited stretches — 9–20 May &amp; 7–12 Jun — excluded) and <b>organic set to 100/day (an
+    assumption/target — measured recent organic was ~25/day)</b>; it therefore <b>assumes ad serving stays healthy</b>,
+    plus two things you haven't shipped yet: <b>iOS launched and interstitial+banner ads live</b>.
     Richer ad formats always win on pure profit, verified level-by-level: <b>rewarded-only</b> (today's real ad setup)
-    tops out at <b>£1,472</b> profit (£26/day, iOS 65%, stop M8), <b>+Interstitial</b> at <b>£9,593</b> (£69/day) —
+    tops out at <b>£2,477</b> profit (£26/day, iOS 65%, stop M8), <b>+Interstitial</b> at <b>£11,152</b> (£69/day) —
     monetisation depth, not spend, is the main profit lever. To see <b>today's actual position</b>, click
-    <b>Current (T3 Android)</b> — with only Android + rewarded ads live, the brute-force optimum is now
-    <b>£11/day, stop after 6 months → +£758 profit</b> (ROAS 1.38×): at normal serving, even today's setup pays for
+    <b>Current (T3 Android)</b> — with only Android + rewarded ads live, the brute-force optimum is
+    <b>£11/day, stop after 6 months → +£1,763 profit</b> (ROAS 1.89×): at normal serving, even today's setup pays for
     modest paid UA. Every number here is editable — this is a <i>target to build toward</i>, not a measured state.
   </div>
 
@@ -161,9 +162,9 @@
       <div class="hint">Splits each tier's budget between Android &amp; iOS. iOS organic = 0 until you launch it.</div>
 
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
-      <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="25"/>
-        <input id="orgN" type="number" min="0" max="3000" step="1" value="25"/></div>
-      <div class="hint">Recent organic ≈ 25/day — your floor with £0 ads.</div>
+      <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="100"/>
+        <input id="orgN" type="number" min="0" max="3000" step="1" value="100"/></div>
+      <div class="hint">Default <b>100/day is an assumption/target</b> — recent <i>measured</i> organic was ≈ 25/day. At 100/day, organic alone settles you near ~580 DAU (above today's 327), so £0-spend forecasts <i>grow</i>. Set back to 25 for the measured floor.</div>
 
       <label style="margin-top:14px">Current live DAU <span class="pill">anchors the model</span></label>
       <div class="row"><input id="currentDAU" type="number" min="0" max="100000" step="1" value="327"/></div>
@@ -860,7 +861,7 @@ $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
 // preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?]
 const MIX={
   opt:[0,0,100,55,83,1.4,2.1,11,1.0,1.0],     // ★ optimiser MAX-PROFIT point @ normal-serving ARPDAU (assumes iOS + interstitial+banner; network/country expansion OFF — unmeasured, not baked in)
-  cur:[0,0,100,0,11,1.4,1.0,6,1.0,1.0],       // today's reality: Android+rewarded-only max profit = £11/day, stop M6 (+£758) at normal-serving ARPDAU
+  cur:[0,0,100,0,11,1.4,1.0,6,1.0,1.0],       // today's reality: Android+rewarded-only max profit = £11/day, stop M6 (+£1,763 at org=100) at normal-serving ARPDAU
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
   const m=MIX[e.target.dataset.mix];
