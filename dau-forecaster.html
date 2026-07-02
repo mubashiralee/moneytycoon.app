@@ -109,21 +109,20 @@
   </div>
 
   <div class="banner" style="border-color:var(--gold);background:linear-gradient(90deg,rgba(233,196,106,.14),transparent)">
-    <b>★ This opens on the MAX-PROFIT target, not today's reality.</b> A brute-force search of 500k+ combinations
-    (<code>optimizer.py</code>) — spend, geo-tier split, iOS share, spend duration, at every ad-format depth —
-    found the settings that <b>maximise 12-month net profit</b> (revenue − spend, not just revenue):
-    <b>£126/day · Tier-3 100% · iOS 55% · +Interstitial+Banner ads · full country expansion · spend 11 months</b> →
-    <b>£64,499</b> 12-mo revenue, <b>£22,919 profit</b> (ROAS 1.55×). Calibrated on your <b>measured normal-serving
-    ARPDAU £0.0085</b> (AdMob daily data with the policy-limited stretches excluded), <b>organic at 100/day</b>
-    (assumption/target — measured recent was ~25/day), and <b>country/market expansion at full (2.0×)</b> — reach
-    computed from real population data, T1 ×1.40 / T2 ×1.91 / T3 ×1.52. It assumes ad serving stays healthy plus
-    three things you haven't shipped yet: <b>iOS launched, interstitial+banner ads live, and UA running across the
-    expanded country set</b>. Richer ad formats always win on pure profit, verified level-by-level: <b>rewarded-only</b>
-    (today's real ad setup) tops out at <b>£2,948</b> profit (£40/day, iOS 65%, stop M8), <b>+Interstitial</b> at
-    <b>£15,734</b> (£105/day) — monetisation depth, not spend, is the main profit lever. To see <b>today's actual
-    position</b>, click <b>Current (T3 Android)</b> — Android + rewarded ads only, named countries only — the
-    brute-force optimum there is still <b>£11/day, stop after 6 months → +£1,763 profit</b> (ROAS 1.89×). Every number
-    here is editable — this is a <i>target to build toward</i>, not a measured state.
+    <b>★ This opens on the BEST plan at a £75/day budget — not the unconstrained optimum, and not today's reality.</b>
+    Your spend is fixed at <b>£75/day</b>; a brute-force search of 500k+ combinations (<code>optimizer.py</code>) then
+    found the best <b>geo-tier split, iOS share and spend duration</b> for that exact budget: <b>Tier-3 100% · iOS
+    60% · +Interstitial+Banner ads · full country expansion · spend 11 months</b> → <b>£44,860</b> 12-mo revenue,
+    <b>£20,110 profit</b> (ROAS 1.81×). <b>Note: the true unconstrained max-profit spend is £126/day → £22,919
+    profit (ROAS 1.55×)</b> — more total profit but less capital-efficient; £75/day is the better pound-for-pound
+    return, just a smaller total. Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily data
+    with the policy-limited stretches excluded), <b>organic at 100/day</b> (assumption/target — measured recent was
+    ~25/day), and <b>country/market expansion at full (2.0×)</b> — reach computed from real population data, T1
+    ×1.40 / T2 ×1.91 / T3 ×1.52. It assumes ad serving stays healthy plus three things you haven't shipped yet:
+    <b>iOS launched, interstitial+banner ads live, and UA running across the expanded country set</b>. To see
+    <b>today's actual position</b>, click <b>Current (T3 Android)</b> — Android + rewarded ads only, named countries
+    only — the brute-force optimum there is <b>£11/day, stop after 6 months → +£1,763 profit</b> (ROAS 1.89×). Every
+    number here is editable — this is a <i>target to build toward</i>, not a measured state.
   </div>
 
   <div class="grid">
@@ -131,9 +130,9 @@
     <div class="card">
       <h2>Inputs</h2>
 
-      <label>Total daily ad spend &nbsp;<span class="pill" id="spendPill">£126/day</span></label>
-      <div class="row"><input id="spend" type="range" min="0" max="500" step="1" value="126"/>
-        <input id="spendN" type="number" min="0" max="5000" step="1" value="126"/></div>
+      <label>Total daily ad spend &nbsp;<span class="pill" id="spendPill">£75/day</span></label>
+      <div class="row"><input id="spend" type="range" min="0" max="500" step="1" value="75"/>
+        <input id="spendN" type="number" min="0" max="5000" step="1" value="75"/></div>
 
       <label style="margin-top:18px">Where you spend it — presets</label>
       <div class="seg" id="mixSeg">
@@ -158,8 +157,8 @@
       <div class="hint">Weights auto-normalise to 100%. <span id="allocEcho"></span></div>
 
       <label style="margin-top:14px">iOS share of budget % <span class="pill">within each tier</span></label>
-      <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="55"/>
-        <input id="iosShareN" type="number" min="0" max="100" step="5" value="55"/></div>
+      <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="60"/>
+        <input id="iosShareN" type="number" min="0" max="100" step="5" value="60"/></div>
       <div class="hint">Splits each tier's budget between Android &amp; iOS. iOS organic = 0 until you launch it.</div>
 
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
@@ -861,7 +860,7 @@ $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
 
 // preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?]
 const MIX={
-  opt:[0,0,100,55,126,1.4,2.1,11,1.0,2.0],    // ★ optimiser MAX-PROFIT point @ normal-serving ARPDAU + full country expansion (assumes iOS + interstitial+banner; network expansion still OFF — low-confidence, not baked in)
+  opt:[0,0,100,60,75,1.4,2.1,11,1.0,2.0],      // ★ BEST AT A £75/day BUDGET (user-fixed spend cap) — tier/iOS/duration re-optimised conditional on that spend; unconstrained max-profit is £126/day -> £22,919 (higher profit, lower ROAS) — see banner
   cur:[0,0,100,0,11,1.4,1.0,6,1.0,1.0],       // today's reality: Android+rewarded-only max profit = £11/day, stop M6 (+£1,763 at org=100) at normal-serving ARPDAU
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
