@@ -3,117 +3,367 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Money Tycoon — DAU × Ad-Spend Forecaster</title>
+<title>Money Tycoon — Investor Growth Model</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
         integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Archivo:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0b1411; --panel:#11201a; --panel2:#16292160; --line:#1f3a30;
-    --emerald:#2fbf80; --emerald-d:#1d9460; --gold:#e9c46a; --text:#e8f3ee;
-    --muted:#8fb0a3; --danger:#e76f6f; --blue:#5aa9e6; --input:#0c1714;
+  /* ============ THE OFFERING MEMORANDUM — design system ============
+     A private-placement document that computes. Bond paper, engraved
+     serif numerals, brass & racing-green, accounting-grade tables.   */
+  :root{ /* dark = "the vault" */
+    --bg:#0C120F; --paper:#101914; --panel2:#141F19; --line:#24362C; --line-soft:#1B2A22;
+    --ink:#EAF0E9; --muted:#8FA89A; --green:#41B183; --green-deep:#2E8C63;
+    --brass:#CFA935; --crimson:#E07A6E; --blue:#74A8D8; --field:#0D1511;
+    /* legacy aliases used by inline styles + JS */
+    --panel:var(--paper); --emerald:var(--green); --emerald-d:var(--green-deep);
+    --gold:var(--brass); --danger:var(--crimson); --text:var(--ink); --input:var(--field);
+  }
+  body.light{ /* bond paper (default) */
+    --bg:#F3F0E7; --paper:#FDFCF7; --panel2:#F7F4EA; --line:#DDD6C2; --line-soft:#E9E4D4;
+    --ink:#1C201B; --muted:#75806F; --green:#14724A; --green-deep:#0E5A39;
+    --brass:#8F6F1E; --crimson:#A8321F; --blue:#2F6690; --field:#F5F2E8;
   }
   *{box-sizing:border-box}
-  body.light{
-    --bg:#eef3f0; --panel:#ffffff; --panel2:#f3f8f5; --line:#e0e8e4;
-    --text:#15241d; --muted:#5a7468; --emerald:#1d9460; --gold:#b7891f; --input:#eef3f0;
-    background:radial-gradient(1200px 600px at 80% -10%,#f7faf8 0%,#eef3f0 55%);
-  }
-  body.light .banner{background:#fdf6e3;border-color:#e6d39a;color:#7a5d10}
-  body.light .banner b{color:#9a7410}
-  body.light .seg button{color:#15241d}
-  body.light .foot span{color:#7c948a!important}
-  .themebtn{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-left:12px}
-  .themebtn:hover{color:var(--text)}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-       background:radial-gradient(1200px 600px at 80% -10%,#13261f 0%,var(--bg) 55%);color:var(--text);}
-  .wrap{max-width:1200px;margin:0 auto;padding:28px 22px 60px;}
-  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;}
-  header h1{font-size:22px;margin:0;font-weight:700;letter-spacing:.2px}
-  header .tag{color:var(--gold);font-size:13px;font-weight:600;letter-spacing:.5px}
-  header .sub{color:var(--muted);font-size:13px;margin-left:auto}
-  .banner{margin:16px 0;padding:12px 16px;border:1px solid #6b531f;background:#241d0e;border-radius:10px;
-          font-size:13px;color:#f1dca0;line-height:1.5}
-  .banner b{color:var(--gold)}
-  .grid{display:grid;grid-template-columns:340px 1fr;gap:20px;margin-top:18px}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
-  .card h2{margin:0 0 14px;font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Archivo",-apple-system,"Segoe UI",sans-serif;font-size:15px;
+       background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  /* bond-paper grain + vignette */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.012) 2px 3px),
+      repeating-linear-gradient(90deg,transparent 0 2px,rgba(0,0,0,.008) 2px 3px),
+      radial-gradient(1400px 700px at 75% -12%, rgba(20,114,74,.05), transparent 60%);}
+  body:not(.light)::before{background:
+      repeating-linear-gradient(0deg,transparent 0 2px,rgba(255,255,255,.008) 2px 3px),
+      radial-gradient(1400px 700px at 75% -12%, rgba(65,177,131,.06), transparent 60%);}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 26px 90px;position:relative;z-index:1}
+
+  /* ---------- masthead: prospectus cover chrome ---------- */
+  .masthead{padding:26px 0 0}
+  .confid{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);
+    border-top:3px solid var(--ink);border-bottom:1px solid var(--ink);padding:7px 2px;font-weight:600}
+  .confid .stamp{color:var(--muted);letter-spacing:.14em;font-weight:500}
+  .brandrow{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:26px 0 20px;border-bottom:1px solid var(--line)}
+  .brand h1{font-family:"Fraunces",serif;font-optical-sizing:auto;font-size:clamp(30px,4.4vw,44px);
+    font-weight:600;letter-spacing:-.01em;margin:0;line-height:1.02}
+  .brand h1 em{font-style:italic;font-weight:400;color:var(--green)}
+  .brand .subtitle{margin:8px 0 0;color:var(--muted);font-size:13px;letter-spacing:.02em}
+  .brand .subtitle b{color:var(--ink);font-weight:600}
+  .mast-side{text-align:right;font-size:12px;color:var(--muted);line-height:1.7}
+  .mast-side .doc{font-family:"Spline Sans Mono",monospace;font-size:11px;letter-spacing:.06em}
+  .themebtn{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:3px;
+    padding:6px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:6px}
+  .themebtn:hover{color:var(--ink);border-color:var(--muted)}
+
+  /* ---------- scenario switcher ---------- */
+  .scenario{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0 0}
+  .scenario .cap{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:2px;
+    padding:7px 14px;font-size:12.5px;font-family:"Archivo";cursor:pointer;letter-spacing:.01em;
+    transition:border-color .15s,background .15s}
+  .seg button:hover{border-color:var(--muted)}
+  .seg button.on{background:var(--green-deep);border-color:var(--green-deep);color:#F6F3EA;font-weight:600}
+
+  /* ---------- tab navigation: document sections ---------- */
+  .tabs{position:sticky;top:0;z-index:50;display:flex;gap:4px;margin-top:18px;
+    background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:2px 0 0}
+  .tabs button{appearance:none;background:none;border:none;cursor:pointer;color:var(--muted);
+    font-family:"Archivo";font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;
+    padding:14px 18px 12px;border-bottom:2px solid transparent;transition:color .15s}
+  .tabs button:hover{color:var(--ink)}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--brass)}
+  .tabs .num{color:var(--brass);font-family:"Spline Sans Mono",monospace;margin-right:7px;font-size:11px}
+  .panel{display:none;animation:rise .5s ease both}
+  .panel.active{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){.panel{animation:none}}
+
+  /* ---------- executive hero ---------- */
+  .hero{padding:46px 0 34px;border-bottom:1px solid var(--line)}
+  .hero .kick{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);font-weight:600;margin-bottom:14px}
+  .hero-grid{display:grid;grid-template-columns:auto 1fr;gap:20px 64px;align-items:end}
+  .hero .big{font-family:"Fraunces",serif;font-size:clamp(58px,9vw,104px);font-weight:600;line-height:.95;
+    letter-spacing:-.02em;color:var(--green);font-variant-numeric:lining-nums;margin:0}
+  .hero .big small{font-size:.34em;font-weight:400;color:var(--muted);letter-spacing:0;font-family:"Archivo"}
+  .hero .biglabel{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:10px;font-weight:600}
+  .hero .planline{font-family:"Fraunces",serif;font-style:italic;font-weight:400;font-size:clamp(16px,2vw,20px);
+    color:var(--ink);line-height:1.55;max-width:560px}
+  .hero .planline b{font-style:normal;font-weight:600;color:var(--green)}
+  .statrow{display:grid;grid-template-columns:repeat(5,1fr);margin-top:38px;border-top:1px solid var(--line)}
+  .stat{padding:16px 18px 2px;border-left:1px solid var(--line)}
+  .stat:first-child{border-left:none;padding-left:2px}
+  .stat .v{font-family:"Fraunces",serif;font-size:clamp(22px,2.6vw,30px);font-weight:600;font-variant-numeric:lining-nums}
+  .stat .l{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px;font-weight:600;line-height:1.5}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}.statrow{grid-template-columns:repeat(2,1fr)}
+    .stat{border-left:none;padding-left:2px}}
+
+  /* ---------- report sections ---------- */
+  .section{padding:44px 0 8px}
+  .sechead{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--ink);padding-bottom:10px;margin-bottom:4px}
+  .sechead .no{font-family:"Spline Sans Mono",monospace;font-size:12px;color:var(--brass);letter-spacing:.1em}
+  .sechead h2{font-family:"Fraunces",serif;font-size:clamp(20px,2.6vw,26px);font-weight:600;margin:0;letter-spacing:-.01em}
+  .sechead .pill{margin-left:auto}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:22px;margin-top:16px;
+        box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  .card h2{margin:0 0 14px;font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600}
   .card h2 .pill{text-transform:none;letter-spacing:0}
-  label{display:block;font-size:13px;margin:14px 0 6px;color:var(--text)}
-  .row{display:flex;align-items:center;gap:10px}
-  input[type=range]{width:100%;accent-color:var(--emerald)}
-  input[type=number]{width:82px;background:var(--input);border:1px solid var(--line);color:var(--text);
-       border-radius:8px;padding:7px 9px;font-size:14px;text-align:right}
-  input.mini{width:60px;padding:5px 6px;font-size:12px}
-  .hint{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
-  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:6px}
+
+  /* ---------- stat tiles (report metrics) ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:6px}
   @media(max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
-  .kpi{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px}
-  .kpi .v{font-size:26px;font-weight:700;line-height:1.1}
-  .kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:6px}
-  .kpi .rng{font-size:11px;color:var(--muted);margin-top:4px;font-weight:400}
-  .kpi.em .v{color:var(--emerald)} .kpi.gold .v{color:var(--gold)} .kpi.blue .v{color:var(--blue)}
+  .kpi{background:var(--paper);border:1px solid var(--line);border-top:2px solid var(--ink);border-radius:2px;padding:15px 16px 13px}
+  .kpi .v{font-family:"Fraunces",serif;font-size:26px;font-weight:600;line-height:1.08;font-variant-numeric:lining-nums}
+  .kpi .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.13em;margin-top:7px;font-weight:600;line-height:1.5}
+  .kpi .rng{font-size:11px;color:var(--muted);margin-top:4px;font-family:"Spline Sans Mono",monospace}
+  .kpi.em .v{color:var(--green)} .kpi.gold .v{color:var(--brass)} .kpi.blue .v{color:var(--blue)}
   .chartbox{height:340px;margin-top:8px}
+
+  /* ---------- accounting tables ---------- */
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line-soft)}
   th:first-child,td:first-child{text-align:left}
-  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-  tr.tot td{border-top:2px solid var(--line);border-bottom:none;font-weight:700}
-  tr.tot td:first-child{color:var(--gold)}
-  .pill{display:inline-block;background:var(--input);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted)}
-  .foot{margin-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
-  .foot code{background:var(--input);padding:2px 6px;border-radius:5px;color:var(--gold)}
-  .seg{display:flex;gap:6px;margin:6px 0 2px;flex-wrap:wrap}
-  .seg button{background:var(--input);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer}
-  .seg button.on{background:var(--emerald-d);border-color:var(--emerald);color:#fff;font-weight:600}
+  td{font-family:"Spline Sans Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums}
+  td:first-child{font-family:"Archivo";font-size:12.5px}
+  th{color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-family:"Archivo"}
+  tr.tot td{border-top:1px solid var(--ink);border-bottom:3px double var(--ink);font-weight:600;color:var(--ink)}
+  tr.tot td:first-child{font-weight:700;letter-spacing:.04em}
+  tr.stoprow td{border-top:2px solid var(--brass)}
+  td.pos{color:var(--green)} td.neg{color:var(--crimson)}
+  .pill{display:inline-block;background:var(--field);border:1px solid var(--line);border-radius:2px;
+    padding:3px 10px;font-size:10.5px;color:var(--muted);letter-spacing:.05em;font-family:"Spline Sans Mono",monospace}
+
+  /* ---------- prose, hints, footnotes ---------- */
+  label{display:block;font-size:13px;margin:14px 0 6px;color:var(--ink);font-weight:500}
+  .row{display:flex;align-items:center;gap:10px}
+  input[type=range]{width:100%;accent-color:var(--green-deep)}
+  input[type=number]{width:84px;background:var(--field);border:1px solid var(--line);color:var(--ink);
+       border-radius:2px;padding:7px 9px;font-size:13px;text-align:right;font-family:"Spline Sans Mono",monospace}
+  input.mini{width:62px;padding:5px 6px;font-size:11.5px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.55}
+  .note{border-left:2px solid var(--brass);padding:10px 16px;margin-top:14px;font-size:12.5px;
+    color:var(--muted);line-height:1.6;background:var(--panel2)}
+  .note b{color:var(--ink)}
+  .banner{margin:14px 0 0;padding:14px 18px;border:1px solid var(--line);border-left:3px solid var(--brass);
+    background:var(--panel2);border-radius:2px;font-size:12.5px;color:var(--muted);line-height:1.65}
+  .banner b{color:var(--ink)}
+  .foot{margin-top:30px;color:var(--muted);font-size:12px;line-height:1.7;border-top:1px solid var(--line);padding-top:18px}
+  .foot code{background:var(--field);padding:2px 6px;border-radius:2px;color:var(--brass);font-family:"Spline Sans Mono",monospace;font-size:11px}
   details{margin-top:16px;border-top:1px solid var(--line);padding-top:6px}
-  summary{cursor:pointer;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 0;user-select:none}
-  summary:hover{color:var(--text)}
-  .allocbar{height:10px;border-radius:6px;overflow:hidden;display:flex;margin:8px 0 2px;border:1px solid var(--line)}
+  summary{cursor:pointer;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;padding:8px 0;user-select:none;font-weight:600}
+  summary:hover{color:var(--ink)}
+  .allocbar{height:10px;border-radius:2px;overflow:hidden;display:flex;margin:8px 0 2px;border:1px solid var(--line)}
   .allocbar span{display:block;height:100%}
-  .mkt-android{color:var(--blue)} .mkt-ios{color:var(--gold)}
-  /* ---- phone-friendly ---- */
+  .mkt-android{color:var(--blue)} .mkt-ios{color:var(--brass)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+  .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:16px}
+  @media(max-width:900px){.controls-grid{grid-template-columns:1fr}}
+
+  /* ---------- print: hand them the document ---------- */
+  @media print{
+    .tabs,.themebtn,.scenario{display:none!important}
+    .panel{display:block!important}
+    #panel-controls,#panel-appendix{display:none!important}
+    body{background:#fff}
+    .card,.kpi{box-shadow:none}
+  }
+  /* ---------- phone ---------- */
   @media(max-width:640px){
-    .wrap{padding:16px 12px 44px}
-    header{gap:8px} header h1{font-size:18px} header .sub{display:none}
-    .themebtn{margin-left:auto}
-    .grid{grid-template-columns:1fr!important;gap:14px;margin-top:14px}
-    .kpis{grid-template-columns:repeat(2,1fr)!important;gap:8px}
-    .kpi{padding:12px} .kpi .v{font-size:20px} .kpi .l{font-size:10px}
-    .card{padding:14px;overflow-x:auto} .banner{font-size:12px}
-    table{font-size:12px} th,td{padding:6px 5px}
-    .seg{gap:5px} .seg button{padding:7px 9px;font-size:11px}
-    input[type=number]{width:70px} input.mini{width:54px}
+    .wrap{padding:0 14px 56px}
+    .brandrow{padding:18px 0 14px}
+    .mast-side{display:none}
+    .confid{font-size:8.5px;letter-spacing:.14em}
+    .tabs button{padding:12px 10px;font-size:10.5px;letter-spacing:.08em}
+    .tabs .num{display:none}
+    .hero{padding:30px 0 24px}
+    .kpis{grid-template-columns:repeat(2,1fr)!important;gap:9px}
+    .kpi{padding:12px} .kpi .v{font-size:20px}
+    .card{padding:14px;overflow-x:auto}
+    table{font-size:11.5px} th,td{padding:6px 5px}
+    .seg{gap:5px} .seg button{padding:7px 10px;font-size:11px}
+    input[type=number]{width:72px} input.mini{width:54px}
     .chartbox{height:260px} label{font-size:12px}
+    .statrow{grid-template-columns:repeat(2,1fr)}
   }
   @media(max-width:380px){ .kpis{grid-template-columns:1fr!important} }
 </style>
 </head>
 <body class="light">
 <div class="wrap">
-  <header>
-    <h1>Money Tycoon · DAU Forecaster</h1>
-    <span class="tag">EARN · INVEST · EXPAND</span>
-    <span class="sub">v3 · endogenous-CPI market-mix · fitted on GA4 + Google Ads · OOS ≈ 5.5%</span>
-    <button id="themeBtn" class="themebtn">🌙 Dark</button>
-  </header>
 
-  <div class="banner">
-    <b>How this works.</b> Split your daily budget across <b>geo tiers</b> (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK) and
-    <b>Android / iOS</b> — six markets, each with its own economics. <b>CPI rises with spend</b>: as you exhaust a market's cheap
-    daily reach, your <b>effective CPI</b> climbs and ROAS degrades on its own (no manual edit needed). Blended ARPDAU/CPI/ROAS are
-    <b>computed from the mix</b>. The <b>installs→DAU retention engine</b> is fitted to your real data; everything else (floor CPI,
-    reach, ARPDAU, retention) is an <b>editable assumption</b> under <i>Advanced</i>. Shaded chart band + KPI ranges show the
-    <b>conservative→optimistic</b> spread — the honest answer is a range. iOS is a <b>projection</b> (not launched yet).
+  <!-- ═══════════ MASTHEAD — prospectus chrome ═══════════ -->
+  <div class="masthead">
+    <div class="confid"><span>Private &amp; Confidential — Investor Model</span><span class="stamp">Prepared <span id="stampDate">—</span></span></div>
+    <div class="brandrow">
+      <div class="brand">
+        <h1>Money Tycoon <em>Growth &amp; Returns</em></h1>
+        <p class="subtitle"><b>Live capital-deployment model</b> · fitted to real GA4 + Google Ads data (OOS ≈ 5.5%) · calibrated on AdMob &amp; Play statements · independently audited ×2</p>
+      </div>
+      <div class="mast-side">
+        <div class="doc">DOC MT-2026-GRM · v4</div>
+        <div>Every figure recomputes live</div>
+        <button id="themeBtn" class="themebtn">🌙 Dark</button>
+      </div>
+    </div>
+    <div class="scenario">
+      <span class="cap">Scenario</span>
+      <div class="seg" id="mixSeg">
+        <button data-mix="opt" class="on">★ Funded plan · £75/day</button>
+        <button data-mix="cur">Today · no investment</button>
+        <button data-mix="bal">Balanced growth</button>
+        <button data-mix="prem">Premium push</button>
+        <button data-mix="rev">Revenue-max</button>
+        <button data-mix="launch">↺ Launch replay</button>
+      </div>
+    </div>
   </div>
 
+  <!-- ═══════════ DOCUMENT SECTIONS ═══════════ -->
+  <nav class="tabs">
+    <button class="on" data-panel="panel-report"><span class="num">01</span>Investor Report</button>
+    <button data-panel="panel-controls"><span class="num">02</span>Model Controls</button>
+    <button data-panel="panel-appendix"><span class="num">03</span>Analyst Appendix</button>
+  </nav>
+
+  <!-- ════════ 01 · INVESTOR REPORT ════════ -->
+  <div class="panel active" id="panel-report">
+
+    <div class="hero">
+      <div class="kick">Twelve-month projected outcome — selected scenario</div>
+      <div class="hero-grid">
+        <div>
+          <div class="big" id="xNet">—</div>
+          <div class="biglabel">Net profit · 12 months</div>
+        </div>
+        <p class="planline" id="xPlan">—</p>
+      </div>
+      <div class="statrow">
+        <div class="stat"><div class="v" id="xRev">—</div><div class="l">Revenue · 12 mo</div></div>
+        <div class="stat"><div class="v" id="xBudget">—</div><div class="l">Capital required</div></div>
+        <div class="stat"><div class="v" id="xRoas">—</div><div class="l">Return on ad spend</div></div>
+        <div class="stat"><div class="v" id="xPayback">—</div><div class="l">Cumulative breakeven</div></div>
+        <div class="stat"><div class="v" id="xPeak">—</div><div class="l">Peak daily active users</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sechead"><span class="no">01</span><h2>Monthly profit &amp; loss</h2></div>
+  <!-- MONTH ON MONTH -->
+  <div class="card" style="margin-top:20px">
+    <h2>Monthly profit &amp; loss statement <span class="pill" id="momPill">sustained · 12 months</span></h2>
+    <div class="note" id="momStopEcho" style="margin:4px 0 10px"></div>
+    <div class="chartbox" style="height:300px"><canvas id="chart3"></canvas></div>
+    <table style="margin-top:10px"><thead><tr><th>Month</th><th>Avg DAU</th><th>Revenue</th><th>Ad spend</th><th>Net profit</th><th>Cumulative</th></tr></thead>
+      <tbody id="momBody"></tbody></table>
+    <div class="hint" style="margin-top:8px">Set <b>how many months you keep spending</b> (12 = never stop). Spend is charged <b>only while active</b> — £0 after you stop — and paid DAU + new subscribers then decay on the retention tail while <b>organic and already-bought users keep paying</b>. Watch the <b>J-curve</b>: DAU ramps over the first ~6 weeks so early months can run at a loss and <b>cumulative profit dips before it recovers</b>; after you stop, cumulative profit keeps climbing as the tail monetises. Revenue includes free organic; net = revenue − ad spend.</div>
+  </div>
+    </div>
+
+    <div class="section">
+      <div class="sechead"><span class="no">02</span><h2>Growth trajectory</h2></div>
+      <div class="card" style="margin-top:16px">
+      <div class="kpis">
+        <div class="kpi em"><div class="v" id="kInstalls">—</div><div class="l">Total installs / day</div></div>
+        <div class="kpi"><div class="v" id="kBlendCpi">—</div><div class="l">Effective blended CPI</div></div>
+        <div class="kpi gold"><div class="v" id="kSteady">—</div><div class="l">Steady-state DAU</div><div class="rng" id="kSteadyRng"></div></div>
+        <div class="kpi em"><div class="v" id="k30">—</div><div class="l">DAU in 30 days</div></div>
+        <div class="kpi em"><div class="v" id="k90">—</div><div class="l">DAU in 90 days</div></div>
+        <div class="kpi blue"><div class="v" id="kDays">—</div><div class="l">Days to 80% of gain</div></div>
+      </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h2>DAU trajectory from today <span class="pill">shaded = conservative→optimistic</span></h2>
+        <div class="chartbox"><canvas id="chart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sechead"><span class="no">03</span><h2>Unit economics</h2></div>
+  <!-- REVENUE -->
+  <div class="card" style="margin-top:20px">
+    <h2>Revenue &amp; ROAS</h2>
+    <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi gold"><div class="v" id="rArpdau">—</div><div class="l">Blended ARPDAU (net)</div></div>
+      <div class="kpi gold"><div class="v" id="rRevMonth">—</div><div class="l">Total revenue / month (steady)</div></div>
+      <div class="kpi" id="rNetCard"><div class="v" id="rNet">—</div><div class="l">Net / month (rev − spend)</div><div class="rng" id="rNetRng"></div></div>
+      <div class="kpi" id="rBlendCard"><div class="v" id="rBlend">—</div><div class="l">Business ROAS (incl. organic)</div></div>
+      <div class="kpi" id="rRoasCard"><div class="v" id="rRoas">—</div><div class="l">Marginal ROAS (paid LTV ÷ spend)</div></div>
+      <div class="kpi em"><div class="v" id="rCurRev">—</div><div class="l">Current rev / month (£0 ads)</div></div>
+      <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
+      <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
+    </div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the <b>measured normal-serving</b> ARPDAU £0.0085 at rewarded-only — AdMob daily data, limited-serving days excluded; mix ~64% ads / 36% IAP. Assumes serving stays healthy — if it gets policy-limited again, actuals drop toward £0.003–0.005. Use the <b>Ad formats</b> lever for the interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
+  </div>
+    </div>
+
+    <div class="section">
+      <div class="sechead"><span class="no">04</span><h2>Revenue composition</h2></div>
+  <!-- REVENUE COMPOSITION (three-way) -->
+  <div class="card" style="margin-top:20px">
+    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">current DAU · selected ad-formats</span></h2>
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi blue"><div class="v" id="cmpAd">—</div><div class="l">Ad revenue / mo</div><div class="rng" id="cmpAdPct"></div></div>
+      <div class="kpi gold"><div class="v" id="cmpSub">—</div><div class="l">Subscription revenue / mo</div><div class="rng" id="cmpSubPct"></div></div>
+      <div class="kpi em"><div class="v" id="cmpCons">—</div><div class="l">Consumable IAP / mo</div><div class="rng" id="cmpConsPct"></div></div>
+      <div class="kpi"><div class="v" id="cmpSubsNow">—</div><div class="l">Current subscribers</div></div>
+      <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
+      <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
+    </div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. <b>Rewarded only</b> is your literal setup today — at <b>normal serving</b> the measured mix is ~<b>64% ads / 24% subs / 13% consumables</b> (the earlier "50/50" was an artifact of the policy-limited stretches). Flip to <b>+Interstitial</b> / <b>+Banner</b> to see the ad upside: ads take a larger share and <b>total revenue rises</b> (~£78 → ~£118 → ~£133/mo at current DAU, normal serving). Scaling paid UA also tilts the mix toward ads. Current subscribers anchored to measured Play data (subs ≈ 65% of IAP, ~10 subs now). Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+  </div>
+    </div>
+
+    <div class="section">
+      <div class="sechead"><span class="no">05</span><h2>Capital deployment &amp; the tail</h2></div>
+  <!-- CAMPAIGN P&L -->
+  <div class="card" style="margin-top:20px">
+    <h2>Capital deployment &amp; the retention tail <span class="pill">paid cohorts · 12 months</span></h2>
+    <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
+      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months.</div>
+    </div>
+    <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
+      <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
+      <div class="kpi blue"><div class="v" id="cPeak">—</div><div class="l">Peak DAU</div></div>
+      <div class="kpi" id="cPayCard"><div class="v" id="cPayback">—</div><div class="l">Payback day</div></div>
+      <div class="kpi gold"><div class="v" id="cRoas">—</div><div class="l">12-mo ROAS (rev ÷ budget)</div></div>
+      <div class="kpi gold"><div class="v" id="cRev">—</div><div class="l">12-mo total revenue</div></div>
+      <div class="kpi" id="cProfitCard"><div class="v" id="cProfit">—</div><div class="l">12-mo profit (rev − budget)</div></div>
+      <div class="kpi em"><div class="v" id="cTail">—</div><div class="l">Revenue AFTER spend stops</div></div>
+      <div class="kpi em"><div class="v" id="cTailPct">—</div><div class="l">…the tail, as % of revenue</div></div>
+    </div>
+    <div class="chartbox" style="margin-top:12px"><canvas id="chart2"></canvas></div>
+    <div class="hint" style="margin-top:8px">The <b>burst</b> question — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). Profit keeps climbing after spend stops: the retention tail monetising users you already paid for. <b>Caveat:</b> the "spread budget over more days beats one big burst" effect is largely driven by the <i>reach/saturation</i> assumption (a short burst hits the daily-reach ceiling and pays a higher effective CPI) — it's real but assumption-sensitive, not a universal law. Paid cohorts only; organic is extra.</div>
+  </div>
+    </div>
+
+    <div class="section">
+      <div class="sechead"><span class="no">06</span><h2>Methodology &amp; integrity</h2></div>
+      <div class="card">
+        <div class="hint" style="font-size:12.5px;line-height:1.7">
+          <b style="color:var(--ink)">This model is fitted, calibrated and audited — not sketched.</b>
+          The installs→DAU retention engine is fitted to the app's real GA4 history (out-of-sample error ≈ 5.5%); revenue rates are
+          calibrated from AdMob payout statements and Play Console transaction ledgers (DAU-weighted, policy-limited serving days
+          excluded); reach expansion ratios are computed from DataReportal + StatCounter population data; and the full engine has been
+          independently audited twice by an adversarial reviewer (see <code>AUDIT.md</code>), with every finding remediated.
+          The default plan was found by an exhaustive brute-force search (<code>optimizer.py</code>, 500k+ combinations) and is
+          cross-checked against this page to the pound.
+        </div>
+        <details>
+          <summary>▸ Read the full plan &amp; assumptions note</summary>
   <div class="banner" style="border-color:var(--gold);background:linear-gradient(90deg,rgba(233,196,106,.14),transparent)">
     <b>★ This opens on the BEST plan at a £75/day budget — not the unconstrained optimum, and not today's reality.</b>
     Your spend is fixed at <b>£75/day</b>; a brute-force search of 500k+ combinations (<code>optimizer.py</code>) then
     found the best <b>geo-tier split, iOS share and spend duration</b> for that exact budget: <b>Tier-3 100% · iOS
-    60% · +Interstitial+Banner ads · full country expansion · spend 11 months</b> → <b>£44,860</b> 12-mo revenue,
-    <b>£20,110 profit</b> (ROAS 1.81×). <b>Note: the true unconstrained max-profit spend is £126/day → £22,919
+    60% · +Interstitial+Banner ads · full country expansion · spend 11 months</b> → <b>£44,795</b> 12-mo revenue,
+    <b>£20,045 profit</b> (ROAS 1.81×) — matching the P&amp;L statement above to the pound. <b>Note: the true unconstrained max-profit spend is £126/day → £22,919
     profit (ROAS 1.55×)</b> — more total profit but less capital-efficient; £75/day is the better pound-for-pound
     return, just a smaller total. Calibrated on your <b>measured normal-serving ARPDAU £0.0085</b> (AdMob daily data
     with the policy-limited stretches excluded), <b>organic at 100/day</b> (assumption/target — measured recent was
@@ -123,26 +373,38 @@
     <b>today's actual position</b>, click <b>Current (T3 Android)</b> — Android + rewarded ads only, named countries
     only — the brute-force optimum there is <b>£11/day, stop after 6 months → +£1,763 profit</b> (ROAS 1.89×). Every
     number here is editable — this is a <i>target to build toward</i>, not a measured state.
+  
+  <div class="banner">
+    <b>How this works.</b> Split your daily budget across <b>geo tiers</b> (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK) and
+    <b>Android / iOS</b> — six markets, each with its own economics. <b>CPI rises with spend</b>: as you exhaust a market's cheap
+    daily reach, your <b>effective CPI</b> climbs and ROAS degrades on its own (no manual edit needed). Blended ARPDAU/CPI/ROAS are
+    <b>computed from the mix</b>. The <b>installs→DAU retention engine</b> is fitted to your real data; everything else (floor CPI,
+    reach, ARPDAU, retention) is an <b>editable assumption</b> under <i>Advanced</i>. Shaded chart band + KPI ranges show the
+    <b>conservative→optimistic</b> spread — the honest answer is a range. iOS is a <b>projection</b> (not launched yet).
+  </div>
+        </details>
+      </div>
+    </div>
   </div>
 
-  <div class="grid">
-    <!-- CONTROLS -->
-    <div class="card">
-      <h2>Inputs</h2>
-
+  <!-- ════════ 02 · MODEL CONTROLS ════════ -->
+  <div class="panel" id="panel-controls">
+    <div class="section">
+      <div class="sechead"><span class="no">02</span><h2>Model controls</h2><span class="pill">every change recomputes the report live</span></div>
+      <div class="controls-grid">
+        <div class="card">
+          <h2>Capital &amp; allocation</h2>
       <label>Total daily ad spend &nbsp;<span class="pill" id="spendPill">£75/day</span></label>
       <div class="row"><input id="spend" type="range" min="0" max="500" step="1" value="75"/>
         <input id="spendN" type="number" min="0" max="5000" step="1" value="75"/></div>
 
-      <label style="margin-top:18px">Where you spend it — presets</label>
-      <div class="seg" id="mixSeg">
-        <button data-mix="opt" class="on">★ Optimum</button>
-        <button data-mix="cur">Current (T3 Android)</button>
-        <button data-mix="bal">Balanced growth</button>
-        <button data-mix="prem">Premium push</button>
-        <button data-mix="rev">Revenue-max</button>
-        <button data-mix="launch">↺ Launch replay</button>
-      </div>
+      <label style="margin-top:14px">Spend duration — months, then stop <span class="pill">12 = sustained</span></label>
+        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="11"/>
+          <input id="momStopN" type="number" min="1" max="12" step="1" value="11"/></div>
+      <div class="hint">The plan runs this many months, then spend goes to £0 and the model coasts on the retention tail. Mirrored in days below.</div>
+      <label style="margin-top:10px">Spend duration — days <span class="pill">synced with months</span></label>
+        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="330"/>
+          <input id="cDaysN" type="number" min="1" max="365" step="1" value="330"/></div>
 
       <label style="margin-top:14px">Geo-tier split of budget %</label>
       <div class="allocbar" id="allocBar"><span></span><span></span><span></span></div>
@@ -155,26 +417,24 @@
           <input class="mini" id="t3" type="number" min="0" max="100" step="5" value="100"/></div>
       </div>
       <div class="hint">Weights auto-normalise to 100%. <span id="allocEcho"></span></div>
-
       <label style="margin-top:14px">iOS share of budget % <span class="pill">within each tier</span></label>
       <div class="row"><input id="iosShare" type="range" min="0" max="100" step="5" value="60"/>
         <input id="iosShareN" type="number" min="0" max="100" step="5" value="60"/></div>
       <div class="hint">Splits each tier's budget between Android &amp; iOS. iOS organic = 0 until you launch it.</div>
-
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
       <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="100"/>
         <input id="orgN" type="number" min="0" max="3000" step="1" value="100"/></div>
       <div class="hint">Default <b>100/day is an assumption/target</b> — recent <i>measured</i> organic was ≈ 25/day. At 100/day, organic alone settles you near ~580 DAU (above today's 327), so £0-spend forecasts <i>grow</i>. Set back to 25 for the measured floor.</div>
-
       <label style="margin-top:14px">Current live DAU <span class="pill">anchors the model</span></label>
       <div class="row"><input id="currentDAU" type="number" min="0" max="100000" step="1" value="327"/></div>
       <div class="hint">Your real measured DAU today (default 327). The forecast starts here and the chart, current-revenue &amp; maintenance all use this single number.</div>
-
       <label style="margin-top:14px">Store fee on IAP %</label>
       <div class="row"><input id="fee" type="range" min="0" max="30" step="1" value="15"/>
         <input id="feeN" type="number" min="0" max="30" step="1" value="15"/></div>
       <div class="hint">15% under £1M/yr. Applied to each tier's IAP slice; ad revenue is already net.</div>
-
+        </div>
+        <div class="card">
+          <h2>Monetisation &amp; market levers</h2>
       <label style="margin-top:14px">Ad formats (monetisation depth) <span class="pill">default: optimum (+banner)</span></label>
       <div class="seg" id="adSeg">
         <button data-am="1.0">Rewarded only</button>
@@ -182,7 +442,6 @@
         <button data-am="2.1" class="on">+ Interstitial + Banner</button>
       </div>
       <div class="hint">Your app runs <b>rewarded ads only</b> today (impressions/user ≈2 in AdMob) — click <b>Rewarded only</b> for today's real mix (~64% ads at normal serving). Adding interstitials ≈ <b>1.8×</b> ad revenue, + banners ≈ <b>2.1×</b> (eCPM ~£3 measured, unbuilt inventory). Scales the <b>ad slice only</b> — raising ad share &amp; total revenue. The default is set to <b>+Interstitial+Banner</b> because that's the ad depth the optimiser's max-profit plan assumes.</div>
-
       <label style="margin-top:14px">UA network mix <span class="pill">default: Google only (today)</span></label>
       <div class="seg" id="netSeg">
         <button data-nm="1.0" class="on">Google only</button>
@@ -190,12 +449,10 @@
         <button data-nm="1.6">+ AppLovin/Unity/Mintegral</button>
       </div>
       <div class="hint">You buy installs on <b>Google Ads only</b> today. Running more networks in parallel raises the <b>reach ceiling</b> (each network has its own, separate audience pool) at roughly the <b>same CPI</b> — research found no reliable evidence other major networks are cheaper or pricier than Google at the margin (Unity Ads ≈$2.50, AppLovin+Vungle ≈$3.00 CPI, games-blended, vs. Google/Meta's own $1.50–4.50 blended range). <b>Low confidence</b> — no industry source publishes a reach multiplier for adding networks; these values (+25% / +60%) are a deliberately modest, illustrative estimate, not a measured figure. Mintegral specifically over-indexes on your genre (hyper-casual + puzzle + simulation ≈70% of its ad buys).</div>
-
       <label style="margin-top:14px">Country/market expansion <span class="pill">default: full expansion (target)</span></label>
       <div class="row"><input id="countryMult" type="range" min="1" max="2" step="0.05" value="2"/>
         <input id="countryMultN" type="number" min="1" max="2" step="0.05" value="2"/></div>
       <div class="hint">Today's tiers only count a handful of named countries (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK). Sliding this up adds <b>more countries within the same cost bracket</b> — e.g. T1 + Canada/Australia/Japan/South&nbsp;Korea, T2 + Mexico/Poland/South&nbsp;Africa/Argentina, T3 + Vietnam/Nigeria/Egypt/Bangladesh/Indonesia/Colombia — raising each tier's <b>reach ceiling</b> by a different amount (population/Android-share-weighted: T1 ×1.40, T2 ×1.91, T3 ×1.52 at the slider's max, per DataReportal Jan-2025 + StatCounter Jun-2026 data). <b>Medium confidence</b> — reach itself is a population proxy (no installs-by-country benchmark exists publicly); floor CPI is held unchanged per tier, which is a simplification — real CPI varies 2–8× between countries in the same bracket and isn't modelled here. Russia is excluded (Google/Meta don't serve ads there since 2022). <b>Default is now the full-expansion target</b> (like iOS/ad-formats, an assumption to build toward) — click <b>Current (T3 Android)</b> for named-countries-only.</div>
-
       <label style="margin-top:14px">User lifetime (LTV horizon) <span class="pill">caps the tail</span></label>
       <div class="seg" id="lifeSeg">
         <button data-l="90">90 days</button>
@@ -203,14 +460,12 @@
         <button data-l="365" class="on">365 days</button>
       </div>
       <div class="hint">How long a user keeps contributing to LTV. 365d is generous (fat power-law tail); pick 90–180d to be conservative.</div>
-
       <label style="margin-top:14px">Chart horizon</label>
       <div class="seg" id="horizonSeg">
         <button data-h="90">90 days</button>
         <button data-h="180" class="on">180 days</button>
         <button data-h="365">365 days</button>
       </div>
-
       <details id="adv">
         <summary>▸ Advanced assumptions (floor CPI · reach · ARPDAU · retention)</summary>
         <div class="hint" style="margin:8px 0"><b>Floor CPI</b> = cheapest CPI at low volume; <b>reach</b> = daily installs a market yields before CPI climbs steeply (effective CPI = spend ÷ installs rises as you approach reach). Android base values; iOS derived by the multipliers below.</div>
@@ -281,53 +536,16 @@
         <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP ≈ 65%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
         <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> = your real effective cost (£497 → 36,750 installs → ~15,600 GA4 users ≈ £0.03 + buffer); the model raises it automatically as spend scales. <b>T3 ARPDAU £0.0085, IAP 40%</b> — the <b>measured normal-serving</b> rate (AdMob daily, DAU-weighted, <b>policy-limited days excluded</b>): clean window 22 May–6 Jun = ad £0.0060 + IAP ~£0.0035 ≈ £0.0095 gross; all 32 normal-serving days ≈ £0.0092; June restored window £0.0078 → central £0.0085. During normal serving the mix is ~<b>64% ads / 36% IAP</b> — the earlier "50/50" was an artifact of the limited stretches (ads forced to £0 while IAP kept flowing). Assumes serving <b>stays healthy</b>; if it gets limited again, drop toward £0.003–0.005. Interstitial/banner upside stays in the <b>Ad formats</b> lever, not this number. β &amp; retention measured. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections; IAP share higher (T1 44%) as Tier-1 skews to IAP. <b>Retention floor</b> models a loyal core; raise β to decay faster.</div>
       </details>
-
       <div class="hint" style="margin-top:16px">Engine: installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
-    </div>
-
-    <!-- OUTPUTS -->
-    <div>
-      <div class="kpis">
-        <div class="kpi em"><div class="v" id="kInstalls">—</div><div class="l">Total installs / day</div></div>
-        <div class="kpi"><div class="v" id="kBlendCpi">—</div><div class="l">Effective blended CPI</div></div>
-        <div class="kpi gold"><div class="v" id="kSteady">—</div><div class="l">Steady-state DAU</div><div class="rng" id="kSteadyRng"></div></div>
-        <div class="kpi em"><div class="v" id="k30">—</div><div class="l">DAU in 30 days</div></div>
-        <div class="kpi em"><div class="v" id="k90">—</div><div class="l">DAU in 90 days</div></div>
-        <div class="kpi blue"><div class="v" id="kDays">—</div><div class="l">Days to 80% of gain</div></div>
-      </div>
-
-      <div class="card" style="margin-top:14px">
-        <h2>DAU trajectory from today <span class="pill">shaded = conservative→optimistic</span></h2>
-        <div class="chartbox"><canvas id="chart"></canvas></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- CAMPAIGN P&L -->
-  <div class="card" style="margin-top:20px">
-    <h2>Campaign P&amp;L — spend a burst, then stop <span class="pill">the decay tail</span></h2>
-    <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
-      <div style="min-width:230px">
-        <label style="margin-top:0">Spend for how many days, then stop</label>
-        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="330"/>
-          <input id="cDaysN" type="number" min="1" max="365" step="1" value="330"/></div>
-      </div>
-      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£50</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£1,500</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months.</div>
-    </div>
-    <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
-      <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
-      <div class="kpi blue"><div class="v" id="cPeak">—</div><div class="l">Peak DAU</div></div>
-      <div class="kpi" id="cPayCard"><div class="v" id="cPayback">—</div><div class="l">Payback day</div></div>
-      <div class="kpi gold"><div class="v" id="cRoas">—</div><div class="l">12-mo ROAS (rev ÷ budget)</div></div>
-      <div class="kpi gold"><div class="v" id="cRev">—</div><div class="l">12-mo total revenue</div></div>
-      <div class="kpi" id="cProfitCard"><div class="v" id="cProfit">—</div><div class="l">12-mo profit (rev − budget)</div></div>
-      <div class="kpi em"><div class="v" id="cTail">—</div><div class="l">Revenue AFTER spend stops</div></div>
-      <div class="kpi em"><div class="v" id="cTailPct">—</div><div class="l">…the tail, as % of revenue</div></div>
-    </div>
-    <div class="chartbox" style="margin-top:12px"><canvas id="chart2"></canvas></div>
-    <div class="hint" style="margin-top:8px">The <b>burst</b> question — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). Profit keeps climbing after spend stops: the retention tail monetising users you already paid for. <b>Caveat:</b> the "spread budget over more days beats one big burst" effect is largely driven by the <i>reach/saturation</i> assumption (a short burst hits the daily-reach ceiling and pays a higher effective CPI) — it's real but assumption-sensitive, not a universal law. Paid cohorts only; organic is extra.</div>
-  </div>
-
+  <!-- ════════ 03 · ANALYST APPENDIX ════════ -->
+  <div class="panel" id="panel-appendix">
+    <div class="section">
+      <div class="sechead"><span class="no">03</span><h2>Analyst appendix</h2><span class="pill">market-level detail &amp; sensitivities</span></div>
   <!-- MARKET BREAKDOWN -->
   <div class="card" style="margin-top:20px">
     <h2>Market breakdown — how the blend is built <span class="pill" id="mixEcho">—</span></h2>
@@ -336,54 +554,6 @@
     <div class="hint" id="haloEcho" style="margin-top:8px;color:var(--gold)"></div>
     <div class="hint" style="margin-top:6px"><b>Eff. CPI</b> is spend ÷ installs (incl. free halo installs), and rises above the floor CPI as you approach a market's daily reach. Cheap Tier-3 installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept far fewer users. ROAS is lifetime paid-value ÷ spend at your chosen LTV horizon.</div>
   </div>
-
-  <!-- REVENUE -->
-  <div class="card" style="margin-top:20px">
-    <h2>Revenue &amp; ROAS</h2>
-    <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-      <div class="kpi gold"><div class="v" id="rArpdau">—</div><div class="l">Blended ARPDAU (net)</div></div>
-      <div class="kpi gold"><div class="v" id="rRevMonth">—</div><div class="l">Total revenue / month (steady)</div></div>
-      <div class="kpi" id="rNetCard"><div class="v" id="rNet">—</div><div class="l">Net / month (rev − spend)</div><div class="rng" id="rNetRng"></div></div>
-      <div class="kpi" id="rBlendCard"><div class="v" id="rBlend">—</div><div class="l">Business ROAS (incl. organic)</div></div>
-      <div class="kpi" id="rRoasCard"><div class="v" id="rRoas">—</div><div class="l">Marginal ROAS (paid LTV ÷ spend)</div></div>
-      <div class="kpi em"><div class="v" id="rCurRev">—</div><div class="l">Current rev / month (£0 ads)</div></div>
-      <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
-      <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
-    </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the <b>measured normal-serving</b> ARPDAU £0.0085 at rewarded-only — AdMob daily data, limited-serving days excluded; mix ~64% ads / 36% IAP. Assumes serving stays healthy — if it gets policy-limited again, actuals drop toward £0.003–0.005. Use the <b>Ad formats</b> lever for the interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
-  </div>
-
-  <!-- REVENUE COMPOSITION (three-way) -->
-  <div class="card" style="margin-top:20px">
-    <h2>Revenue composition — ads · subscriptions · consumables <span class="pill">current DAU · selected ad-formats</span></h2>
-    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-      <div class="kpi blue"><div class="v" id="cmpAd">—</div><div class="l">Ad revenue / mo</div><div class="rng" id="cmpAdPct"></div></div>
-      <div class="kpi gold"><div class="v" id="cmpSub">—</div><div class="l">Subscription revenue / mo</div><div class="rng" id="cmpSubPct"></div></div>
-      <div class="kpi em"><div class="v" id="cmpCons">—</div><div class="l">Consumable IAP / mo</div><div class="rng" id="cmpConsPct"></div></div>
-      <div class="kpi"><div class="v" id="cmpSubsNow">—</div><div class="l">Current subscribers</div></div>
-      <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
-      <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
-    </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. <b>Rewarded only</b> is your literal setup today — at <b>normal serving</b> the measured mix is ~<b>64% ads / 24% subs / 13% consumables</b> (the earlier "50/50" was an artifact of the policy-limited stretches). Flip to <b>+Interstitial</b> / <b>+Banner</b> to see the ad upside: ads take a larger share and <b>total revenue rises</b> (~£78 → ~£118 → ~£133/mo at current DAU, normal serving). Scaling paid UA also tilts the mix toward ads. Current subscribers anchored to measured Play data (subs ≈ 65% of IAP, ~10 subs now). Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
-  </div>
-
-  <!-- MONTH ON MONTH -->
-  <div class="card" style="margin-top:20px">
-    <h2>Month-on-month revenue &amp; profit <span class="pill" id="momPill">sustained · 12 months</span></h2>
-    <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end;margin-bottom:4px">
-      <div style="min-width:230px">
-        <label style="margin-top:0">Spend for how many months, then stop</label>
-        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="11"/>
-          <input id="momStopN" type="number" min="1" max="12" step="1" value="11"/></div>
-      </div>
-      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px" id="momStopEcho">Spending <b>all 12 months</b>. Drag down to stop early and watch revenue coast on the retention tail while spend drops to £0.</div>
-    </div>
-    <div class="chartbox" style="height:300px"><canvas id="chart3"></canvas></div>
-    <table style="margin-top:10px"><thead><tr><th>Month</th><th>Avg DAU</th><th>Revenue</th><th>Ad spend</th><th>Net profit</th><th>Cumulative</th></tr></thead>
-      <tbody id="momBody"></tbody></table>
-    <div class="hint" style="margin-top:8px">Set <b>how many months you keep spending</b> (12 = never stop). Spend is charged <b>only while active</b> — £0 after you stop — and paid DAU + new subscribers then decay on the retention tail while <b>organic and already-bought users keep paying</b>. Watch the <b>J-curve</b>: DAU ramps over the first ~6 weeks so early months can run at a loss and <b>cumulative profit dips before it recovers</b>; after you stop, cumulative profit keeps climbing as the tail monetises. Revenue includes free organic; net = revenue − ad spend.</div>
-  </div>
-
   <!-- TABLES -->
   <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:20px">
     <div class="card">
@@ -399,7 +569,6 @@
       <div class="hint" style="margin-top:8px">Shifting budget upmarket lifts <b>value per user</b> but shrinks <b>DAU volume</b> — the core trade-off. (iOS share held.)</div>
     </div>
   </div>
-
   <!-- MAINTENANCE -->
   <div class="card" style="margin-top:20px">
     <h2>Maintenance — minimum to hold the line</h2>
@@ -410,7 +579,6 @@
     </div>
     <div class="hint">With £0 ads, organic alone settles you near <b id="orgEq">—</b> DAU. To stay at your current DAU you must replace daily churn with the installs above (solved independently of the spend slider, at the mix's effective CPI).</div>
   </div>
-
   <div class="foot">
     <b>How the maths answers your questions.</b><br>
     • <b>"£X/day → how much DAU, and does it still work at higher £X?"</b> installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); <b>effective CPI rises</b> as you exhaust a market, so ROAS degrades automatically — no manual edit. Each sustained 1 install/day ≈ 5–6 DAU (T3) up to ≈ 8–9 (T1 iOS) at a 365-day lifetime.<br>
@@ -419,8 +587,9 @@
     • <b>"What if I spend a burst then stop?"</b> the Campaign P&amp;L integrates every cohort's revenue over 12 months incl. the retention tail after spend ends.<br>
     <span style="color:#6f8f82">Retention engine (β, m) fitted to your data. Floor CPI, reach, ARPDAU, iOS multipliers &amp; lifetime are editable planning assumptions. Ranges/bands reflect CPI-scaling and lifetime uncertainty — the honest answer is a range. Independently audited (see AUDIT.md).</span>
   </div>
+    </div>
+  </div>
 </div>
-
 <script>
 // ================= fitted retention engine =================
 const M=1.0672;
@@ -618,12 +787,12 @@ function renderCampaign(spend,p){
   $('cProfitCard').style.borderColor=profit12>=0?'var(--emerald)':'var(--danger)';
   $('cPayCard').style.borderColor=(payback!==null&&payback<=D)?'var(--emerald)':(payback===null?'var(--danger)':'var(--gold)');
   const labels=Array.from({length:H+1},(_,i)=>i);
-  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
-  const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
+  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8FA89A').trim();
+  const gl=document.body.classList.contains('light')?'#E7E2D1':'#22342b99';
   const ds=[
-    {label:'Cumulative revenue',data:sim.cumRev,borderColor:'#2fbf80',backgroundColor:'rgba(47,191,128,.10)',fill:true,tension:.15,pointRadius:0,borderWidth:2},
-    {label:'Cumulative spend (stops day '+D+')',data:sim.cumSpend,borderColor:'#8fb0a3',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
-    {label:'Cumulative profit',data:sim.cumProfit,borderColor:'#e9c46a',fill:false,tension:.15,pointRadius:0,borderWidth:2.5}
+    {label:'Cumulative revenue',data:sim.cumRev,borderColor:'#2E9E6B',backgroundColor:'rgba(46,158,107,.10)',fill:true,tension:.15,pointRadius:0,borderWidth:2},
+    {label:'Cumulative spend (stops day '+D+')',data:sim.cumSpend,borderColor:'#98A69B',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
+    {label:'Cumulative profit',data:sim.cumProfit,borderColor:'#C9A227',fill:false,tension:.15,pointRadius:0,borderWidth:2.5}
   ];
   if(chart2){chart2.data.labels=labels;chart2.data.datasets=ds;chart2.update();}
   else chart2=new Chart($('chart2'),{type:'line',data:{labels,datasets:ds},
@@ -651,17 +820,35 @@ function renderMoM(spend,p){
     ? 'Spending <b>all 12 months</b>. Drag down to stop early and watch revenue coast on the retention tail while spend drops to £0.'
     : 'Spending <b>£'+fmt(spend)+'/day for '+stopMo+' month'+(stopMo>1?'s':'')+'</b> (budget <b style="color:var(--gold)">£'+fmt(spend*stopMo*30)+'</b>), then <b>£0</b>. Paid DAU &amp; new subscribers decay after M'+stopMo+'; organic + already-bought users keep paying.';
   const tb=$('momBody'); tb.innerHTML='';
-  const money=x=>(x>=0?'+£':'−£')+fmt(Math.abs(x)), col=x=>x>=0?'var(--emerald)':'var(--danger)';
+  // accounting format: negatives in (parentheses), tabular alignment via CSS
+  const acc=x=> x<0 ? `(£${fmt(Math.abs(x))})` : `£${fmt(x)}`;
+  const cls=x=> x<0 ? 'neg' : 'pos';
   rows.forEach(r=>tb.insertAdjacentHTML('beforeend',
-    `<tr><td>M${r.m}</td><td>${fmt(r.dau)}</td><td>£${fmt(r.rev)}</td><td>£${fmt(r.sp)}</td>`+
-    `<td style="color:${col(r.net)}">${money(r.net)}</td><td style="color:${col(r.cum)}">${money(r.cum)}</td></tr>`));
+    `<tr${(stopMo<12&&r.m===stopMo+1)?' class="stoprow"':''}><td>Month ${r.m}</td><td>${fmt(r.dau)}</td><td>£${fmt(r.rev)}</td><td>${r.sp>0?'£'+fmt(r.sp):'—'}</td>`+
+    `<td class="${cls(r.net)}">${acc(r.net)}</td><td class="${cls(r.cum)}">${acc(r.cum)}</td></tr>`));
+  const totRev=rows.reduce((s,r)=>s+r.rev,0), totSp=rows.reduce((s,r)=>s+r.sp,0), totNet=totRev-totSp;
+  tb.insertAdjacentHTML('beforeend',
+    `<tr class="tot"><td>Total · 12 months</td><td>—</td><td>£${fmt(totRev)}</td><td>£${fmt(totSp)}</td>`+
+    `<td class="${cls(totNet)}">${acc(totNet)}</td><td></td></tr>`);
+  // ---- executive hero (report front page) ----
+  if($('xNet')){
+    let bk=null; for(const r of rows){ if(r.cum>=0){bk=r.m;break;} }
+    const peak=Math.round(Math.max(...traj));
+    $('xNet').textContent=(totNet<0?'−£':'£')+fmt(Math.abs(totNet));
+    $('xRev').textContent=gbp(totRev);
+    $('xBudget').textContent=gbp(totSp);
+    $('xRoas').textContent=totSp>0?(totRev/totSp).toFixed(2)+'×':'∞';
+    $('xPayback').textContent=bk?('Month '+bk):'>12 mo';
+    $('xPeak').textContent=fmt(peak);
+    $('xPlan').innerHTML = `The selected plan deploys <b>£${fmt(spend)}/day</b> ${stopMo>=12?'sustained across all 12 months':'for <b>'+stopMo+' months</b>, then £0'} — total capital <b>£${fmt(totSp)}</b>. Revenue keeps flowing after spend stops: users already acquired continue paying on the retention tail. Every figure in this document recomputes live.`;
+  }
   const labels=rows.map(r=>'M'+r.m);
-  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
-  const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
+  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8FA89A').trim();
+  const gl=document.body.classList.contains('light')?'#E7E2D1':'#22342b99';
   const ds=[
-    {type:'bar',label:'Revenue',data:rows.map(r=>r.rev),backgroundColor:'rgba(47,191,128,.55)',borderColor:'#2fbf80',borderWidth:1},
-    {type:'bar',label:'Ad spend',data:rows.map(r=>r.sp),backgroundColor:'rgba(143,176,163,.30)',borderColor:'#8fb0a3',borderWidth:1},
-    {type:'line',label:'Cumulative profit',data:rows.map(r=>r.cum),borderColor:'#e9c46a',backgroundColor:'rgba(233,196,106,.12)',borderWidth:2.5,tension:.2,pointRadius:0,fill:false,yAxisID:'y1'}
+    {type:'bar',label:'Revenue',data:rows.map(r=>r.rev),backgroundColor:'rgba(46,158,107,.55)',borderColor:'#2E9E6B',borderWidth:1},
+    {type:'bar',label:'Ad spend',data:rows.map(r=>r.sp),backgroundColor:'rgba(152,166,155,.28)',borderColor:'#98A69B',borderWidth:1},
+    {type:'line',label:'Cumulative profit',data:rows.map(r=>r.cum),borderColor:'#C9A227',backgroundColor:'rgba(201,162,39,.12)',borderWidth:2.5,tension:.2,pointRadius:0,fill:false,yAxisID:'y1'}
   ];
   if(chart3){chart3.data.labels=labels;chart3.data.datasets=ds;chart3.update();}
   else chart3=new Chart($('chart3'),{data:{labels,datasets:ds},
@@ -802,13 +989,13 @@ function recompute(){
   // main chart with confidence band
   const trLow=mixTraj(spend,horizon,pLow,1.4), trHigh=mixTraj(spend,horizon,pHigh,0.8);
   const labels=Array.from({length:tr.length},(_,i)=>i);
-  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8fb0a3').trim();
-  const gl=document.body.classList.contains('light')?'#e0e8e4':'#16292160';
+  const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8FA89A').trim();
+  const gl=document.body.classList.contains('light')?'#E7E2D1':'#22342b99';
   const ds=[
     {label:'_low',data:trLow,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(0,0,0,0)',pointRadius:0,fill:false,borderWidth:0},
-    {label:'Range (conservative→optimistic)',data:trHigh,borderColor:'rgba(47,191,128,0.28)',backgroundColor:'rgba(47,191,128,0.13)',pointRadius:0,fill:'-1',borderWidth:0,tension:.25},
-    {label:`Mix · £${spend}/day`,data:tr,borderColor:'#2fbf80',backgroundColor:'rgba(0,0,0,0)',fill:false,tension:.25,pointRadius:0,borderWidth:2.5},
-    {label:'£0 (organic only)',data:base0,borderColor:'#6f8f82',borderDash:[6,5],fill:false,tension:.25,pointRadius:0,borderWidth:1.5}
+    {label:'Range (conservative→optimistic)',data:trHigh,borderColor:'rgba(46,158,107,0.28)',backgroundColor:'rgba(46,158,107,0.13)',pointRadius:0,fill:'-1',borderWidth:0,tension:.25},
+    {label:`Mix · £${spend}/day`,data:tr,borderColor:'#2E9E6B',backgroundColor:'rgba(0,0,0,0)',fill:false,tension:.25,pointRadius:0,borderWidth:2.5},
+    {label:'£0 (organic only)',data:base0,borderColor:'#7C8F81',borderDash:[6,5],fill:false,tension:.25,pointRadius:0,borderWidth:1.5}
   ];
   if(chart){chart.data.labels=labels;chart.data.datasets=ds;chart.update();}
   else chart=new Chart($('chart'),{type:'line',data:{labels,datasets:ds},
@@ -882,6 +1069,15 @@ $('themeBtn').addEventListener('click',()=>{
   document.body.classList.toggle('light');
   $('themeBtn').textContent=document.body.classList.contains('light')?'🌙 Dark':'☀️ Light';
   if(chart){chart.destroy();chart=null;} if(chart2){chart2.destroy();chart2=null;} if(chart3){chart3.destroy();chart3=null;} recompute();});
+
+// ---- document sections (tabs) ----
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.panel').forEach(pn=>pn.classList.toggle('active',pn.id===b.dataset.panel));
+  requestAnimationFrame(()=>{[chart,chart2,chart3].forEach(c=>c&&c.resize());});
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+$('stampDate').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
 recompute();
 </script>
