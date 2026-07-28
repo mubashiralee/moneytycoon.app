@@ -47,8 +47,8 @@
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
     <p><strong>Developer and data controller:</strong> CapitalCraft Studios</p>
-    <p><strong>Last updated:</strong> July 14, 2026</p>
-    <p><strong>Effective date:</strong> July 14, 2026</p>
+    <p><strong>Last updated:</strong> July 28, 2026</p>
+    <p><strong>Effective date:</strong> July 28, 2026</p>
 
     <div class="summary">
         <strong>Plain-language summary</strong>
@@ -56,7 +56,7 @@
             <li>Money Tycoon creates an anonymous Firebase account automatically so game data can be protected and synchronized without an email address.</li>
             <li>Most game processing happens on your device. Current Android builds also mirror game state to protected cloud storage by default when a network connection is available.</li>
             <li>Linking a Google or Play Games identity, enabling notifications, making a purchase, and requesting a rewarded ad are optional.</li>
-            <li>Firebase Analytics and Crashlytics collection are disabled in the current release. Advertising SDKs may still process the limited data described below when an ad is requested.</li>
+            <li>Firebase Analytics and Crashlytics collect app-interaction analytics and crash diagnostics, gated by your consent choices where consent is legally required and enabled by default elsewhere. Advertising SDKs may also process the limited data described below when an ad is requested.</li>
             <li>You can permanently delete your account and cloud data in the app or request deletion by email without reinstalling the app.</li>
         </ul>
     </div>
@@ -98,7 +98,7 @@
     <p>Potential mediation partners include Meta Audience Network, Pangle, Unity, Liftoff/Vungle, AppLovin, ironSource, Mintegral, InMobi, and Digital Turbine/Fyber. A partner receives an ad request only when selected by the AdMob mediation configuration and permitted by applicable consent signals.</p>
 
     <h3>Diagnostics, analytics, and configuration</h3>
-    <p>Firebase Analytics and Firebase Crashlytics collection are disabled in the current release, regardless of the advertising-consent result, and unsent Crashlytics reports are deleted. Historical versions may have processed app interactions, crash logs, diagnostics, device information, and an anonymous user ID when collection was enabled. Firebase Remote Config and App Check may process installation and integrity signals needed to deliver configuration securely. Advertising SDKs may process diagnostic information when an ad is requested.</p>
+    <p>Firebase Analytics and Firebase Crashlytics collect app interactions, crash logs, diagnostics, device information, and an anonymous user ID. Crash reports may additionally include a pseudonymous player identifier and game-progress context such as the current screen and subscription tier. Where privacy law requires consent (for example the EEA and UK), collection is enabled only after you grant consent through the Google-certified consent form shown in the App, and it stays disabled — with unsent crash reports deleted — if you decline or no decision can be obtained. Elsewhere, collection is enabled by default. You can revisit your consent choices at any time from the App's settings. Firebase Remote Config and App Check may process installation and integrity signals needed to deliver configuration securely. Advertising SDKs may process diagnostic information when an ad is requested.</p>
 
     <h3>Read-only market-data providers</h3>
     <p>Optional Pro Trading screens may request public market prices from providers such as Alpha Vantage, Finnhub, or Alpaca. Requests use HTTPS and may expose ordinary connection information such as IP address and user agent to the provider. If you enter a provider API key, it is stored locally and sent only to that provider to make the requested market-data call.</p>
