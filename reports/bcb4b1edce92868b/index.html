@@ -1,0 +1,3510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Money Tycoon — Income Statement</title>
+<meta name="description" content="Interactive income statement, expense ledger and profitability report built from AdMob user-metrics data.">
+<style>
+/* ============================================================================
+   TOKENS — validated data-viz palette (see docs/finance/README.md)
+   Light/dark are *selected* pairs, not an automatic flip.
+   ========================================================================= */
+:root{
+  color-scheme: light;
+  --plane:#f9f9f7;
+  --surface-1:#fcfcfb;
+  --surface-2:#f4f3f0;
+  --surface-3:#efeee9;
+  --ink:#0b0b0b;
+  --ink-2:#52514e;
+  --muted:#898781;
+  --grid:#e1e0d9;
+  --axis:#c3c2b7;
+  --border:rgba(11,11,11,.10);
+  --border-strong:rgba(11,11,11,.18);
+  /* categorical slots 1 / 3 / 2 — validated all-pairs, light */
+  --s-ads:#2a78d6;
+  --s-iap:#1baf7a;
+  --s-exp:#eb6834;
+  --s-tax:rgba(11,11,11,.34);
+  --good:#006300;
+  --bad:#d03b3b;
+  --warn:#fab219;
+  --heat-mid:#f0efec;
+  --heat-pos:#104281;
+  --heat-neg:#d03b3b;
+  --focus:#2a78d6;
+  --shadow-1:0 1px 2px rgba(11,11,11,.04), 0 10px 30px -18px rgba(11,11,11,.22);
+  --shadow-2:0 2px 6px rgba(11,11,11,.06), 0 22px 50px -24px rgba(11,11,11,.32);
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-io:cubic-bezier(.77,0,.175,1);
+  --r-sm:8px; --r-md:12px; --r-lg:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --plane:#0d0d0d;
+    --surface-1:#1a1a19;
+    --surface-2:#211f1e;
+    --surface-3:#272523;
+    --ink:#ffffff;
+    --ink-2:#c3c2b7;
+    --muted:#898781;
+    --grid:#2c2c2a;
+    --axis:#383835;
+    --border:rgba(255,255,255,.10);
+    --border-strong:rgba(255,255,255,.18);
+    --s-ads:#3987e5;
+    --s-iap:#199e70;
+    --s-exp:#d95926;
+    --s-tax:rgba(255,255,255,.34);
+    --good:#0ca30c;
+    --bad:#d03b3b;
+    --heat-mid:#383835;
+    --heat-pos:#86b6ef;
+    --heat-neg:#e66767;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -18px rgba(0,0,0,.8);
+    --shadow-2:0 2px 6px rgba(0,0,0,.5), 0 22px 50px -24px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0d0d0d; --surface-1:#1a1a19; --surface-2:#211f1e; --surface-3:#272523;
+  --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+  --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.18);
+  --s-ads:#3987e5; --s-iap:#199e70; --s-exp:#d95926; --s-tax:rgba(255,255,255,.34);
+  --good:#0ca30c; --bad:#d03b3b; --heat-mid:#383835; --heat-pos:#86b6ef; --heat-neg:#e66767;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -18px rgba(0,0,0,.8);
+  --shadow-2:0 2px 6px rgba(0,0,0,.5), 0 22px 50px -24px rgba(0,0,0,.9);
+}
+
+/* ============================================================================
+   BASE
+   ========================================================================= */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--plane); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p{margin:0}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--s-ads)}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px; border-radius:4px}
+.skip{position:absolute;left:-9999px;top:0;background:var(--surface-1);padding:10px 14px;z-index:99;border-radius:0 0 var(--r-sm) 0}
+.skip:focus{left:0}
+.num{font-variant-numeric:tabular-nums}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ============================================================================
+   SHELL
+   ========================================================================= */
+.wrap{max-width:1320px;margin:0 auto;padding:0 clamp(14px,3vw,32px)}
+.topbar{
+  display:flex;align-items:center;gap:14px 20px;justify-content:space-between;flex-wrap:wrap;
+  padding:22px 0 18px;
+}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.brand .mark{
+  width:38px;height:38px;flex:none;border-radius:11px;background:var(--surface-1);
+  border:1px solid var(--border);box-shadow:var(--shadow-1);
+  display:grid;place-items:center;
+}
+.brand h1{font-size:16px;letter-spacing:-.012em;font-weight:640;line-height:1.2}
+.brand .sub{font-size:12.5px;color:var(--muted);letter-spacing:.002em}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.btn{
+  appearance:none;background:var(--surface-1);border:1px solid var(--border);
+  border-radius:9px;padding:7px 12px;font-size:13px;font-weight:520;
+  color:var(--ink-2);cursor:pointer;
+  transition:transform 160ms var(--ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{background:var(--surface-2);color:var(--ink);border-color:var(--border-strong)}
+}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--ink);color:var(--plane);border-color:var(--ink);font-weight:580}
+@media (hover:hover) and (pointer:fine){ .btn.primary:hover{background:var(--ink);color:var(--plane);opacity:.88} }
+.btn.icon{width:34px;height:34px;padding:0;display:grid;place-items:center}
+.btn.sm{padding:5px 9px;font-size:12px;border-radius:8px}
+.btn[aria-pressed="true"]{background:var(--surface-3);color:var(--ink);border-color:var(--border-strong)}
+.btn.danger{color:var(--bad)}
+
+/* ============================================================================
+   CARD
+   ========================================================================= */
+.card{
+  background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-1);padding:20px;margin:0;
+}
+.card > header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.card h2{font-size:14.5px;font-weight:600;letter-spacing:-.008em}
+.card h3{font-size:13px;font-weight:600;letter-spacing:-.004em}
+.card .hint{font-size:12px;color:var(--muted);margin-top:2px;max-width:62ch}
+
+/* ============================================================================
+   HERO
+   ========================================================================= */
+.hero{
+  display:grid;grid-template-columns:minmax(230px,.85fr) 2fr;gap:26px;align-items:center;
+  padding:26px 24px;
+}
+.hero-main{min-width:0}
+.lbl{font-size:11.5px;letter-spacing:.055em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.hero-fig{
+  font-size:clamp(40px,5.2vw,58px);line-height:1.02;font-weight:640;letter-spacing:-.028em;
+  margin-top:8px;
+  transition:filter 220ms ease, opacity 220ms ease;
+}
+.hero-fig.swap{filter:blur(5px);opacity:.35}
+.hero-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--ink-2)}
+.hero-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--axis)}
+.delta{display:inline-flex;align-items:center;gap:4px;font-weight:580}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)} .delta.flat{color:var(--muted)}
+/* Six tiles, so three columns fills two rows exactly — auto-fit would leave a
+   dead cell at most widths. */
+.hero-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--border);border-radius:var(--r-md);overflow:hidden}
+@media (max-width:620px){ .hero-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.tile{background:var(--surface-1);padding:13px 14px 12px}
+.tile .k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tile .v{font-size:19px;font-weight:600;letter-spacing:-.018em;margin-top:5px;transition:filter 200ms ease,opacity 200ms ease}
+.tile .v.swap{filter:blur(4px);opacity:.4}
+.tile .d{font-size:11.5px;margin-top:3px;color:var(--muted)}
+
+.banner{
+  display:flex;gap:11px;align-items:flex-start;
+  border:1px solid var(--border);border-left:3px solid var(--warn);
+  background:var(--surface-1);border-radius:var(--r-md);padding:12px 15px;margin-top:14px;
+  font-size:12.5px;color:var(--ink-2);box-shadow:var(--shadow-1);
+}
+.banner b{color:var(--ink);font-weight:600}
+.banner button{margin-left:auto;flex:none}
+.banner[hidden]{display:none}
+
+/* ============================================================================
+   CONTROLS — one row, scoping everything below
+   ========================================================================= */
+.controls{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;margin:18px 0;
+  background:var(--surface-1);
+  background:color-mix(in srgb, var(--surface-1) 88%, transparent);
+  backdrop-filter:saturate(1.6) blur(14px);
+  -webkit-backdrop-filter:saturate(1.6) blur(14px);
+  border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-1);
+}
+.ctl-lbl{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-right:-2px}
+.seg{position:relative;display:flex;background:var(--surface-3);border-radius:10px;padding:3px;gap:2px}
+.seg .ind{
+  position:absolute;top:3px;left:0;height:calc(100% - 6px);
+  background:var(--surface-1);border-radius:8px;box-shadow:var(--shadow-1);
+  transition:transform 220ms var(--ease-out), width 220ms var(--ease-out);
+  pointer-events:none;
+}
+.seg button{
+  position:relative;appearance:none;background:none;border:0;cursor:pointer;
+  padding:5px 11px;font-size:12.5px;font-weight:540;color:var(--muted);border-radius:8px;
+  transition:color 180ms ease;white-space:nowrap;
+}
+.seg button[aria-pressed="true"]{color:var(--ink)}
+@media (hover:hover) and (pointer:fine){ .seg button:hover{color:var(--ink-2)} }
+.spacer{flex:1 1 auto}
+.dates{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)}
+.dates input{
+  background:var(--surface-1);border:1px solid var(--border);border-radius:8px;
+  padding:5px 8px;font-size:12.5px;font-variant-numeric:tabular-nums;
+}
+
+/* ============================================================================
+   CHART GRID
+   ========================================================================= */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-bottom:16px}
+.span12{grid-column:span 12} .span6{grid-column:span 6} .span5{grid-column:span 5} .span7{grid-column:span 7}
+@media (max-width:900px){ .span6,.span5,.span7{grid-column:span 12} .hero{grid-template-columns:1fr} }
+
+figure.chart{position:relative;display:flex;flex-direction:column}
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px}
+figcaption{min-width:0}
+figcaption .t{font-size:14.5px;font-weight:600;letter-spacing:-.008em}
+figcaption .s{font-size:12px;color:var(--muted);margin-top:2px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 2px}
+.legend .item{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2)}
+.legend .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.legend .sw.line{width:14px;height:2px;border-radius:2px}
+.plot{position:relative;width:100%}
+.plot svg{display:block;width:100%;height:auto;overflow:visible}
+.plot svg text{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+.plot svg .lbl-dir{fill:var(--ink-2);font-size:10.5px;font-weight:600}
+.gridline{stroke:var(--grid);stroke-width:1}
+.zeroline{stroke:var(--axis);stroke-width:1}
+.hair{stroke:var(--axis);stroke-width:1}
+.mark-focus{outline:none}
+
+/* tooltip */
+.tip{
+  position:absolute;z-index:30;min-width:172px;max-width:280px;pointer-events:none;
+  background:var(--surface-1);border:1px solid var(--border-strong);border-radius:11px;
+  box-shadow:var(--shadow-2);padding:9px 11px;font-size:12px;
+  opacity:0;transform:scale(.97);transform-origin:var(--tip-origin,left top);
+  transition:opacity 125ms var(--ease-out), transform 125ms var(--ease-out);
+}
+.tip.on{opacity:1;transform:scale(1)}
+.tip .tt{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.tip .row{display:flex;align-items:center;gap:8px;padding:2.5px 0}
+.tip .row .key{width:14px;height:2px;border-radius:2px;flex:none}
+.tip .row .key.sq{width:9px;height:9px;border-radius:2.5px}
+.tip .row .v{margin-left:auto;font-weight:640;font-variant-numeric:tabular-nums;color:var(--ink)}
+.tip .row .n{color:var(--ink-2)}
+.tip .rule{height:1px;background:var(--border);margin:6px -11px}
+.tip .note{color:var(--muted);font-size:11px;margin-top:5px}
+
+/* table twins */
+details.twin{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+details.twin > summary{
+  cursor:pointer;font-size:11.5px;color:var(--muted);font-weight:560;list-style:none;
+  display:inline-flex;align-items:center;gap:6px;
+}
+details.twin > summary::-webkit-details-marker{display:none}
+details.twin > summary::before{content:"›";display:inline-block;transition:transform 180ms var(--ease-out)}
+details.twin[open] > summary::before{transform:rotate(90deg)}
+.tblwrap{overflow-x:auto;margin-top:8px;max-height:280px;overflow-y:auto}
+
+/* ============================================================================
+   TABLES
+   ========================================================================= */
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+th,td{text-align:right;padding:7px 12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left;font-variant-numeric:normal}
+thead th{
+  font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface-1);z-index:2;
+}
+tbody td{border-bottom:1px solid var(--border);color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+.stmt-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-md)}
+.stmt th:first-child,.stmt td:first-child{
+  position:sticky;left:0;background:var(--surface-1);z-index:1;
+  min-width:246px;box-shadow:1px 0 0 var(--border);
+}
+.stmt thead th:first-child{z-index:3}
+.stmt tr.sec td{
+  font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;
+  background:var(--surface-2);padding-top:9px;padding-bottom:9px;
+}
+.stmt tr.sec td:first-child{background:var(--surface-2)}
+.stmt td.lbl-cell{color:var(--ink-2)}
+.stmt tr.sub td:first-child{padding-left:26px}
+.stmt tr.sub2 td:first-child{padding-left:40px;color:var(--muted)}
+.stmt tr.total td{font-weight:640;color:var(--ink);border-top:1px solid var(--border-strong);background:var(--surface-2)}
+.stmt tr.total td:first-child{background:var(--surface-2)}
+.stmt tr.grand td{font-weight:680;color:var(--ink);background:var(--surface-3)}
+.stmt tr.grand td:first-child{background:var(--surface-3)}
+.stmt tr.memo td{color:var(--muted);font-style:normal}
+.stmt col.totcol{background:var(--surface-2)}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.zero{color:var(--muted)}
+
+/* ============================================================================
+   EXPENSES
+   ========================================================================= */
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.chip{
+  appearance:none;cursor:pointer;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:999px;padding:5px 12px;font-size:12px;font-weight:520;color:var(--ink-2);
+  transition:transform 160ms var(--ease-out),background-color 160ms ease,color 160ms ease;
+}
+@media (hover:hover) and (pointer:fine){ .chip:hover{background:var(--surface-3);color:var(--ink)} }
+.chip:active{transform:scale(.97)}
+.exp-form{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:10px;align-items:end;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;
+}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field > span{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.field input,.field select{
+  background:var(--surface-1);border:1px solid var(--border);border-radius:9px;padding:8px 10px;
+  font-size:13px;width:100%;
+  transition:border-color 160ms ease, box-shadow 160ms ease;
+}
+.field input:focus,.field select:focus{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 18%,transparent);outline:none}
+.field input[type=number]{font-variant-numeric:tabular-nums}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c12{grid-column:span 12}
+@media (max-width:820px){ .exp-form{grid-template-columns:repeat(6,1fr)} .c2,.c3{grid-column:span 3} .c4,.c5{grid-column:span 6} }
+.form-err{color:var(--bad);font-size:12px;grid-column:span 12;min-height:0}
+.form-err:empty{display:none}
+.exp-actions{display:flex;gap:8px;align-items:center}
+.exp-sum{display:flex;gap:22px;flex-wrap:wrap;margin:16px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.exp-sum div{min-width:96px}
+.exp-sum .k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.exp-sum .v{font-size:17px;font-weight:600;letter-spacing:-.014em;margin-top:3px;font-variant-numeric:tabular-nums}
+.empty{
+  border:1px dashed var(--border-strong);border-radius:var(--r-md);padding:26px 20px;text-align:center;
+  color:var(--muted);font-size:13px;
+}
+.empty b{display:block;color:var(--ink);font-size:14px;font-weight:600;margin-bottom:5px}
+.tag{
+  display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:560;
+  background:var(--surface-3);color:var(--ink-2);
+}
+.rowbtns{display:flex;gap:5px;justify-content:flex-end}
+tbody tr.exp-row{transition:background-color 160ms ease}
+@media (hover:hover) and (pointer:fine){ tbody tr.exp-row:hover{background:var(--surface-2)} }
+tbody tr.exp-row.editing{background:color-mix(in srgb,var(--focus) 9%,transparent)}
+
+/* ============================================================================
+   ASSUMPTIONS / NOTES
+   ========================================================================= */
+.assume{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:6px}
+.notes h3{margin-bottom:7px}
+.notes ul{margin:0;padding-left:17px;color:var(--ink-2);font-size:12.5px}
+.notes li{margin-bottom:6px}
+.notes li b{color:var(--ink);font-weight:600}
+.flags{display:flex;flex-direction:column;gap:8px}
+.flag{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--ink-2)}
+.flag .d{width:6px;height:6px;border-radius:50%;margin-top:6px;flex:none;background:var(--muted)}
+.flag.warn .d{background:var(--warn)} .flag.info .d{background:var(--s-ads)}
+footer{padding:26px 0 44px;color:var(--muted);font-size:11.5px;text-align:center}
+
+/* highlights */
+.hl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--border);border-radius:var(--r-md);overflow:hidden}
+@media (max-width:820px){ .hl{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:520px){ .hl{grid-template-columns:1fr} }
+.hl > div{background:var(--surface-1);padding:14px 15px}
+.hl .k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.hl .v{font-size:15.5px;font-weight:600;letter-spacing:-.012em;margin-top:5px}
+.hl .s{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+/* calendar */
+.cal-legend{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted)}
+.cal-legend .ramp{display:flex;gap:2px}
+.cal-legend .ramp i{width:13px;height:13px;border-radius:3px;display:block}
+
+/* toasts */
+.toasts{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;flex-direction:column-reverse;gap:9px}
+.toast{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface-1);border:1px solid var(--border-strong);border-radius:12px;
+  box-shadow:var(--shadow-2);padding:11px 13px;font-size:12.5px;color:var(--ink);
+  transition:opacity 400ms ease, transform 400ms ease;
+}
+@starting-style{ .toast{opacity:0;transform:translateY(14px) scale(.97)} }
+.toast.out{opacity:0;transform:translateY(8px) scale(.98)}
+
+/* keyboard layer — focusable sibling of the svg, so the svg keeps role="img" */
+.kbd{position:absolute;inset:0;background:none;border:0;padding:0;cursor:crosshair;border-radius:10px}
+.kbd:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+
+/* drag-and-drop a fresh export anywhere on the page */
+.drop{
+  position:fixed;inset:0;z-index:90;display:none;place-items:center;
+  background:color-mix(in srgb,var(--plane) 82%,transparent);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+.drop.on{display:grid}
+.drop > div{
+  border:2px dashed var(--focus);border-radius:20px;padding:34px 44px;text-align:center;
+  background:var(--surface-1);box-shadow:var(--shadow-2);max-width:420px;
+}
+.drop b{display:block;font-size:16px;font-weight:640;margin-bottom:6px}
+.drop span{font-size:12.5px;color:var(--muted)}
+
+/* ============================================================================
+   NEW ANALYSIS BLOCKS
+   ========================================================================= */
+.narr{margin:0 0 16px;padding:0;list-style:none;display:grid;gap:7px}
+.narr li{position:relative;padding-left:15px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.narr li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--axis)}
+.narr li b{color:var(--ink);font-weight:600}
+.narr li.flagged::before{background:var(--warn)}
+
+.hl.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:820px){ .hl.c4{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+/* numbered timeline markers */
+.evbadge{
+  display:inline-grid;place-items:center;width:15px;height:15px;flex:none;
+  border-radius:4px;background:var(--surface-3);color:var(--ink-2);
+  font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+.evnote{margin:9px 0 0;font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px}
+.evnote:empty{display:none}
+.evnote .ev{display:inline-flex;align-items:center;gap:6px}
+.evrow{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.evrow:last-child{border-bottom:0}
+.evrow .d{color:var(--muted);font-variant-numeric:tabular-nums;min-width:104px}
+.evrow .t{color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evrow .rowbtns{margin-left:auto}
+
+/* statement change mode */
+td.d-up{color:var(--good)} td.d-down{color:var(--bad)}
+
+/* keyboard-shortcut dialog */
+dialog{
+  border:1px solid var(--border-strong);border-radius:17px;padding:22px 24px;
+  background:var(--surface-1);color:var(--ink);box-shadow:var(--shadow-2);
+  max-width:440px;width:calc(100% - 32px);
+}
+dialog::backdrop{background:rgba(0,0,0,.42)}
+dialog h2{font-size:15px;font-weight:640;letter-spacing:-.01em;margin-bottom:14px}
+dialog dl{display:grid;grid-template-columns:auto 1fr;gap:9px 16px;margin:0;font-size:12.5px;align-items:baseline}
+dialog dd{margin:0;color:var(--ink-2)}
+.key{
+  display:inline-block;min-width:22px;text-align:center;padding:2px 7px;border-radius:6px;
+  border:1px solid var(--border-strong);background:var(--surface-2);
+  font-size:11.5px;font-weight:640;font-variant-numeric:tabular-nums;
+}
+
+/* print-only cover block */
+.print-cover{display:none}
+
+/* stagger-in — declared in CSS so nothing restarts the animation after paint.
+   Scoped to grid children only; whole-section delays would break every time a
+   section is added or reordered. */
+.rise{animation:rise 420ms var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.grid > .rise:nth-child(2){animation-delay:40ms}
+.grid > .rise:nth-child(3){animation-delay:70ms}
+.grid > .rise:nth-child(4){animation-delay:95ms}
+.grid > .rise:nth-child(5){animation-delay:115ms}
+.grid > .rise:nth-child(6){animation-delay:130ms}
+.grid > .rise:nth-child(7){animation-delay:145ms}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .rise{animation:none}
+}
+
+/* ============================================================================
+   PRINT — investor PDF
+   ========================================================================= */
+@media print{
+  :root{
+    --plane:#fff;--surface-1:#fff;--surface-2:#fafaf8;--surface-3:#f4f3f0;
+    --ink:#000;--ink-2:#333;--muted:#666;--border:#d8d7d1;--border-strong:#b9b8b2;
+    --shadow-1:none;--shadow-2:none;
+  }
+  body{background:#fff;font-size:10.5px}
+  .actions,.controls .seg,.controls .dates,.controls .ctl-lbl,.exp-form,.chips,.rowbtns,
+  .banner button,.no-print,dialog,#cardEvents .exp-form{display:none !important}
+  .print-cover{display:block;text-align:center;padding:18px 0 26px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .print-cover h1{font-size:26px;font-weight:640;letter-spacing:-.02em}
+  .print-cover .pc-sub{font-size:13px;color:var(--ink-2);margin-top:5px}
+  .print-cover .pc-meta{font-size:11px;color:var(--muted);margin-top:9px}
+  .narr li{font-size:11px}
+  .hero-fig{font-size:34px}
+  .controls{position:static;border:0;box-shadow:none;padding:0;margin:6px 0 14px;backdrop-filter:none}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid var(--border)}
+  .grid{gap:12px}
+  details.twin{display:none}
+  .stmt-wrap{overflow:visible;max-height:none}
+  .tblwrap{max-height:none}
+  a{color:#000;text-decoration:none}
+  .hero{padding:16px}
+  .hero-fig{font-size:40px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to report</a>
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+<div class="drop" id="drop" aria-hidden="true"><div>
+  <b>Drop the AdMob export here</b>
+  <span>A daily CSV with Date, Ads earnings and Purchase earnings columns. UTF-16 exports are handled automatically.</span>
+</div></div>
+
+<!-- Snapshot slot. "Download report" writes the live dataset + expense ledger in
+     here, so the downloaded file opens with exactly what you were looking at. -->
+<script id="embedded-state" type="application/json">null</script>
+
+<div class="wrap">
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="2" y="11" width="3.4" height="7" rx="1.2" fill="var(--s-ads)"/>
+        <rect x="7.3" y="8" width="3.4" height="10" rx="1.2" fill="var(--s-iap)"/>
+        <rect x="12.6" y="4" width="3.4" height="14" rx="1.2" fill="var(--s-exp)"/>
+        <path d="M2.6 8.2 L7.6 5.4 L11.4 6.6 L17.4 2.2" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <div>
+      <h1>Money Tycoon — Income Statement</h1>
+      <p class="sub" id="topSub">Management accounts · GBP</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn sm" id="btnData">Update data</button>
+    <button class="btn sm" id="btnRevert" hidden>Revert to built-in</button>
+    <button class="btn sm primary" id="btnSnap">Download report</button>
+    <button class="btn sm" id="btnTables" aria-pressed="false">Show data tables</button>
+    <button class="btn icon" id="btnHelp" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (press ?)">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M6.3 6.1c0-1 .8-1.7 1.7-1.7s1.7.7 1.7 1.6c0 1.3-1.7 1.3-1.7 2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="8" cy="11.4" r=".85" fill="currentColor"/>
+      </svg>
+    </button>
+    <button class="btn sm" id="btnCsv">Export CSV</button>
+    <button class="btn sm" id="btnPrint">Print / PDF</button>
+    <input type="file" id="fileCsv" accept=".csv,text/csv,text/plain" class="vh" tabindex="-1">
+    <button class="btn icon" id="btnTheme" aria-label="Switch colour theme" title="Switch colour theme">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 1.6v1.7M8 12.7v1.7M1.6 8h1.7M12.7 8h1.7M3.5 3.5l1.2 1.2M11.3 11.3l1.2 1.2M12.5 3.5l-1.2 1.2M4.7 11.3l-1.2 1.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="8" cy="8" r="3.1" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Print-only cover block. On screen the header does this job. -->
+  <div class="print-cover">
+    <h1>Money Tycoon</h1>
+    <p class="pc-sub">Income statement and profitability review</p>
+    <p class="pc-meta" id="pcMeta">—</p>
+  </div>
+
+  <!-- ================= HERO ================= -->
+  <section class="card hero rise" aria-labelledby="heroLbl">
+    <div class="hero-main">
+      <p class="lbl" id="heroLbl">Net profit · <span id="heroPeriod">—</span></p>
+      <p class="hero-fig" id="heroValue">—</p>
+      <p class="hero-meta">
+        <span id="heroMargin">—</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span id="heroDelta">—</span>
+      </p>
+    </div>
+    <div class="hero-tiles" id="heroTiles"></div>
+  </section>
+
+  <div class="banner" id="noExpBanner" hidden>
+    <span>
+      <b>No expenses recorded yet.</b> Every "profit" figure below therefore equals net revenue.
+      Add your acquisition spend, hosting and tooling costs to turn this into a true income statement.
+    </span>
+    <button class="btn sm primary" id="btnJumpExp">Add expenses</button>
+  </div>
+
+  <!-- ================= CONTROLS ================= -->
+  <section class="controls" id="controls" aria-label="Report period controls">
+    <span class="ctl-lbl">Period</span>
+    <div class="seg" id="segRange" role="group" aria-label="Date range">
+      <span class="ind" aria-hidden="true"></span>
+      <button type="button" data-v="7">7d</button>
+      <button type="button" data-v="30">30d</button>
+      <button type="button" data-v="mtd">MTD</button>
+      <button type="button" data-v="90">90d</button>
+      <button type="button" data-v="all" aria-pressed="true">All</button>
+    </div>
+    <span class="ctl-lbl" style="margin-left:6px">Group by</span>
+    <div class="seg" id="segGran" role="group" aria-label="Grouping">
+      <span class="ind" aria-hidden="true"></span>
+      <button type="button" data-v="day">Day</button>
+      <button type="button" data-v="month" aria-pressed="true">Month</button>
+      <button type="button" data-v="year">Year</button>
+    </div>
+    <span class="spacer"></span>
+    <div class="dates">
+      <label for="dFrom" class="vh">From date</label>
+      <input type="date" id="dFrom" class="num">
+      <span aria-hidden="true">→</span>
+      <label for="dTo" class="vh">To date</label>
+      <input type="date" id="dTo" class="num">
+    </div>
+  </section>
+
+  <!-- ================= EXECUTIVE SUMMARY ================= -->
+  <section class="card rise" style="margin-bottom:16px" aria-labelledby="hlH">
+    <header>
+      <div>
+        <h2 id="hlH">Executive summary</h2>
+        <p class="hint">Every sentence is computed from the selected period. Nothing here is an estimate except lines explicitly marked as a run-rate.</p>
+      </div>
+    </header>
+    <ul class="narr" id="narrative"></ul>
+    <div class="hl" id="hlGrid"></div>
+  </section>
+
+  <!-- ================= CHARTS ================= -->
+  <section class="grid">
+    <figure class="card chart span12 rise" id="cardBridge">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t">Revenue, expenses and profit</div>
+          <div class="s" id="bridgeSub">Revenue above the line, costs below it, net profit as the dark line.</div>
+        </figcaption>
+      </div>
+      <div class="legend" id="bridgeLegend"></div>
+      <div class="plot" id="plotBridge"></div>
+      <p class="evnote" id="bridgeEvents"></p>
+      <details class="twin"><summary>Table view</summary><div class="tblwrap" id="twinBridge"></div></details>
+    </figure>
+
+    <figure class="card chart span7 rise" id="cardVar">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t">Why profit moved</div>
+          <div class="s" id="varSub">—</div>
+        </figcaption>
+      </div>
+      <div class="plot" id="plotVar"></div>
+      <details class="twin"><summary>Table view</summary><div class="tblwrap" id="twinVar"></div></details>
+    </figure>
+
+    <figure class="card chart span5 rise" id="cardCum">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t">Cumulative net profit</div>
+          <div class="s" id="cumSub">Running total across the period.</div>
+        </figcaption>
+      </div>
+      <div class="plot" id="plotCum"></div>
+      <details class="twin"><summary>Table view</summary><div class="tblwrap" id="twinCum"></div></details>
+    </figure>
+
+    <figure class="card chart span5 rise" id="cardMix">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t">Revenue mix</div>
+          <div class="s">Share of net revenue by stream.</div>
+        </figcaption>
+      </div>
+      <div class="legend" id="mixLegend"></div>
+      <div class="plot" id="plotMix"></div>
+      <details class="twin"><summary>Table view</summary><div class="tblwrap" id="twinMix"></div></details>
+    </figure>
+
+    <figure class="card chart span7 rise" id="cardUnit">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t" id="unitTitle">Unit economics</div>
+          <div class="s" id="unitSub">—</div>
+        </figcaption>
+        <div class="seg" id="segMeasure" role="group" aria-label="Measure">
+          <span class="ind" aria-hidden="true"></span>
+          <button type="button" data-v="ecpm" aria-pressed="true">eCPM</button>
+          <button type="button" data-v="arpdau">ARPDAU</button>
+          <button type="button" data-v="avr">Ad reach</button>
+          <button type="button" data-v="imp">Impressions</button>
+        </div>
+      </div>
+      <div class="plot" id="plotUnit"></div>
+      <details class="twin"><summary>Table view</summary><div class="tblwrap" id="twinUnit"></div></details>
+    </figure>
+
+    <figure class="card chart span7 rise" id="cardRun">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t">Run-rate</div>
+          <div class="s" id="runSub">Trailing 28 days, annualised. An extrapolation of the observed rate — not a forecast.</div>
+        </figcaption>
+      </div>
+      <div class="plot" id="plotRun"></div>
+      <div class="hl" id="runTiles" style="margin-top:14px"></div>
+      <details class="twin"><summary>Table view</summary><div class="tblwrap" id="twinRun"></div></details>
+    </figure>
+
+    <figure class="card chart span5 rise" id="cardCal">
+      <div class="chart-head">
+        <figcaption>
+          <div class="t">Profit per day</div>
+          <div class="s" id="calSub">Every day in the period, coloured by net profit.</div>
+        </figcaption>
+      </div>
+      <div class="plot" id="plotCal"></div>
+      <div class="cal-legend" id="calLegend" style="margin-top:10px"></div>
+      <details class="twin"><summary>Table view — best and worst days</summary><div class="tblwrap" id="twinCal"></div></details>
+    </figure>
+  </section>
+
+  <!-- ================= BREAK-EVEN / MARKETING ================= -->
+  <section class="grid">
+    <div class="card span6 rise" id="cardBreak" aria-labelledby="bkH">
+      <header>
+        <div>
+          <h2 id="bkH">Break-even and burn</h2>
+          <p class="hint">What it costs to stand still, from the trailing 28 days of recorded expenses.</p>
+        </div>
+      </header>
+      <div class="hl" id="breakTiles"></div>
+    </div>
+
+    <div class="card span6 rise" id="cardMkt" aria-labelledby="mkH">
+      <header>
+        <div>
+          <h2 id="mkH">Acquisition efficiency</h2>
+          <p class="hint">Return on user-acquisition spend. Blended across all users, not by cohort.</p>
+        </div>
+      </header>
+      <div id="mktBody"></div>
+    </div>
+  </section>
+
+  <!-- ================= STATEMENT ================= -->
+  <section class="card rise" id="cardStatement" aria-labelledby="stH" style="margin-bottom:16px">
+    <header>
+      <div>
+        <h2 id="stH">Income statement</h2>
+        <p class="hint" id="stHint">—</p>
+      </div>
+      <div class="seg no-print" id="segMode" role="group" aria-label="Statement figures">
+        <span class="ind" aria-hidden="true"></span>
+        <button type="button" data-v="amount" aria-pressed="true">Amounts</button>
+        <button type="button" data-v="pct">% of revenue</button>
+        <button type="button" data-v="delta">Change</button>
+      </div>
+    </header>
+    <div class="stmt-wrap"><table class="stmt" id="stmt"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <!-- ================= EXPENSES ================= -->
+  <section class="card rise" id="cardExpenses" aria-labelledby="exH" style="margin-bottom:16px">
+    <header>
+      <div>
+        <h2 id="exH">Expenses</h2>
+        <p class="hint">Add any cost the business carries. One-off items land on their date; recurring items are
+          amortised evenly across the days of each period so daily profit stays meaningful.</p>
+      </div>
+      <div class="actions no-print">
+        <button class="btn sm" id="btnExpExport">Export</button>
+        <button class="btn sm" id="btnExpImport">Import</button>
+        <input type="file" id="fileImport" accept="application/json,.json" class="vh" tabindex="-1">
+      </div>
+    </header>
+
+    <div class="chips no-print" id="chips" role="group" aria-label="Quick add templates"></div>
+
+    <form class="exp-form no-print" id="expForm" novalidate>
+      <label class="field c2"><span id="lblDate">Start date</span><input type="date" id="fDate" required></label>
+      <label class="field c3"><span>Category</span>
+        <select id="fCat"></select>
+      </label>
+      <label class="field c3"><span>Description</span><input type="text" id="fDesc" placeholder="e.g. Google Ads UAC campaign" maxlength="90"></label>
+      <label class="field c2"><span id="lblAmt">Amount</span><input type="number" id="fAmt" step="0.01" min="0" inputmode="decimal" placeholder="0.00" required></label>
+      <label class="field c2"><span>Frequency</span>
+        <select id="fRec">
+          <option value="once">One-off</option>
+          <option value="daily">Per day</option>
+          <option value="monthly">Per month</option>
+          <option value="annual">Per year</option>
+        </select>
+      </label>
+      <label class="field c3" id="wrapEnd"><span>End date (optional)</span><input type="date" id="fEnd"></label>
+      <label class="field c3"><span>Treatment</span>
+        <select id="fCls">
+          <option value="opex">Operating expense</option>
+          <option value="cogs">Cost of revenue</option>
+        </select>
+      </label>
+      <div class="field c3" style="justify-content:flex-end">
+        <div class="exp-actions">
+          <button type="submit" class="btn primary" id="btnSaveExp">Add expense</button>
+          <button type="button" class="btn" id="btnCancelEdit" hidden>Cancel</button>
+        </div>
+      </div>
+      <p class="form-err" id="expErr" role="alert"></p>
+    </form>
+
+    <div class="exp-sum" id="expSum"></div>
+    <div id="expList"></div>
+  </section>
+
+  <!-- ================= CASH TIMING ================= -->
+  <section class="card rise" id="cardPay" aria-labelledby="pyH" style="margin-bottom:16px">
+    <header>
+      <div>
+        <h2 id="pyH">Expected cash receipts</h2>
+        <p class="hint" id="pyHint">—</p>
+      </div>
+    </header>
+    <div class="stmt-wrap" id="payWrap"></div>
+  </section>
+
+  <!-- ================= EVENTS ================= -->
+  <section class="card rise" id="cardEvents" aria-labelledby="evH" style="margin-bottom:16px">
+    <header>
+      <div>
+        <h2 id="evH">Timeline markers</h2>
+        <p class="hint">Mark the dates that explain the shape of the charts — a release, a campaign start, a policy change. Markers appear as numbered rules on the time charts.</p>
+      </div>
+    </header>
+    <form class="exp-form no-print" id="evForm" novalidate style="grid-template-columns:repeat(12,1fr)">
+      <label class="field c3"><span>Date</span><input type="date" id="evDate" required></label>
+      <label class="field c5"><span>What happened</span><input type="text" id="evLabel" maxlength="60" placeholder="e.g. AdMob mediation live" required></label>
+      <div class="field c4" style="justify-content:flex-end">
+        <div class="exp-actions"><button type="submit" class="btn primary">Add marker</button></div>
+      </div>
+      <p class="form-err" id="evErr" role="alert"></p>
+    </form>
+    <div id="evList" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ================= ASSUMPTIONS + NOTES ================= -->
+  <section class="card rise" aria-labelledby="asH" style="margin-bottom:16px">
+    <header><div><h2 id="asH">Assumptions</h2><p class="hint">These drive every figure in the report. Change them and the whole statement re-computes.</p></div></header>
+    <div class="assume">
+      <label class="field"><span>Store commission on IAP</span>
+        <select id="aFee">
+          <option value="15">15% — Play/App Store reduced rate</option>
+          <option value="30">30% — standard rate</option>
+          <option value="0">0% — already net of fees</option>
+        </select>
+      </label>
+      <label class="field"><span>Other revenue deductions (%)</span><input type="number" id="aOther" min="0" max="100" step="0.1" value="0"></label>
+      <label class="field"><span>Tax on operating profit (%)</span><input type="number" id="aTax" min="0" max="100" step="0.1" value="0"></label>
+      <label class="field"><span>Include today (partial day)</span>
+        <select id="aPartial"><option value="1">Include</option><option value="0">Exclude</option></select>
+      </label>
+      <label class="field"><span>Ad network pays on day</span><input type="number" id="aPayAd" min="1" max="28" step="1" value="21"></label>
+      <label class="field"><span>Store pays on day</span><input type="number" id="aPayIap" min="1" max="28" step="1" value="15"></label>
+      <label class="field"><span id="lblThresh">Ad payment threshold</span><input type="number" id="aThresh" min="0" step="1" value="70"></label>
+    </div>
+  </section>
+
+  <section class="card rise" aria-labelledby="noH">
+    <header><div><h2 id="noH">Basis of preparation, data quality and definitions</h2></div></header>
+    <div class="notes">
+      <div>
+        <h3>Where the numbers come from</h3>
+        <ul id="noteSource"></ul>
+      </div>
+      <div>
+        <h3>Data-quality flags</h3>
+        <div class="flags" id="noteFlags"></div>
+      </div>
+      <div>
+        <h3>Definitions</h3>
+        <ul>
+          <li><b>Advertising revenue</b> — AdMob estimated earnings, already net of the ad network's share. It is the amount payable to the publisher.</li>
+          <li><b>Gross billings</b> — what players paid for in-app purchases, before the store's commission. The source column is labelled "includes fees".</li>
+          <li><b>Net revenue</b> — advertising revenue plus in-app purchases after store commission and any other deductions. This is the top line of the statement.</li>
+          <li><b>eCPM</b> — advertising revenue per thousand ad impressions.</li>
+          <li><b>ARPDAU</b> — net revenue divided by daily active users, averaged only over days where the user metric is reported.</li>
+          <li><b>Operating profit</b> — net revenue less cost of revenue and operating expenses; before tax. Equivalent to EBITDA for a business with no debt or depreciation.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Method and limitations</h3>
+        <ul>
+          <li>All arithmetic is performed in <b>integer pence</b>; nothing is stored as a floating-point pound value, so column and row totals reconcile exactly.</li>
+          <li>Recurring expenses are amortised evenly across the days of each period. The remainder from division is distributed penny-by-penny, so the days of a month always sum to the exact monthly amount.</li>
+          <li>Tax is applied to each displayed period's operating profit where positive; the total column is the sum of the periods shown.</li>
+          <li>Refunds appear as negative purchase earnings. Store commission is reversed on them at the same rate.</li>
+          <li>This is an indicative management report built from platform reporting, not a statutory account. It is not tax or accounting advice, and platform figures are themselves estimates until paid.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <!-- ================= SOURCE DATA ================= -->
+  <section class="card rise" id="cardSource" aria-labelledby="srcH" style="margin-top:16px">
+    <header>
+      <div>
+        <h2 id="srcH">Source data</h2>
+        <p class="hint" id="srcHint">Every day in the export, exactly as read, with the derived figures beside it. Nothing in this report comes from anywhere else.</p>
+      </div>
+      <button class="btn sm no-print" id="btnSrcCsv">Download as CSV</button>
+    </header>
+    <details class="twin" id="srcDetails"><summary>Show all days</summary><div class="tblwrap" id="srcTable" style="max-height:460px"></div></details>
+  </section>
+</main>
+
+<footer>
+  <span id="footMeta">—</span>
+</footer>
+
+<dialog id="helpDlg" aria-labelledby="helpH">
+  <h2 id="helpH">Keyboard shortcuts</h2>
+  <dl id="helpList"></dl>
+  <div style="display:flex;justify-content:flex-end;margin-top:16px">
+    <button class="btn primary" id="helpClose">Close</button>
+  </div>
+</dialog>
+</div>
+
+<script>
+"use strict";
+/* ===========================================================================
+   Money Tycoon — interactive income statement
+   Self-contained: no network, no dependencies. Data is injected at build time
+   by docs/finance/build_income_statement.py
+   ======================================================================== */
+const RAW = {"rows":[["2026-04-19",null,null,10,null,2,null,null,10],["2026-04-20",null,null,13,null,37,null,null,13],["2026-04-21",null,null,150,null,557,null,null,150],["2026-04-22",null,null,174,null,558,null,null,174],["2026-04-23",null,null,165,null,737,null,null,165],["2026-04-24",null,null,403,null,1904,null,null,403],["2026-04-25",null,null,858,null,4962,null,null,858],["2026-04-26",null,null,905,null,5728,null,null,905],["2026-04-27",null,null,784,null,26456,null,null,784],["2026-04-28",null,null,984,null,34655,null,null,984],["2026-04-29",null,null,742,null,27682,null,null,742],["2026-04-30",null,null,1201,null,37517,null,null,1201],["2026-05-01",null,null,54,null,924,null,null,54],["2026-05-02",null,null,54,null,631,null,null,54],["2026-05-03",null,null,50,null,564,null,null,50],["2026-05-04",null,null,58,null,312,null,null,58],["2026-05-05",null,null,10,null,162,null,null,10],["2026-05-06",null,null,1,null,40,null,null,1],["2026-05-07",null,null,0,null,15,null,null,0],["2026-05-08",null,null,1,null,7,null,null,1],["2026-05-09",1,null,0,0,6,null,null,0],["2026-05-10",433,null,0,99,1,null,null,99],["2026-05-11",2021,null,0,331,2,null,null,331],["2026-05-12",2045,null,0,227,1,null,null,227],["2026-05-13",1920,null,0,0,2,null,null,0],["2026-05-14",2157,null,0,0,7,null,null,0],["2026-05-15",2301,null,0,255,2,null,null,255],["2026-05-16",2496,null,0,0,0,null,null,0],["2026-05-17",2632,null,0,591,14,null,null,592],["2026-05-18",2778,null,0,0,0,null,null,0],["2026-05-19",2586,null,0,62,0,null,null,62],["2026-05-20",2586,null,0,414,0,null,null,414],["2026-05-21",2707,317,251,159,1508,235,926,410],["2026-05-22",3536,1245,993,153,6730,999,4850,1147],["2026-05-23",2895,1286,2163,737,7325,1028,5222,2900],["2026-05-24",2096,894,1394,85,3816,668,2763,1479],["2026-05-25",1651,767,1142,0,2956,565,2021,1142],["2026-05-26",1528,725,976,286,2905,546,2044,1263],["2026-05-27",1423,655,944,211,2496,483,1706,1155],["2026-05-28",1228,589,744,196,2248,443,1656,940],["2026-05-29",1404,639,1062,268,2676,465,1881,1329],["2026-05-30",1392,657,941,0,2734,495,1934,941],["2026-05-31",1303,628,773,3420,2410,436,1626,4193],["2026-06-01",1146,504,607,1627,2051,364,1432,2235],["2026-06-02",994,517,692,-743,2429,383,1733,-51],["2026-06-03",1040,548,690,-147,2452,448,1745,544],["2026-06-04",1004,534,678,0,2222,422,1542,678],["2026-06-05",890,441,534,957,1770,352,1308,1491],["2026-06-06",952,456,429,208,1866,339,1230,637],["2026-06-07",768,28,14,248,34,24,29,263],["2026-06-08",730,7,5,232,8,6,7,236],["2026-06-09",694,1,1,74,1,1,1,75],["2026-06-10",633,1,0,0,2,2,2,0],["2026-06-11",597,5,2,74,10,6,6,76],["2026-06-12",602,63,49,259,214,69,155,308],["2026-06-13",678,213,140,85,1121,187,671,225],["2026-06-14",649,213,148,259,1135,211,679,407],["2026-06-15",609,237,141,0,980,202,665,141],["2026-06-16",625,289,177,75,1008,224,708,252],["2026-06-17",579,254,205,483,1047,212,758,688],["2026-06-18",554,277,273,223,1277,221,950,496],["2026-06-19",524,247,267,213,991,212,718,479],["2026-06-20",513,231,217,-179,851,180,584,38],["2026-06-21",513,220,232,135,885,178,668,368],["2026-06-22",429,197,200,0,686,151,500,200],["2026-06-23",418,205,151,922,732,167,556,1073],["2026-06-24",405,192,114,352,659,140,460,467],["2026-06-25",436,213,165,0,886,167,614,165],["2026-06-26",434,216,216,-300,770,146,480,-84],["2026-06-27",390,167,152,547,549,130,350,698],["2026-06-28",379,175,218,0,730,145,530,218],["2026-06-29",368,164,163,-380,722,131,495,-217],["2026-06-30",363,163,164,-113,702,123,505,50],["2026-07-01",356,174,131,0,711,134,516,131],["2026-07-02",354,147,115,340,606,129,465,454],["2026-07-03",330,159,193,0,671,127,519,193],["2026-07-04",332,153,219,437,658,123,536,656],["2026-07-05",368,193,211,121,841,151,656,332],["2026-07-06",347,166,138,0,693,129,524,138],["2026-07-07",299,167,126,-381,614,128,420,-255],["2026-07-08",281,143,184,0,689,104,459,184],["2026-07-09",270,145,146,0,595,113,425,146],["2026-07-10",264,145,221,0,729,107,503,221],["2026-07-11",274,144,181,0,778,108,610,181],["2026-07-12",275,130,155,0,686,103,518,155],["2026-07-13",306,141,127,0,580,108,451,127],["2026-07-14",285,143,138,0,573,109,421,138],["2026-07-15",215,104,100,361,547,70,215,460],["2026-07-16",111,42,122,0,500,26,58,122],["2026-07-17",79,27,97,321,356,15,30,418],["2026-07-18",57,19,113,222,547,10,28,335],["2026-07-19",37,14,96,0,597,9,12,96],["2026-07-20",34,14,87,0,453,10,15,87],["2026-07-21",55,19,85,61,201,14,48,147],["2026-07-22",146,69,84,0,409,59,270,84],["2026-07-23",176,92,123,0,420,70,272,123],["2026-07-24",198,92,119,194,386,80,263,313],["2026-07-25",1399,687,905,607,4951,551,3771,1513],["2026-07-26",2045,1133,1175,0,7425,878,5596,1175],["2026-07-27",null,1154,1270,480,7457,897,5504,1750],["2026-07-28",null,1349,1371,442,8004,1046,5852,1813],["2026-07-29",null,1111,1031,1118,6405,842,4274,2149]],"meta":{"source":"admob-report-2026-04-19_2026-07-29.csv","generated":"2026-07-29 20:35","currency":"GBP"}};
+
+/* ---------------------------------------------------------------- utils --- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const NS = "http://www.w3.org/2000/svg";
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+function sv(tag, attrs) { const n = document.createElementNS(NS, tag); for (const k in attrs) if (attrs[k] != null) n.setAttribute(k, attrs[k]); return n; }
+
+/* Dates are handled as integer UTC day numbers. Never build a Date from a
+   local-time string: `new Date('2026-07-29').getDate()` is the 28th west of
+   Greenwich. Every conversion below goes through UTC. */
+const DAY_MS = 86400000;
+const pad2 = n => String(n).padStart(2, "0");
+function dnum(s) { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d) / DAY_MS; }
+function dstr(n) { const t = new Date(n * DAY_MS); return `${t.getUTCFullYear()}-${pad2(t.getUTCMonth() + 1)}-${pad2(t.getUTCDate())}`; }
+function dparts(n) { const t = new Date(n * DAY_MS); return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate(), wd: (t.getUTCDay() + 6) % 7 }; }
+function daysInMonth(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+function daysInYear(y) { return (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 366 : 365; }
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const WD = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function fmtDay(n) { const p = dparts(n); return `${p.d} ${MON[p.m - 1]}`; }
+function fmtDayFull(n) { const p = dparts(n); return `${WD[p.wd]} ${p.d} ${MON[p.m - 1]} ${p.y}`; }
+
+/* ---------------------------------------------------------------- money --- */
+/* Everything is integer pence. Formatting is the only place pounds appear. */
+const MINUS = "−";
+let CUR = "GBP", SYM = "£";
+function curSymbol() {
+  try { return (0).toLocaleString("en-GB", { style: "currency", currency: CUR, minimumFractionDigits: 0 }).replace(/[\d\s., ]/g, "") || "£"; }
+  catch (err) { console.warn("Unknown currency " + CUR + ", falling back to £", err); return "£"; }
+}
+function money(p, o = {}) {
+  const dp = o.dp == null ? 2 : o.dp;
+  const abs = Math.abs(p) / 100;
+  let s;
+  try { s = abs.toLocaleString("en-GB", { style: "currency", currency: CUR, minimumFractionDigits: dp, maximumFractionDigits: dp }); }
+  catch (err) { s = SYM + abs.toFixed(dp); }
+  if (p < 0) return MINUS + s;
+  if (o.sign && p > 0) return "+" + s;
+  return s;
+}
+function moneyShort(p) {
+  const a = Math.abs(p) / 100, sgn = p < 0 ? MINUS : "";
+  if (a >= 1000000) return sgn + SYM + (a / 1000000).toFixed(a >= 10000000 ? 0 : 1) + "m";
+  if (a >= 1000) return sgn + SYM + (a / 1000).toFixed(a >= 10000 ? 0 : 1) + "k";
+  if (a >= 100) return sgn + SYM + a.toFixed(0);
+  return sgn + SYM + a.toFixed(a < 10 ? 2 : 1);
+}
+function pct(x, dp = 1) { return (x * 100).toFixed(dp) + "%"; }
+function intFmt(n) { return Math.round(n).toLocaleString("en-GB"); }
+function poundsToPence(v) { return Math.round(Number(v) * 100); }
+/* Split `total` pence into n parts summing exactly to total. */
+function spread(total, n) {
+  if (n <= 0) return [];
+  const s = total < 0 ? -1 : 1, a = Math.abs(total);
+  const base = Math.floor(a / n), rem = a - base * n;
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = s * (base + (i < rem ? 1 : 0));
+  return out;
+}
+/* Percentage of a pence amount, rounded half-away-from-zero to the penny. */
+function pctOf(pence, percent) {
+  if (!percent) return 0;
+  const v = pence * percent / 100;
+  return v < 0 ? -Math.round(-v) : Math.round(v);
+}
+
+/* ------------------------------------------------------ OKLab colour mix --- */
+/* Used only for the diverging heat ramp, so its steps are perceptually even
+   rather than eyeballed. */
+function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+const gam = c => { c = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055; return clamp(Math.round(c * 255), 0, 255); };
+function rgb2oklab(rgb) {
+  const r = lin(rgb[0]), g = lin(rgb[1]), b = lin(rgb[2]);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+          1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+          0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
+}
+function oklab2hex(L) {
+  const l_ = L[0] + 0.3963377774 * L[1] + 0.2158037573 * L[2];
+  const m_ = L[0] - 0.1055613458 * L[1] - 0.0638541728 * L[2];
+  const s_ = L[0] - 0.0894841775 * L[1] - 1.2914855480 * L[2];
+  const l = l_ * l_ * l_, m = m_ * m_ * m_, s = s_ * s_ * s_;
+  const r = gam(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s);
+  const g = gam(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s);
+  const b = gam(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s);
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+function mixOk(hexA, hexB, t) {
+  const a = rgb2oklab(hex2rgb(hexA)), b = rgb2oklab(hex2rgb(hexB));
+  return oklab2hex([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]);
+}
+function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+/* ------------------------------------------------------------- dataset --- */
+/* Row shape: [date, activeUsers|null, adViewers|null, adsMinor, iapGrossMinor|null,
+               impressions, rewardedUsers|null, rewardedEvents|null,
+               reportedTotalMinor|null]
+   The last field is the platform's own total, carried only so the report can
+   reconcile against it — the statement is always built from the components.
+   The dataset is replaceable at runtime, so nothing below may capture it in a
+   const. setDataset() is the single place that rebuilds the derived indexes. */
+let ROWS = [], DAYS = [], DATA_FROM = 0, DATA_TO = 0, META = null;
+const TODAY = Math.floor(Date.now() / DAY_MS);
+
+function setDataset(rows, meta) {
+  const clean = rows
+    .filter(r => Array.isArray(r) && typeof r[0] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r[0]))
+    .map(r => r.slice(0, 9));
+  if (!clean.length) throw new Error("No dated rows found");
+  clean.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  ROWS = clean;
+  DAYS = clean.map(r => ({
+    n: dnum(r[0]), date: r[0],
+    au: r[1] == null ? null : r[1], av: r[2] == null ? null : r[2],
+    ads: r[3] || 0, iapNull: r[4] == null, iap: r[4] == null ? 0 : r[4],
+    imp: r[5] || 0, ru: r[6], re: r[7], rep: r[8] == null ? null : r[8]
+  }));
+  DATA_FROM = DAYS[0].n;
+  DATA_TO = DAYS[DAYS.length - 1].n;
+  META = Object.assign({ source: "unknown", generated: "—", currency: "GBP" }, meta || {});
+  CUR = /^[A-Z]{3}$/.test(META.currency) ? META.currency : "GBP";
+  SYM = curSymbol();
+  META.partialLast = DATA_TO >= TODAY;
+  META.days = DAYS.length;
+  META.gapDays = (DATA_TO - DATA_FROM + 1) - DAYS.length;
+}
+
+/* ---------------------------------------------------------- CSV loading --- */
+/* AdMob exports as UTF-16LE with a BOM and tab separators; other tools emit
+   UTF-8 commas. Sniff both rather than assuming. */
+function decodeBytes(buf) {
+  const b = new Uint8Array(buf);
+  if (b[0] === 0xFF && b[1] === 0xFE) return new TextDecoder("utf-16le").decode(buf);
+  if (b[0] === 0xFE && b[1] === 0xFF) return new TextDecoder("utf-16be").decode(buf);
+  if (b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF) return new TextDecoder("utf-8").decode(buf.slice(3));
+  let nul = 0, n = Math.min(b.length, 512);
+  for (let i = 1; i < n; i += 2) if (b[i] === 0) nul++;
+  if (nul > n / 4) return new TextDecoder("utf-16le").decode(buf);
+  return new TextDecoder("utf-8").decode(buf);
+}
+function parseDelimited(text) {
+  const head = text.split(/\r?\n/, 1)[0] || "";
+  const delim = head.split("\t").length > head.split(",").length ? "\t" : ",";
+  const rows = [];
+  let row = [], field = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === delim) { row.push(field); field = ""; }
+    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (c !== "\r") field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ""));
+}
+/* Keep "%" so "Rewarded users" and "Rewarded users (%)" stay distinguishable. */
+const normHead = s => String(s).toLowerCase().replace(/[^a-z0-9%]+/g, " ").trim();
+function parseAdMobCsv(text, filename) {
+  const rows = parseDelimited(text);
+  if (rows.length < 2) throw new Error("The file has no data rows");
+  const heads = rows[0].map(normHead);
+  const used = new Set();
+  const pick = (exact, prefix) => {
+    for (let i = 0; i < heads.length; i++) if (!used.has(i) && exact.includes(heads[i])) { used.add(i); return i; }
+    if (prefix) for (let i = 0; i < heads.length; i++) {
+      if (used.has(i)) continue;
+      if (prefix.some(p => heads[i].startsWith(p)) && !heads[i].includes("%") && !heads[i].includes(" rate")) { used.add(i); return i; }
+    }
+    return -1;
+  };
+  const iDate = pick(["date", "day"], ["date"]);
+  const iAds = pick(["ads earnings"], ["ads earnings", "estimated earnings", "ad revenue"]);
+  const iIap = pick(["purchase earnings"], ["purchase earnings", "iap", "in app purchase"]);
+  const iAu = pick(["active users au", "active users"], ["active users", "daily active"]);
+  const iAv = pick(["ad viewers av", "ad viewers"], ["ad viewers"]);
+  const iImp = pick(["impressions"], ["impressions"]);
+  const iRu = pick(["rewarded users"], null);
+  const iRe = pick(["rewarded events"], null);
+  const iAll = pick(["overall earnings"], ["overall earnings", "total earnings"]);
+  if (iDate < 0) throw new Error("No Date column found");
+  if (iAds < 0 && iIap < 0) throw new Error("No earnings column found (expected “Ads earnings” or “Purchase earnings”)");
+  const curHead = rows[0][iAds >= 0 ? iAds : iIap] || "";
+  const curMatch = /\(([A-Z]{3})\)/.exec(curHead);
+  const num = s => {
+    if (s == null) return null;
+    const t = String(s).replace(/[^0-9.\-]/g, "");
+    if (t === "" || t === "-" || t === ".") return null;
+    const v = Number(t);
+    return isFinite(v) ? v : null;
+  };
+  const cash = s => { const v = num(s); return v == null ? null : Math.round(v * 100); };
+  const out = [];
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    const d = (row[iDate] || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+    out.push([d,
+      iAu < 0 ? null : num(row[iAu]),
+      iAv < 0 ? null : num(row[iAv]),
+      (iAds < 0 ? 0 : cash(row[iAds])) || 0,
+      iIap < 0 ? null : cash(row[iIap]),
+      (iImp < 0 ? 0 : num(row[iImp])) || 0,
+      iRu < 0 ? null : num(row[iRu]),
+      iRe < 0 ? null : num(row[iRe]),
+      iAll < 0 ? null : cash(row[iAll])
+    ]);
+  }
+  if (!out.length) throw new Error("No rows with a YYYY-MM-DD date were found");
+  return {
+    rows: out,
+    meta: {
+      source: filename || "imported CSV",
+      generated: new Date().toISOString().slice(0, 16).replace("T", " "),
+      currency: curMatch ? curMatch[1] : "GBP",
+      imported: true,
+      savedAt: Date.now()
+    }
+  };
+}
+
+/* ---------------------------------------------------------------- state --- */
+const STORE_KEY = "mt.income.v1";
+let storageOK = true;
+const CATS = [
+  { id: "ua", label: "User acquisition" },
+  { id: "infra", label: "Infrastructure & hosting" },
+  { id: "tools", label: "Software & tooling" },
+  { id: "people", label: "Contractors & services" },
+  { id: "fees", label: "Store & platform fees" },
+  { id: "legal", label: "Legal & compliance" },
+  { id: "other", label: "Other" }
+];
+const CAT_LABEL = id => (CATS.find(c => c.id === id) || { label: id }).label;
+
+const DEFAULTS = {
+  gran: "month",
+  preset: "all",
+  from: null,          /* filled from the dataset once it is loaded */
+  to: null,
+  measure: "ecpm",
+  stmtMode: "amount",
+  showTables: false,
+  theme: "auto",
+  assume: { fee: 15, other: 0, tax: 0, partial: 1, payAd: 21, payIap: 15, threshold: 7000 },
+  expenses: [],
+  events: []
+};
+let S = JSON.parse(JSON.stringify(DEFAULTS));
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) applyState(JSON.parse(raw));
+    localStorage.setItem(STORE_KEY + ".probe", "1");
+    localStorage.removeItem(STORE_KEY + ".probe");
+  } catch (err) {
+    storageOK = false;
+    console.warn("Local storage unavailable — expenses will not persist between reloads.", err);
+  }
+}
+function save() {
+  if (!storageOK) return;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); }
+  catch (err) { storageOK = false; toast("Could not save locally — export your ledger to keep it."); console.warn(err); }
+}
+/* Clamp the selected window into whatever dataset is now loaded. */
+function fitRangeToData() {
+  if (!S.from || !S.to || S.preset !== "custom") { applyPreset(S.preset === "custom" ? "all" : S.preset); return; }
+  const f = clamp(dnum(S.from), DATA_FROM, DATA_TO), t = clamp(dnum(S.to), DATA_FROM, DATA_TO);
+  S.from = dstr(Math.min(f, t)); S.to = dstr(Math.max(f, t));
+}
+function validExpense(e) {
+  return e && typeof e.id === "string" && typeof e.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(e.date)
+    && Number.isInteger(e.amount) && ["once", "daily", "monthly", "annual"].includes(e.rec)
+    && ["cogs", "opex"].includes(e.cls);
+}
+function validEvent(e) {
+  return e && typeof e.id === "string" && typeof e.date === "string"
+    && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && typeof e.label === "string" && e.label.length > 0;
+}
+
+/* ------------------------------------------------- expense → day ledger --- */
+/* THE single definition of how one expense spreads over days. Everything that
+   needs to know what a cost is worth on a given day goes through this — the
+   ledger table, the statement, the charts and the burn rate. Three separate
+   copies of this logic existed before and had to agree by hand.
+   Recurring amounts are amortised across the days of each period, with the
+   division remainder distributed penny by penny (see spread), so the days of a
+   month always sum to exactly the monthly amount. */
+function* expenseDays(e) {
+  const start = dnum(e.date);
+  const end = e.end ? dnum(e.end) : DATA_TO;
+  if (end < start) return;
+  if (e.rec === "once") {
+    if (start >= DATA_FROM && start <= DATA_TO) yield [start, e.amount];
+    return;
+  }
+  const lo = Math.max(start, DATA_FROM), hi = Math.min(end, DATA_TO);
+  if (hi < lo) return;
+  if (e.rec === "daily") {
+    for (let n = lo; n <= hi; n++) yield [n, e.amount];
+    return;
+  }
+  const inWindow = n => n >= start && n <= end && n >= DATA_FROM && n <= DATA_TO;
+  if (e.rec === "monthly") {
+    const endP = dparts(hi);
+    let p = dparts(lo), y = p.y, m = p.m;
+    while (y < endP.y || (y === endP.y && m <= endP.m)) {
+      const dim = daysInMonth(y, m), parts = spread(e.amount, dim), first = dnum(`${y}-${pad2(m)}-01`);
+      for (let d = 0; d < dim; d++) if (inWindow(first + d)) yield [first + d, parts[d]];
+      m++; if (m > 12) { m = 1; y++; }
+    }
+    return;
+  }
+  /* annual — amortised across the days of the year, same principle */
+  for (let y = dparts(lo).y, yEnd = dparts(hi).y; y <= yEnd; y++) {
+    const diy = daysInYear(y), parts = spread(e.amount, diy), jan1 = dnum(`${y}-01-01`);
+    for (let i = 0; i < diy; i++) if (inWindow(jan1 + i)) yield [jan1 + i, parts[i]];
+  }
+}
+/* Categories that count as customer acquisition, for ROAS and contribution. */
+const MARKETING_CATS = new Set(["ua"]);
+const catKey = (cat, cls) => cat + "|" + cls;
+
+/* Allocated across the WHOLE dataset span, so zooming the view never changes
+   how a recurring cost is spread. Keyed by category+treatment, so a statement
+   line is a map lookup instead of a scan over days. */
+let ALLOC = new Map();
+function allocate() {
+  ALLOC = new Map();
+  for (const e of S.expenses) {
+    const key = catKey(e.cat, e.cls), mkt = MARKETING_CATS.has(e.cat);
+    for (const [n, p] of expenseDays(e)) {
+      if (!p) continue;
+      let a = ALLOC.get(n);
+      if (!a) { a = { cogs: 0, opex: 0, mkt: 0, byKey: new Map() }; ALLOC.set(n, a); }
+      a[e.cls] += p;
+      if (mkt) a.mkt += p;
+      a.byKey.set(key, (a.byKey.get(key) || 0) + p);
+    }
+  }
+}
+
+/* ------------------------------------------------------------ modelling --- */
+function viewRange() {
+  let from = dnum(S.from), to = dnum(S.to);
+  if (from > to) { const t = from; from = to; to = t; }
+  from = clamp(from, DATA_FROM, DATA_TO);
+  to = clamp(to, DATA_FROM, DATA_TO);
+  if (!S.assume.partial && META.partialLast && to === DATA_TO) to = Math.max(from, DATA_TO - 1);
+  return { from, to };
+}
+
+/* Per-day P&L in pence. */
+function dayModel(d) {
+  const A = S.assume;
+  const grossBillings = d.iap;
+  const commission = -pctOf(grossBillings, A.fee);          /* reversed on refunds */
+  const grossRev = d.ads + grossBillings;
+  const otherDed = -pctOf(grossRev, A.other);
+  const netRev = grossRev + commission + otherDed;
+  /* Split "other deductions" pro-rata, then take the remainder into the second
+     stream so adsNet + iapNet === netRev to the penny. */
+  const adsNet = d.ads + (grossRev === 0 ? 0 : Math.round(otherDed * d.ads / grossRev));
+  const iapNet = netRev - adsNet;
+  const ex = ALLOC.get(d.n);
+  const cogs = ex ? ex.cogs : 0, opex = ex ? ex.opex : 0;
+  const opProfit = netRev - cogs - opex;
+  /* Day-level tax, so the calendar and the burn rate agree with the statement
+     whenever a rate is set. Totals remain the sum of the periods shown. */
+  const tax = (A.tax > 0 && opProfit > 0) ? pctOf(opProfit, A.tax) : 0;
+  return {
+    n: d.n, date: d.date, ads: d.ads, grossBillings, commission, otherDed, netRev,
+    adsNet, iapNet, cogs, opex, mkt: ex ? ex.mkt : 0,
+    grossProfit: netRev - cogs, opProfit, tax, netProfit: opProfit - tax,
+    cats: ex ? ex.byKey : null,
+    imp: d.imp, au: d.au, av: d.av, re: d.re, iapNull: d.iapNull, rep: d.rep
+  };
+}
+
+function periodKeyOf(n, gran) {
+  const p = dparts(n);
+  if (gran === "day") return dstr(n);
+  if (gran === "month") return `${p.y}-${pad2(p.m)}`;
+  return String(p.y);
+}
+function periodLabelOf(key, gran) {
+  if (gran === "day") { const p = dparts(dnum(key)); return `${p.d} ${MON[p.m - 1]}`; }
+  if (gran === "month") { const [y, m] = key.split("-").map(Number); return `${MON[m - 1]} ${String(y).slice(2)}`; }
+  return key;
+}
+function periodLongLabel(key, gran) {
+  if (gran === "day") return fmtDayFull(dnum(key));
+  if (gran === "month") { const [y, m] = key.split("-").map(Number); return `${MON[m - 1]} ${y}`; }
+  return key;
+}
+
+const EMPTY_AGG = () => ({
+  ads: 0, grossBillings: 0, commission: 0, otherDed: 0, netRev: 0, adsNet: 0, iapNet: 0,
+  cogs: 0, opex: 0, mkt: 0, cats: new Map(), imp: 0, auSum: 0, auDays: 0, avSum: 0, reSum: 0,
+  netRevOnAuDays: 0, days: 0, refunds: 0, aboveBreakeven: 0, first: null, last: null
+});
+
+function aggregate(models, gran) {
+  const map = new Map();
+  for (const m of models) {
+    const k = periodKeyOf(m.n, gran);
+    let a = map.get(k);
+    if (!a) { a = EMPTY_AGG(); a.key = k; a.gran = gran; map.set(k, a); }
+    a.ads += m.ads; a.grossBillings += m.grossBillings; a.commission += m.commission;
+    a.otherDed += m.otherDed; a.netRev += m.netRev; a.adsNet += m.adsNet; a.iapNet += m.iapNet;
+    a.cogs += m.cogs; a.opex += m.opex; a.mkt += m.mkt; a.imp += m.imp; a.days++;
+    if (m.grossBillings < 0) a.refunds += m.grossBillings;
+    if (m.netProfit >= 0) a.aboveBreakeven++;
+    if (m.cats) for (const [c, v] of m.cats) a.cats.set(c, (a.cats.get(c) || 0) + v);
+    if (m.au != null) { a.auSum += m.au; a.auDays++; a.netRevOnAuDays += m.netRev; }
+    if (m.av != null) a.avSum += m.av;
+    if (m.re != null) a.reSum += m.re;
+    if (a.first == null || m.n < a.first) a.first = m.n;
+    if (a.last == null || m.n > a.last) a.last = m.n;
+  }
+  const out = Array.from(map.values()).sort((x, y) => x.first - y.first);
+  for (const a of out) finish(a);
+  return out;
+}
+function finish(a) {
+  a.grossProfit = a.netRev - a.cogs;
+  a.opProfit = a.grossProfit - a.opex;
+  a.tax = (S.assume.tax > 0 && a.opProfit > 0) ? pctOf(a.opProfit, S.assume.tax) : 0;
+  a.netProfit = a.opProfit - a.tax;
+  a.expenses = a.cogs + a.opex;
+  a.margin = a.netRev !== 0 ? a.netProfit / a.netRev : null;
+  a.ecpm = a.imp > 0 ? a.ads / a.imp * 1000 : null;         /* pence per 1000 imps */
+  a.arpdau = a.auSum > 0 ? a.netRevOnAuDays / a.auSum : null;/* pence per DAU */
+  a.avr = a.auSum > 0 ? a.avSum / a.auSum : null;
+  a.avgAu = a.auDays > 0 ? a.auSum / a.auDays : null;
+  /* per-day rates and acquisition efficiency */
+  a.revPerDay = a.days ? Math.round(a.netRev / a.days) : null;
+  a.profitPerDay = a.days ? Math.round(a.netProfit / a.days) : null;
+  a.burnPerDay = a.days ? Math.round(a.expenses / a.days) : null;
+  a.impPerDay = a.days ? a.imp / a.days : null;
+  a.contribution = a.netRev - a.mkt;                        /* after acquisition cost */
+  a.roas = a.mkt > 0 ? a.netRev / a.mkt : null;             /* blended, revenue per £1 spent */
+  a.mktPct = a.netRev > 0 ? a.mkt / a.netRev : null;
+  a.mktPerDauDay = a.auSum > 0 ? a.mkt / a.auSum : null;
+  return a;
+}
+function sumAgg(list) {
+  const t = EMPTY_AGG(); t.key = "TOTAL"; t.gran = "total";
+  for (const a of list) {
+    t.ads += a.ads; t.grossBillings += a.grossBillings; t.commission += a.commission;
+    t.otherDed += a.otherDed; t.netRev += a.netRev; t.adsNet += a.adsNet; t.iapNet += a.iapNet;
+    t.cogs += a.cogs; t.opex += a.opex; t.mkt += a.mkt; t.imp += a.imp; t.days += a.days;
+    t.refunds += a.refunds; t.aboveBreakeven += a.aboveBreakeven;
+    t.auSum += a.auSum; t.auDays += a.auDays; t.avSum += a.avSum; t.reSum += a.reSum;
+    t.netRevOnAuDays += a.netRevOnAuDays;
+    for (const [c, v] of a.cats) t.cats.set(c, (t.cats.get(c) || 0) + v);
+    if (t.first == null || (a.first != null && a.first < t.first)) t.first = a.first;
+    if (t.last == null || (a.last != null && a.last > t.last)) t.last = a.last;
+  }
+  finish(t);
+  /* keep the total additive with the columns shown */
+  t.tax = list.reduce((s, a) => s + a.tax, 0);
+  t.netProfit = t.opProfit - t.tax;
+  t.margin = t.netRev !== 0 ? t.netProfit / t.netRev : null;
+  return t;
+}
+
+/* Every day of the dataset, modelled. Trailing windows and run-rates need days
+   that sit outside the selected view, so this covers the whole export. */
+let ALLMODELS = new Map();
+function modelAllDays() {
+  ALLMODELS = new Map();
+  for (const d of DAYS) ALLMODELS.set(d.n, dayModel(d));
+}
+/* Finished aggregate for an arbitrary day range, independent of the view. */
+function aggRange(from, to) {
+  const list = [];
+  for (let n = from; n <= to; n++) { const m = ALLMODELS.get(n); if (m) list.push(m); }
+  if (!list.length) return null;
+  return sumAgg(aggregate(list, "year"));
+}
+
+/* =========================================================================
+   ANALYTICS — run-rate, break-even, variance, cash timing
+   Each returns plain numbers in pence; rendering is elsewhere.
+   ====================================================================== */
+
+/* Trailing rates anchored on the end of the selected window. A run-rate is an
+   extrapolation of an observed rate, never a forecast, and is labelled as such
+   everywhere it appears. */
+function runRate() {
+  const end = V.to;
+  const win = n => aggRange(end - n + 1, end);
+  const t7 = win(7), t28 = win(28), p7 = aggRange(end - 13, end - 7);
+  const perDay = (a, k) => (a && a.days) ? a[k] / a.days : null;
+  const pd28 = perDay(t28, "netProfit"), rd28 = perDay(t28, "netRev");
+  const p = dparts(end), dim = daysInMonth(p.y, p.m);
+  const mtd = aggRange(dnum(`${p.y}-${pad2(p.m)}-01`), end);
+  const elapsed = mtd ? mtd.days : 0;
+  return {
+    t7, t28, p7, elapsed, dim, mtd,
+    profitPerDay7: perDay(t7, "netProfit"), profitPerDay28: pd28,
+    revPerDay7: perDay(t7, "netRev"), revPerDay28: rd28,
+    monthlyProfit: pd28 == null ? null : Math.round(pd28 * 30.4375),
+    annualProfit: pd28 == null ? null : Math.round(pd28 * 365),
+    annualRev: rd28 == null ? null : Math.round(rd28 * 365),
+    wowRev: (p7 && p7.netRev) ? (t7.netRev - p7.netRev) / Math.abs(p7.netRev) : null,
+    monthProjection: elapsed ? Math.round(mtd.netProfit / elapsed * dim) : null,
+    monthRevProjection: elapsed ? Math.round(mtd.netRev / elapsed * dim) : null,
+    partialMonth: elapsed > 0 && elapsed < dim
+  };
+}
+
+/* What it costs to stand still, and how often the business clears that bar. */
+function breakeven() {
+  const T = V.total;
+  const t28 = aggRange(V.to - 27, V.to);
+  const burn = (t28 && t28.days) ? t28.expenses / t28.days : (T.days ? T.expenses / T.days : 0);
+  let best = 0, run = 0;
+  for (const m of V.days) { if (m.netProfit >= 0) { run++; if (run > best) best = run; } else run = 0; }
+  return {
+    burnPerDay: Math.round(burn),
+    dauNeeded: (T.arpdau > 0) ? Math.ceil(burn / T.arpdau) : null,
+    ecpmNeeded: (T.impPerDay > 0) ? burn / T.impPerDay * 1000 : null,
+    aboveDays: T.aboveBreakeven, totalDays: T.days,
+    longestStreak: best, currentStreak: run,
+    coverage: burn > 0 ? T.revPerDay / burn : null
+  };
+}
+
+/* Two-factor variance on advertising revenue: how much of the move was more
+   impressions, how much was a better rate, and the interaction of the two.
+   Δ = (Δvolume × rate₀) + (Δrate × volume₀) + (Δvolume × Δrate), and the
+   residual is forced into the interaction term so the bridge closes exactly. */
+function variance(prev, cur) {
+  if (!prev || !cur) return null;
+  const i0 = prev.imp, i1 = cur.imp;
+  const r0 = i0 > 0 ? prev.ads / i0 : 0, r1 = i1 > 0 ? cur.ads / i1 : 0;
+  const volume = Math.round((i1 - i0) * r0);
+  const rate = Math.round((r1 - r0) * i0);
+  const inter = (cur.ads - prev.ads) - volume - rate;
+  const steps = [
+    { k: "Ad impressions", v: volume, note: `${intFmt(i0)} → ${intFmt(i1)} impressions, held at the prior rate` },
+    { k: "eCPM rate", v: rate, note: `${money(prev.ecpm || 0)} → ${money(cur.ecpm || 0)} per 1,000, on prior volume` },
+    { k: "Volume × rate", v: inter, note: "interaction of the two effects, plus rounding" },
+    { k: "In-app billings", v: cur.grossBillings - prev.grossBillings, note: "gross, before commission" },
+    { k: "Store commission", v: cur.commission - prev.commission, note: `at ${S.assume.fee}%` }
+  ];
+  const push = (k, v, note) => { if (v) steps.push({ k, v, note }); };
+  push("Other deductions", cur.otherDed - prev.otherDed);
+  push("Cost of revenue", -(cur.cogs - prev.cogs));
+  push("Operating expenses", -(cur.opex - prev.opex));
+  push("Tax", -(cur.tax - prev.tax));
+  const total = cur.netProfit - prev.netProfit;
+  const sum = steps.reduce((s, x) => s + x.v, 0);
+  if (sum !== total) steps.push({ k: "Unexplained", v: total - sum, note: "should always be zero" });
+  return { steps, total, prev, cur };
+}
+
+/* Earned is not received. Ad networks pay in arrears once a balance clears the
+   payment threshold, otherwise it rolls into the next month; stores pay on
+   their own cycle. Dates are expectations from the assumptions, not promises. */
+function payouts() {
+  const months = aggregate(DAYS.map(d => ALLMODELS.get(d.n)), "month");
+  const th = S.assume.threshold;
+  const out = [];
+  let carry = 0;
+  for (const a of months) {
+    const [y, m] = a.key.split("-").map(Number);
+    const bal = carry + a.ads;
+    const payable = bal >= th ? bal : 0;
+    carry = bal - payable;
+    const nx = m === 12 ? { y: y + 1, m: 1 } : { y, m: m + 1 };
+    const on = day => `${nx.y}-${pad2(nx.m)}-${pad2(Math.min(day, daysInMonth(nx.y, nx.m)))}`;
+    out.push({
+      key: a.key, label: periodLongLabel(a.key, "month"),
+      ads: a.ads, payable, carried: carry, adsDate: on(S.assume.payAd),
+      iap: a.iapNet, iapDate: on(S.assume.payIap), total: payable + a.iapNet
+    });
+  }
+  return out;
+}
+
+/* Annualised trailing-window profit, one point per day, for the run-rate chart.
+   Only full windows are plotted — a partial window would read as a collapse. */
+function trailingSeries(n) {
+  return V.days.map(m => {
+    let sum = 0, cnt = 0;
+    for (let k = 0; k < n; k++) { const x = ALLMODELS.get(m.n - k); if (x) { sum += x.netProfit; cnt++; } }
+    return { n: m.n, v: cnt === n ? Math.round(sum / n * 365) : null };
+  });
+}
+
+/* Current view, recomputed on every state change. */
+let V = null;
+function recompute() {
+  allocate();
+  modelAllDays();
+  let { from, to } = viewRange();
+  let days = DAYS.filter(d => d.n >= from && d.n <= to);
+  if (!days.length) {
+    /* The window landed outside the dataset (e.g. after loading a shorter
+       export). Fall back to the whole dataset rather than rendering nothing. */
+    S.preset = "all"; S.from = dstr(DATA_FROM); S.to = dstr(DATA_TO);
+    from = DATA_FROM; to = DATA_TO;
+    days = DAYS.slice();
+    const fi = $("#dFrom"), ti = $("#dTo");
+    if (fi) fi.value = S.from;
+    if (ti) ti.value = S.to;
+  }
+  const models = days.map(d => ALLMODELS.get(d.n));
+  const periods = aggregate(models, S.gran);
+  const total = sumAgg(periods);
+  /* previous equal-length window, for the delta */
+  const span = to - from + 1;
+  const prev = aggRange(from - span, from - 1);
+  V = { from, to, days: models, periods, total, prev, prevDays: prev ? prev.days : 0 };
+}
+
+/* ---------------------------------------------------------------- toasts --- */
+function toast(msg, action) {
+  const t = el("div", "toast");
+  t.appendChild(el("span", null, msg));
+  if (action) {
+    const b = el("button", "btn sm", action.label);
+    b.addEventListener("click", () => { action.fn(); close(); });
+    t.appendChild(b);
+  }
+  $("#toasts").appendChild(t);
+  let timer = setTimeout(close, action ? 7000 : 3800);
+  function close() { clearTimeout(timer); t.classList.add("out"); setTimeout(() => t.remove(), 420); }
+  return close;
+}
+
+/* =========================================================================
+   CHART PRIMITIVES
+   ====================================================================== */
+function niceTicks(min, max, count) {
+  if (min === max) { if (min === 0) { max = 1; } else { min = Math.min(0, min * 1.2); max = Math.max(0, max * 1.2); } }
+  const span = max - min || 1;
+  const raw = span / Math.max(1, count);
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+  const out = [];
+  for (let v = lo; v <= hi + step / 1000; v += step) out.push(Math.abs(v) < step / 1000 ? 0 : v);
+  return { ticks: out, lo, hi };
+}
+/* Bar path: rounded on the outer end only, square at the baseline. */
+function barPath(x, w, yTop, yBot, r, up) {
+  const h = yBot - yTop;
+  if (h <= 0.4) return `M${x} ${yBot}h${w}`;
+  const rr = Math.max(0, Math.min(r, w / 2, h));
+  if (up) return `M${x} ${yBot}V${yTop + rr}Q${x} ${yTop} ${x + rr} ${yTop}H${x + w - rr}Q${x + w} ${yTop} ${x + w} ${yTop + rr}V${yBot}Z`;
+  return `M${x} ${yTop}V${yBot - rr}Q${x} ${yBot} ${x + rr} ${yBot}H${x + w - rr}Q${x + w} ${yBot} ${x + w} ${yBot - rr}V${yTop}Z`;
+}
+function tickEvery(n, plotW, minPx) {
+  const per = plotW / Math.max(1, n);
+  return Math.max(1, Math.ceil(minPx / Math.max(1, per)));
+}
+/* Shared tooltip helper bound to a plot container. */
+function makeTip(host) {
+  const tip = el("div", "tip");
+  tip.setAttribute("role", "tooltip");
+  host.appendChild(tip);
+  let visible = false;
+  return {
+    node: tip,
+    show(x, y, build) {
+      tip.textContent = "";
+      build(tip);
+      const hw = host.clientWidth;
+      tip.style.setProperty("--tip-origin", x > hw * 0.6 ? "right top" : "left top");
+      tip.style.left = "0px"; tip.style.top = "0px";
+      const w = tip.offsetWidth, h = tip.offsetHeight;
+      let lx = x + 14, ly = y - h - 12;
+      if (lx + w > hw - 4) lx = x - w - 14;
+      if (lx < 4) lx = 4;
+      if (ly < 4) ly = y + 16;
+      tip.style.left = lx + "px"; tip.style.top = ly + "px";
+      if (!visible) { visible = true; requestAnimationFrame(() => tip.classList.add("on")); }
+    },
+    hide() { visible = false; tip.classList.remove("on"); }
+  };
+}
+function tipRow(parent, colour, name, value, kind) {
+  const r = el("div", "row");
+  if (colour) { const k = el("span", "row key" + (kind === "sq" ? " sq" : "")); k.style.background = colour; r.appendChild(k); }
+  r.appendChild(el("span", "n", name));
+  r.appendChild(el("span", "v", value));
+  parent.appendChild(r);
+}
+function legendInto(host, items) {
+  host.textContent = "";
+  for (const it of items) {
+    const w = el("span", "item");
+    const sw = el("span", "sw" + (it.line ? " line" : ""));
+    sw.style.background = it.colour;
+    w.appendChild(sw); w.appendChild(el("span", null, it.label));
+    host.appendChild(w);
+  }
+}
+function tableTwin(host, cols, rows) {
+  host.textContent = "";
+  const t = el("table"), th = el("thead"), tr = el("tr");
+  for (const c of cols) tr.appendChild(el("th", null, c));
+  th.appendChild(tr); t.appendChild(th);
+  const tb = el("tbody");
+  for (const r of rows) {
+    const x = el("tr");
+    for (const c of r) x.appendChild(el("td", null, c));
+    tb.appendChild(x);
+  }
+  t.appendChild(tb); host.appendChild(t);
+}
+
+/* Re-render charts on container resize (widths drive layout, not viewBox scaling). */
+const RO = new ResizeObserver(entries => {
+  let need = false;
+  for (const e of entries) {
+    const w = Math.round(e.contentRect.width);
+    if (w > 0 && e.target.__w !== w) { e.target.__w = w; need = true; }
+  }
+  if (need) drawCharts();
+});
+
+/* =========================================================================
+   CHART 1 — P&L bridge (revenue up, costs down, profit line)
+   Single £ axis. Also renders a single-period waterfall.
+   ====================================================================== */
+function drawBridge() {
+  const host = $("#plotBridge");
+  const P = V.periods;
+  legendInto($("#bridgeLegend"), [
+    { colour: cssVar("--s-ads"), label: "Advertising revenue" },
+    { colour: cssVar("--s-iap"), label: "In-app purchases (net)" },
+    { colour: cssVar("--s-exp"), label: "Expenses" }
+  ].concat(V.total.tax ? [{ colour: cssVar("--s-tax"), label: "Tax" }] : [])
+   .concat([{ colour: cssVar("--ink"), label: "Net profit", line: true }]));
+
+  if (P.length === 1) { drawWaterfall(host, P[0]); return; }
+
+  const W = host.clientWidth || 720, H = 300;
+  const M = { t: 26, r: 16, b: 26, l: 56 };   /* top band leaves room for marker badges */
+  const pw = Math.max(60, W - M.l - M.r), ph = H - M.t - M.b;
+
+  let maxV = 0, minV = 0;
+  for (const a of P) {
+    const up = Math.max(0, a.adsNet) + Math.max(0, a.iapNet);
+    const dn = Math.min(0, a.adsNet) + Math.min(0, a.iapNet) - a.expenses - a.tax;
+    maxV = Math.max(maxV, up, a.netProfit);
+    minV = Math.min(minV, dn, a.netProfit);
+  }
+  const { ticks, lo, hi } = niceTicks(minV / 100, maxV / 100, 5);
+  const y = v => M.t + ph - (v / 100 - lo) / (hi - lo) * ph;
+  const band = pw / P.length;
+  const bw = Math.max(2, Math.min(24, band * 0.62));
+  const GAP = band > 14 ? 2 : 0;
+
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img" });
+  svg.setAttribute("aria-label", `Revenue, expenses and net profit by ${S.gran}. Net revenue total ${money(V.total.netRev)}, expenses ${money(V.total.expenses)}, net profit ${money(V.total.netProfit)}.`);
+  const g = sv("g", {});
+  svg.appendChild(g);
+
+  for (const t of ticks) {
+    const yy = y(t * 100);
+    g.appendChild(sv("line", { x1: M.l, x2: M.l + pw, y1: yy, y2: yy, class: t === 0 ? "zeroline" : "gridline" }));
+    const tx = sv("text", { x: M.l - 8, y: yy + 3.5, "text-anchor": "end" });
+    tx.textContent = moneyShort(t * 100);
+    g.appendChild(tx);
+  }
+
+  const every = tickEvery(P.length, pw, 58);
+  P.forEach((a, i) => {
+    const cx = M.l + band * i + band / 2, x0 = cx - bw / 2;
+    /* One component list, split by sign. On a heavy refund day the in-app
+       stream itself is negative, so it belongs below the line with the costs
+       rather than being filtered out of the picture. */
+    const comps = [
+      { v: a.adsNet, c: cssVar("--s-ads") },
+      { v: a.iapNet, c: cssVar("--s-iap") },
+      { v: -a.expenses, c: cssVar("--s-exp") },
+      { v: -a.tax, c: cssVar("--s-tax") }
+    ];
+    let up = 0;
+    comps.filter(s => s.v > 0).forEach((s, k) => {
+      const yb = y(up) - (k > 0 ? GAP : 0), yt = y(up + s.v);
+      g.appendChild(sv("path", { d: barPath(x0, bw, yt, Math.max(yt, yb), 4, true), fill: s.c }));
+      up += s.v;
+    });
+    let dn = 0;
+    comps.filter(s => s.v < 0).forEach((s, k) => {
+      const yt = y(-dn) + (k > 0 ? GAP : 0), yb = y(-dn + s.v);
+      g.appendChild(sv("path", { d: barPath(x0, bw, Math.min(yt, yb), Math.max(yt, yb), 4, false), fill: s.c }));
+      dn += -s.v;
+    });
+    if (i % every === 0 || i === P.length - 1) {
+      const tx = sv("text", { x: cx, y: H - 8, "text-anchor": "middle" });
+      tx.textContent = periodLabelOf(a.key, S.gran);
+      g.appendChild(tx);
+    }
+  });
+
+  /* profit line */
+  let d = "";
+  P.forEach((a, i) => { const cx = M.l + band * i + band / 2; d += (i ? "L" : "M") + cx + " " + y(a.netProfit); });
+  const path = sv("path", { d, fill: "none", stroke: cssVar("--ink"), "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" });
+  g.appendChild(path);
+  const lastA = P[P.length - 1], lastX = M.l + band * (P.length - 1) + band / 2;
+  g.appendChild(sv("circle", { cx: lastX, cy: y(lastA.netProfit), r: 4.5, fill: cssVar("--ink"), stroke: cssVar("--surface-1"), "stroke-width": 2 }));
+
+  host.textContent = "";
+  host.appendChild(svg);
+  eventFootnote($("#bridgeEvents"), eventRules(g, {
+    list: mapEventsToPeriods(P), xAt: i => M.l + band * i + band / 2, top: M.t, bottom: M.t + ph
+  }));
+  const tip = makeTip(host);
+  attachCrosshair({
+    svg, host, tip, g, count: P.length,
+    xAt: i => M.l + band * i + band / 2,
+    top: M.t, bottom: M.t + ph,
+    label: i => periodLongLabel(P[i].key, S.gran),
+    build: (i, box) => {
+      const a = P[i];
+      box.appendChild(el("div", "tt", periodLongLabel(a.key, S.gran)));
+      tipRow(box, cssVar("--s-ads"), "Advertising", money(a.adsNet), "sq");
+      tipRow(box, cssVar("--s-iap"), "In-app (net)", money(a.iapNet), "sq");
+      box.appendChild(el("div", "rule"));
+      tipRow(box, null, "Net revenue", money(a.netRev));
+      tipRow(box, cssVar("--s-exp"), "Expenses", a.expenses ? MINUS + money(a.expenses) : money(0), "sq");
+      if (a.tax) tipRow(box, cssVar("--s-tax"), "Tax", MINUS + money(a.tax), "sq");
+      box.appendChild(el("div", "rule"));
+      tipRow(box, cssVar("--ink"), "Net profit", money(a.netProfit));
+      if (a.margin != null) box.appendChild(el("div", "note", "Margin " + pct(a.margin) + " · " + a.days + (a.days === 1 ? " day" : " days")));
+    }
+  });
+
+  tableTwin($("#twinBridge"),
+    [S.gran === "day" ? "Day" : S.gran === "month" ? "Month" : "Year", "Advertising", "In-app (net)", "Net revenue", "Expenses", "Tax", "Net profit"],
+    P.map(a => [periodLongLabel(a.key, S.gran), money(a.adsNet), money(a.iapNet), money(a.netRev), money(a.expenses), money(a.tax), money(a.netProfit)])
+  );
+}
+
+/* Single-period P&L waterfall — the right form when there is only one column,
+   since a one-column bar chart says nothing. */
+function drawWaterfall(host, a) {
+  const steps = [
+    { k: "Advertising revenue", v: a.adsNet, c: cssVar("--s-ads") },
+    { k: "In-app billings", v: a.grossBillings, c: cssVar("--s-iap") },
+    { k: "Store commission", v: a.commission }
+  ];
+  if (a.otherDed) steps.push({ k: "Other deductions", v: a.otherDed });
+  if (a.cogs) steps.push({ k: "Cost of revenue", v: -a.cogs });
+  if (a.opex) steps.push({ k: "Operating expenses", v: -a.opex });
+  if (a.tax) steps.push({ k: "Tax", v: -a.tax, c: cssVar("--s-tax") });
+  renderWaterfall(host, {
+    base: null,
+    steps,
+    endLabel: "Net profit",
+    twinHost: $("#twinBridge"),
+    ariaLabel: `Profit bridge for ${periodLongLabel(a.key, S.gran)}: net revenue ${money(a.netRev)} less costs gives net profit ${money(a.netProfit)}.`
+  });
+  eventFootnote($("#bridgeEvents"), []);
+}
+
+/* =========================================================================
+   CHART 2 — cumulative net profit
+   ====================================================================== */
+function drawCum() {
+  const host = $("#plotCum");
+  const pts = [];
+  let run = 0;
+  const series = S.gran === "day" ? V.days.map(m => ({ key: m.date, v: m.netProfit })) : V.periods.map(a => ({ key: a.key, v: a.netProfit }));
+  for (const s of series) { run += s.v; pts.push({ key: s.key, v: run, step: s.v }); }
+  const W = host.clientWidth || 520, H = 240;
+  const M = { t: 24, r: 18, b: 26, l: 56 };
+  const pw = Math.max(60, W - M.l - M.r), ph = H - M.t - M.b;
+  const vals = pts.map(p => p.v);
+  const { ticks, lo, hi } = niceTicks(Math.min(0, ...vals) / 100, Math.max(0, ...vals) / 100, 4);
+  const y = v => M.t + ph - (v / 100 - lo) / (hi - lo) * ph;
+  const x = i => pts.length === 1 ? M.l + pw / 2 : M.l + pw * i / (pts.length - 1);
+
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img" });
+  svg.setAttribute("aria-label", `Cumulative net profit reaching ${money(run)} over ${pts.length} ${S.gran === "day" ? "days" : S.gran + "s"}.`);
+  for (const t of ticks) {
+    const yy = y(t * 100);
+    svg.appendChild(sv("line", { x1: M.l, x2: M.l + pw, y1: yy, y2: yy, class: t === 0 ? "zeroline" : "gridline" }));
+    const tx = sv("text", { x: M.l - 8, y: yy + 3.5, "text-anchor": "end" }); tx.textContent = moneyShort(t * 100); svg.appendChild(tx);
+  }
+  let d = "", area = "";
+  pts.forEach((p, i) => { d += (i ? "L" : "M") + x(i) + " " + y(p.v); });
+  area = d + `L${x(pts.length - 1)} ${y(0)}L${x(0)} ${y(0)}Z`;
+  const colour = run >= 0 ? cssVar("--s-ads") : cssVar("--bad");
+  svg.appendChild(sv("path", { d: area, fill: colour, opacity: .1 }));
+  svg.appendChild(sv("path", { d, fill: "none", stroke: colour, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  svg.appendChild(sv("circle", { cx: x(pts.length - 1), cy: y(run), r: 4.5, fill: colour, stroke: cssVar("--surface-1"), "stroke-width": 2 }));
+  const lab = sv("text", { x: x(pts.length - 1) - 4, y: y(run) - 12, "text-anchor": "end", class: "lbl-dir" });
+  lab.textContent = money(run, { dp: 0 });
+  svg.appendChild(lab);
+
+  const every = tickEvery(pts.length, pw, 62);
+  pts.forEach((p, i) => {
+    if (i % every === 0 || i === pts.length - 1) {
+      const tx = sv("text", { x: x(i), y: H - 8, "text-anchor": i === pts.length - 1 ? "end" : "middle" });
+      tx.textContent = S.gran === "day" ? fmtDay(dnum(p.key)) : periodLabelOf(p.key, S.gran);
+      svg.appendChild(tx);
+    }
+  });
+  host.textContent = "";
+  host.appendChild(svg);
+  eventRules(svg, {
+    list: S.gran === "day" ? mapEventsToDays(pts.map(p => ({ n: dnum(p.key) }))) : mapEventsToPeriods(V.periods),
+    xAt: x, top: M.t, bottom: M.t + ph
+  });
+  const tip = makeTip(host);
+  attachCrosshair({
+    svg, host, tip, g: svg, count: pts.length, xAt: x, top: M.t, bottom: M.t + ph,
+    label: i => (S.gran === "day" ? fmtDayFull(dnum(pts[i].key)) : periodLongLabel(pts[i].key, S.gran)),
+    build: (i, box) => {
+      box.appendChild(el("div", "tt", S.gran === "day" ? fmtDayFull(dnum(pts[i].key)) : periodLongLabel(pts[i].key, S.gran)));
+      tipRow(box, colour, "Cumulative", money(pts[i].v));
+      tipRow(box, null, "This period", money(pts[i].step, { sign: true }));
+    }
+  });
+  $("#cumSub").textContent = `Running total · ends at ${money(run)}`;
+  tableTwin($("#twinCum"), ["Period", "This period", "Cumulative"],
+    pts.map(p => [S.gran === "day" ? fmtDayFull(dnum(p.key)) : periodLongLabel(p.key, S.gran), money(p.step), money(p.v)]));
+}
+
+/* =========================================================================
+   CHART 3 — revenue mix (100% stacked columns)
+   ====================================================================== */
+function drawMix() {
+  const host = $("#plotMix");
+  const P = V.periods;
+  legendInto($("#mixLegend"), [
+    { colour: cssVar("--s-ads"), label: "Advertising" },
+    { colour: cssVar("--s-iap"), label: "In-app (net)" }
+  ]);
+  const W = host.clientWidth || 380, H = 240;
+  const M = { t: 14, r: 12, b: 26, l: 40 };
+  const pw = Math.max(50, W - M.l - M.r), ph = H - M.t - M.b;
+  const band = pw / P.length, bw = Math.max(2, Math.min(30, band * 0.66));
+  const GAP = band > 14 ? 2 : 0;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img" });
+  const adsShareTot = V.total.netRev > 0 ? clamp(V.total.adsNet / V.total.netRev, 0, 1) : 1;
+  svg.setAttribute("aria-label", `Revenue mix by ${S.gran}. Over the whole period advertising is ${pct(adsShareTot, 0)} of net revenue.`);
+  for (const t of [0, 25, 50, 75, 100]) {
+    const yy = M.t + ph - t / 100 * ph;
+    svg.appendChild(sv("line", { x1: M.l, x2: M.l + pw, y1: yy, y2: yy, class: t === 0 ? "zeroline" : "gridline" }));
+    const tx = sv("text", { x: M.l - 8, y: yy + 3.5, "text-anchor": "end" }); tx.textContent = t + "%"; svg.appendChild(tx);
+  }
+  const shares = P.map(a => {
+    const ap = Math.max(0, a.adsNet), ip = Math.max(0, a.iapNet), tt = ap + ip;
+    return tt > 0 ? { a: ap / tt, i: ip / tt, tt } : { a: 0, i: 0, tt: 0 };
+  });
+  const every = tickEvery(P.length, pw, 54);
+  P.forEach((a, i) => {
+    const cx = M.l + band * i + band / 2, x0 = cx - bw / 2, s = shares[i];
+    if (s.tt === 0) {
+      svg.appendChild(sv("line", { x1: x0, x2: x0 + bw, y1: M.t + ph, y2: M.t + ph, stroke: cssVar("--axis"), "stroke-width": 2 }));
+    } else {
+      const hAds = s.a * ph, hIap = s.i * ph;
+      const yIapTop = M.t + ph - hIap;
+      if (hIap > 0.4) svg.appendChild(sv("path", { d: barPath(x0, bw, yIapTop, M.t + ph, hAds > 0.4 ? 0 : 4, true), fill: cssVar("--s-iap") }));
+      if (hAds > 0.4) svg.appendChild(sv("path", { d: barPath(x0, bw, M.t, Math.max(M.t, yIapTop - (hIap > 0.4 ? GAP : 0)), 4, true), fill: cssVar("--s-ads") }));
+    }
+    if (i % every === 0 || i === P.length - 1) {
+      const tx = sv("text", { x: cx, y: H - 8, "text-anchor": "middle" }); tx.textContent = periodLabelOf(a.key, S.gran); svg.appendChild(tx);
+    }
+  });
+  host.textContent = "";
+  host.appendChild(svg);
+  const tip = makeTip(host);
+  attachCrosshair({
+    svg, host, tip, g: svg, count: P.length, xAt: i => M.l + band * i + band / 2, top: M.t, bottom: M.t + ph,
+    label: i => periodLongLabel(P[i].key, S.gran),
+    build: (i, box) => {
+      const a = P[i], s = shares[i];
+      box.appendChild(el("div", "tt", periodLongLabel(a.key, S.gran)));
+      tipRow(box, cssVar("--s-ads"), "Advertising", money(a.adsNet) + "  " + pct(s.a, 0), "sq");
+      tipRow(box, cssVar("--s-iap"), "In-app (net)", money(a.iapNet) + "  " + pct(s.i, 0), "sq");
+      if (a.iapNet < 0) box.appendChild(el("div", "note", "Net refunds exceeded purchases; share shown as advertising only."));
+    }
+  });
+  tableTwin($("#twinMix"), ["Period", "Advertising", "Share", "In-app (net)", "Share"],
+    P.map((a, i) => [periodLongLabel(a.key, S.gran), money(a.adsNet), pct(shares[i].a, 0), money(a.iapNet), pct(shares[i].i, 0)]));
+}
+
+/* =========================================================================
+   CHART 4 — unit economics (single series, measure switch)
+   ====================================================================== */
+/* `get` returns the raw stored unit (pence for money); `val` formats a raw
+   value; `axis` formats a tick already expressed in display units. */
+const MEASURES = {
+  ecpm: { title: "eCPM", sub: "Advertising revenue per 1,000 impressions", unit: "money", get: a => a.ecpm, val: v => money(v), axis: t => moneyShort(t * 100) },
+  arpdau: { title: "ARPDAU", sub: "Net revenue per daily active user", unit: "money", get: a => a.arpdau, val: v => money(v, { dp: 4 }), axis: t => SYM + t.toFixed(3) },
+  avr: { title: "Ad reach", sub: "Share of active users who saw at least one ad", unit: "ratio", get: a => a.avr, val: v => pct(v), axis: t => pct(t, 0) },
+  imp: { title: "Impressions", sub: "Ad impressions served", unit: "count", get: a => a.imp, val: v => intFmt(v), axis: t => intFmt(t) }
+};
+function drawUnit() {
+  const host = $("#plotUnit");
+  const m = MEASURES[S.measure];
+  const P = V.periods;
+  $("#unitTitle").textContent = "Unit economics · " + m.title;
+  const W = host.clientWidth || 520, H = 240;
+  const M = { t: 24, r: 18, b: 26, l: 56 };
+  const pw = Math.max(60, W - M.l - M.r), ph = H - M.t - M.b;
+  const raw = P.map(a => { const v = m.get(a); return v == null || !isFinite(v) ? null : v; });
+  const present = raw.filter(v => v != null);
+  const scaleUnit = m.unit === "money" ? 100 : 1;
+  const { ticks, lo, hi } = niceTicks(0, (present.length ? Math.max.apply(null, present) : 1) / scaleUnit, 4);
+  const y = v => M.t + ph - (v / scaleUnit - lo) / (hi - lo) * ph;
+  const x = i => P.length === 1 ? M.l + pw / 2 : M.l + pw * i / (P.length - 1);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img" });
+  const totV = m.get(V.total);
+  svg.setAttribute("aria-label", `${m.title} by ${S.gran}. Period figure ${totV == null ? "not available" : m.val(totV)}.`);
+  for (const t of ticks) {
+    const yy = M.t + ph - (t - lo) / (hi - lo) * ph;
+    svg.appendChild(sv("line", { x1: M.l, x2: M.l + pw, y1: yy, y2: yy, class: t === 0 ? "zeroline" : "gridline" }));
+    const tx = sv("text", { x: M.l - 8, y: yy + 3.5, "text-anchor": "end" });
+    tx.textContent = m.axis(t);
+    svg.appendChild(tx);
+  }
+  /* break the line across gaps rather than inventing a value */
+  let d = "", open = false;
+  raw.forEach((v, i) => { if (v == null) { open = false; return; } d += (open ? "L" : "M") + x(i) + " " + y(v); open = true; });
+  const colour = cssVar("--s-ads");
+  if (present.length > 1) svg.appendChild(sv("path", { d, fill: "none", stroke: colour, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  raw.forEach((v, i) => { if (v != null && (present.length === 1 || P.length <= 40)) svg.appendChild(sv("circle", { cx: x(i), cy: y(v), r: 3.6, fill: colour, stroke: cssVar("--surface-1"), "stroke-width": 2 })); });
+  const lastIdx = raw.reduce((acc, v, i) => v != null ? i : acc, -1);
+  if (lastIdx >= 0) {
+    const lab = sv("text", { x: x(lastIdx) - 4, y: y(raw[lastIdx]) - 12, "text-anchor": "end", class: "lbl-dir" });
+    lab.textContent = m.val(raw[lastIdx]); svg.appendChild(lab);
+  }
+  const every = tickEvery(P.length, pw, 58);
+  P.forEach((a, i) => {
+    if (i % every === 0 || i === P.length - 1) {
+      const tx = sv("text", { x: x(i), y: H - 8, "text-anchor": i === P.length - 1 ? "end" : "middle" });
+      tx.textContent = periodLabelOf(a.key, S.gran); svg.appendChild(tx);
+    }
+  });
+  host.textContent = "";
+  host.appendChild(svg);
+  eventRules(svg, { list: mapEventsToPeriods(P), xAt: x, top: M.t, bottom: M.t + ph });
+  const gapDays = V.days.filter(dd => dd.au == null).length;
+  $("#unitSub").textContent = m.sub + (S.measure === "arpdau" && gapDays ? ` · ${gapDays} day${gapDays === 1 ? "" : "s"} in range have no user metric and are excluded` : "");
+  const tip = makeTip(host);
+  attachCrosshair({
+    svg, host, tip, g: svg, count: P.length, xAt: x, top: M.t, bottom: M.t + ph,
+    label: i => periodLongLabel(P[i].key, S.gran),
+    build: (i, box) => {
+      const a = P[i], v = raw[i];
+      box.appendChild(el("div", "tt", periodLongLabel(a.key, S.gran)));
+      tipRow(box, colour, m.title, v == null ? "not reported" : m.val(v));
+      if (S.measure === "ecpm") tipRow(box, null, "Impressions", intFmt(a.imp));
+      if (S.measure === "arpdau") tipRow(box, null, "Avg DAU", a.avgAu == null ? "—" : intFmt(a.avgAu));
+      if (S.measure === "avr") tipRow(box, null, "Ad viewers", intFmt(a.avSum));
+      if (S.measure === "imp") tipRow(box, null, "Ad revenue", money(a.ads));
+    }
+  });
+  tableTwin($("#twinUnit"), ["Period", m.title, "Impressions", "Ad revenue", "Avg DAU"],
+    P.map((a, i) => [periodLongLabel(a.key, S.gran), raw[i] == null ? "—" : m.val(raw[i]), intFmt(a.imp), money(a.ads), a.avgAu == null ? "—" : intFmt(a.avgAu)]));
+}
+
+/* =========================================================================
+   CHART 5 — daily profit calendar (diverging)
+   Always daily, whatever the grouping — this is the "profit per day" view.
+   ====================================================================== */
+function drawCal() {
+  const host = $("#plotCal");
+  const days = V.days;
+  const CELL = 15, GAPC = 3, LEFT = 30, TOP = 20;
+  /* Position every cell from its own date, not from its index — a dataset with
+     a missing day then leaves a hole instead of shifting the whole grid. */
+  const weekStart = days[0].n - dparts(days[0].n).wd;
+  const cols = Math.floor((days[days.length - 1].n - weekStart) / 7) + 1;
+  const W = LEFT + cols * (CELL + GAPC), H = TOP + 7 * (CELL + GAPC) + 4;
+  const maxAbs = Math.max(1, ...days.map(m => Math.abs(m.netProfit)));
+  const mid = cssVar("--heat-mid"), pos = cssVar("--heat-pos"), neg = cssVar("--heat-neg");
+  const fillFor = v => {
+    if (v === 0) return mid;
+    const t = Math.pow(Math.abs(v) / maxAbs, 0.62);
+    return mixOk(mid, v > 0 ? pos : neg, 0.18 + 0.82 * t);
+  };
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img", preserveAspectRatio: "xMinYMin meet" });
+  svg.setAttribute("aria-label", `Daily net profit for ${days.length} days. Best day ${money(Math.max(...days.map(m => m.netProfit)))}, worst day ${money(Math.min(...days.map(m => m.netProfit)))}.`);
+  for (let r = 0; r < 7; r += 2) {
+    const tx = sv("text", { x: 0, y: TOP + r * (CELL + GAPC) + CELL - 3 }); tx.textContent = WD[r].slice(0, 1); svg.appendChild(tx);
+  }
+  let lastMonth = -1;
+  days.forEach((m, i) => {
+    const idx = m.n - weekStart, col = Math.floor(idx / 7), row = idx % 7;
+    const x = LEFT + col * (CELL + GAPC), y = TOP + row * (CELL + GAPC);
+    const p = dparts(m.n);
+    if (p.m !== lastMonth && p.d <= 7) {
+      const tx = sv("text", { x, y: TOP - 7 }); tx.textContent = MON[p.m - 1]; svg.appendChild(tx);
+      lastMonth = p.m;
+    }
+    const rect = sv("rect", { x, y, width: CELL, height: CELL, rx: 3.5, fill: fillFor(m.netProfit), tabindex: "-1" });
+    rect.dataset.i = String(i);
+    svg.appendChild(rect);
+  });
+  host.textContent = "";
+  host.appendChild(svg);
+
+  const tip = makeTip(host);
+  const onMove = ev => {
+    const t = ev.target;
+    if (!(t instanceof SVGRectElement) || t.dataset.i == null) { tip.hide(); return; }
+    const m = days[+t.dataset.i];
+    const r = host.getBoundingClientRect();
+    tip.show(ev.clientX - r.left, ev.clientY - r.top, box => {
+      box.appendChild(el("div", "tt", fmtDayFull(m.n)));
+      tipRow(box, null, "Net revenue", money(m.netRev));
+      if (m.cogs + m.opex) tipRow(box, cssVar("--s-exp"), "Expenses", MINUS + money(m.cogs + m.opex), "sq");
+      tipRow(box, m.netProfit >= 0 ? cssVar("--heat-pos") : cssVar("--heat-neg"), "Net profit", money(m.netProfit), "sq");
+      if (m.grossBillings < 0) box.appendChild(el("div", "note", "Includes net refunds of " + money(m.grossBillings)));
+      if (m.iapNull) box.appendChild(el("div", "note", "In-app purchase reporting not yet linked on this date."));
+    });
+  };
+  /* bound to the svg, which is replaced each render — no listener build-up */
+  svg.addEventListener("pointermove", onMove);
+  svg.addEventListener("pointerleave", () => tip.hide());
+
+  const lg = $("#calLegend");
+  lg.textContent = "";
+  lg.appendChild(el("span", null, MINUS + money(maxAbs, { dp: 0 })));
+  const ramp = el("span", "ramp");
+  [-1, -0.55, -0.2, 0, 0.2, 0.55, 1].forEach(t => { const i = el("i"); i.style.background = fillFor(t * maxAbs); ramp.appendChild(i); });
+  lg.appendChild(ramp);
+  lg.appendChild(el("span", null, "+" + money(maxAbs, { dp: 0 })));
+
+  const sorted = days.slice().sort((a, b) => b.netProfit - a.netProfit);
+  const best = sorted.slice(0, 5), worst = sorted.slice(-5).reverse();
+  $("#calSub").textContent = `${days.length} days · best ${money(best[0].netProfit)} · weakest ${money(worst[0].netProfit)} · colour diverges at break-even`;
+  tableTwin($("#twinCal"), ["", "Day", "Net revenue", "Expenses", "Net profit"],
+    best.map(m => ["Best", fmtDayFull(m.n), money(m.netRev), money(m.cogs + m.opex), money(m.netProfit)])
+      .concat(worst.map(m => ["Weakest", fmtDayFull(m.n), money(m.netRev), money(m.cogs + m.opex), money(m.netProfit)])));
+}
+
+/* =========================================================================
+   WATERFALL — shared by the single-period P&L and the variance bridge
+   ====================================================================== */
+function renderWaterfall(host, cfg) {
+  const { base, steps, endLabel, ariaLabel, twinHost, height } = cfg;
+  const laid = [];
+  let run = 0;
+  /* An opening column only makes sense when there is an opening balance — a P&L
+     starts from nothing, a variance starts from the prior period. */
+  if (base) { laid.push({ k: base.label, v: base.v, from: 0, to: base.v, total: true }); run = base.v; }
+  for (const s of steps) { const from = run; run += s.v; laid.push(Object.assign({}, s, { from, to: run })); }
+  laid.push({ k: endLabel, v: run, from: 0, to: run, total: true });
+
+  const W = host.clientWidth || 660, H = height || 300;
+  const band0 = (W - 72) / laid.length;
+  /* Labels wrap one word per line over two lines. If the widest single word
+     still would not fit the column, rotate instead of letting text collide —
+     a clipped or overlapping label is worse than no label. */
+  const head = s => s.k.split(" ")[0];
+  const tail = s => s.k.split(" ").slice(1).join(" ");
+  const estW = t => t.length * 5.6;
+  const rotate = laid.some(s => Math.max(estW(head(s)), estW(tail(s))) > band0 - 8);
+  const M = { t: 26, r: 16, b: rotate ? 74 : 46, l: 56 };
+  const pw = Math.max(60, W - M.l - M.r), ph = Math.max(60, H - M.t - M.b);
+  let lo0 = 0, hi0 = 0;
+  for (const s of laid) { lo0 = Math.min(lo0, s.from, s.to); hi0 = Math.max(hi0, s.from, s.to); }
+  const { ticks, lo, hi } = niceTicks(lo0 / 100, hi0 / 100, 5);
+  const y = v => M.t + ph - (v / 100 - lo) / (hi - lo) * ph;
+  const band = pw / laid.length, bw = Math.min(44, band * 0.62);
+
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img" });
+  svg.setAttribute("aria-label", ariaLabel);
+  for (const t of ticks) {
+    const yy = y(t * 100);
+    svg.appendChild(sv("line", { x1: M.l, x2: M.l + pw, y1: yy, y2: yy, class: t === 0 ? "zeroline" : "gridline" }));
+    const tx = sv("text", { x: M.l - 8, y: yy + 3.5, "text-anchor": "end" });
+    tx.textContent = moneyShort(t * 100);
+    svg.appendChild(tx);
+  }
+  const up = cssVar("--s-ads"), down = cssVar("--s-exp"), tot = cssVar("--ink");
+  laid.forEach((s, i) => {
+    const cx = M.l + band * i + band / 2, x0 = cx - bw / 2;
+    const yA = y(s.total ? 0 : s.from), yB = y(s.to);
+    const rising = s.total ? s.v >= 0 : s.v >= 0;
+    const fill = s.total ? tot : (s.c || (s.v >= 0 ? up : down));
+    svg.appendChild(sv("path", { d: barPath(x0, bw, Math.min(yA, yB), Math.max(yA, yB), 4, rising), fill }));
+    if (i < laid.length - 1) {
+      const nx = M.l + band * (i + 1) + band / 2 - bw / 2;
+      svg.appendChild(sv("line", { x1: x0 + bw, x2: nx, y1: y(s.to), y2: y(s.to), stroke: cssVar("--axis"), "stroke-width": 1 }));
+    }
+    const cap = sv("text", { x: cx, y: rising ? Math.min(yA, yB) - 7 : Math.max(yA, yB) + 14, "text-anchor": "middle", class: "lbl-dir" });
+    cap.textContent = (s.total || s.v === 0 ? "" : s.v > 0 ? "+" : MINUS) + moneyShort(Math.abs(s.v)).replace(MINUS, "");
+    svg.appendChild(cap);
+    /* Rotate the category labels once the columns get narrow — wrapping them
+       into a 46px band produces overlapping fragments. */
+    if (rotate) {
+      const t = sv("text", { x: cx, y: H - 56, "text-anchor": "end", transform: `rotate(-38 ${cx} ${H - 56})` });
+      t.textContent = s.k;
+      svg.appendChild(t);
+    } else {
+      const t1 = sv("text", { x: cx, y: H - 26, "text-anchor": "middle" }); t1.textContent = head(s); svg.appendChild(t1);
+      const l2 = tail(s);
+      if (l2) { const t2 = sv("text", { x: cx, y: H - 14, "text-anchor": "middle" }); t2.textContent = l2; svg.appendChild(t2); }
+    }
+  });
+  host.textContent = "";
+  host.appendChild(svg);
+
+  /* per-column hover, since a waterfall has no shared X */
+  const tip = makeTip(host);
+  svg.addEventListener("pointermove", ev => {
+    const sr = svg.getBoundingClientRect(), k = (sr.width || W) / W;
+    const i = Math.floor(((ev.clientX - sr.left) / k - M.l) / band);
+    if (i < 0 || i >= laid.length) { tip.hide(); return; }
+    const s = laid[i], hr = host.getBoundingClientRect();
+    tip.show(ev.clientX - hr.left, ev.clientY - hr.top, box => {
+      box.appendChild(el("div", "tt", s.k));
+      tipRow(box, s.total ? tot : (s.c || (s.v >= 0 ? up : down)), s.total ? "Total" : "Effect", money(s.v, { sign: !s.total }), "sq");
+      if (!s.total) tipRow(box, null, "Running", money(s.to));
+      if (s.note) box.appendChild(el("div", "note", s.note));
+    });
+  });
+  svg.addEventListener("pointerleave", () => tip.hide());
+  if (twinHost) tableTwin(twinHost, ["Line", "Effect", "Running total"], laid.map(s => [s.k, money(s.v), money(s.to)]));
+  return laid;
+}
+
+/* =========================================================================
+   VARIANCE — why profit moved between the last two periods
+   ====================================================================== */
+function drawVariance() {
+  const host = $("#plotVar"), P = V.periods;
+  let prev = null, cur = null, label = "";
+  if (P.length >= 2) {
+    prev = P[P.length - 2]; cur = P[P.length - 1];
+    label = `${periodLongLabel(prev.key, S.gran)} → ${periodLongLabel(cur.key, S.gran)}`;
+  } else if (V.prev && V.prev.days) {
+    prev = V.prev; cur = V.total;
+    label = `prior ${V.prev.days} days → selected ${V.total.days} days`;
+  }
+  if (!prev) {
+    host.textContent = "";
+    const e = el("div", "empty");
+    e.appendChild(el("b", null, "Nothing to compare yet"));
+    e.appendChild(el("span", null, "Widen the range or group by day to get two periods side by side."));
+    host.appendChild(e);
+    $("#varSub").textContent = "Needs two periods.";
+    $("#twinVar").textContent = "";
+    return;
+  }
+  const va = variance(prev, cur);
+  const dir = va.total > 0 ? "higher" : va.total < 0 ? "lower" : "flat";
+  $("#varSub").textContent = `${label} · net profit ${money(va.total, { sign: true })} ${dir === "flat" ? "" : dir}`;
+  renderWaterfall(host, {
+    base: { label: "Opening", v: prev.netProfit },
+    steps: va.steps,
+    endLabel: "Closing",
+    twinHost: $("#twinVar"),
+    ariaLabel: `Why net profit moved from ${money(prev.netProfit)} to ${money(cur.netProfit)}: ` +
+      va.steps.map(s => `${s.k} ${money(s.v, { sign: true })}`).join(", ") + ".",
+    height: 320
+  });
+}
+
+/* =========================================================================
+   RUN-RATE
+   ====================================================================== */
+function drawRun() {
+  const host = $("#plotRun"), R = runRate();
+  const series = trailingSeries(28).filter(p => p.v != null);
+  const tiles = $("#runTiles");
+  tiles.className = "hl c4";
+  tiles.textContent = "";
+  const tile = (k, v, s) => {
+    const d = el("div");
+    d.appendChild(el("div", "k", k));
+    d.appendChild(el("div", "v", v));
+    d.appendChild(el("div", "s", s));
+    tiles.appendChild(d);
+  };
+  tile("Profit per day (28d)", R.profitPerDay28 == null ? "—" : money(Math.round(R.profitPerDay28)),
+    R.profitPerDay7 == null ? "no data" : `${money(Math.round(R.profitPerDay7))} on 7 days`);
+  tile("Monthly run-rate", R.monthlyProfit == null ? "—" : money(R.monthlyProfit), "28-day rate × 30.44");
+  tile("Annual run-rate", R.annualProfit == null ? "—" : money(R.annualProfit, { dp: 0 }),
+    R.annualRev == null ? "" : `${money(R.annualRev, { dp: 0 })} revenue`);
+  tile(R.partialMonth ? "This month projected" : "This month", R.monthProjection == null ? "—" : money(R.monthProjection),
+    R.partialMonth ? `${R.elapsed} of ${R.dim} days elapsed` : "complete month");
+
+  if (series.length < 2) {
+    host.textContent = "";
+    const e = el("div", "empty");
+    e.appendChild(el("b", null, "Not enough history for a 28-day rate"));
+    e.appendChild(el("span", null, "The chart appears once 28 consecutive days sit inside the selected range."));
+    host.appendChild(e);
+    $("#twinRun").textContent = "";
+    return;
+  }
+  const W = host.clientWidth || 620, H = 210;
+  const M = { t: 24, r: 18, b: 26, l: 60 };
+  const pw = Math.max(60, W - M.l - M.r), ph = H - M.t - M.b;
+  const vals = series.map(p => p.v);
+  const { ticks, lo, hi } = niceTicks(Math.min(0, ...vals) / 100, Math.max(0, ...vals) / 100, 4);
+  const y = v => M.t + ph - (v / 100 - lo) / (hi - lo) * ph;
+  const x = i => series.length === 1 ? M.l + pw / 2 : M.l + pw * i / (series.length - 1);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: "img" });
+  svg.setAttribute("aria-label", `Annualised trailing 28-day net profit, ending at ${money(vals[vals.length - 1], { dp: 0 })}.`);
+  for (const t of ticks) {
+    const yy = y(t * 100);
+    svg.appendChild(sv("line", { x1: M.l, x2: M.l + pw, y1: yy, y2: yy, class: t === 0 ? "zeroline" : "gridline" }));
+    const tx = sv("text", { x: M.l - 8, y: yy + 3.5, "text-anchor": "end" }); tx.textContent = moneyShort(t * 100); svg.appendChild(tx);
+  }
+  let d = "";
+  series.forEach((p, i) => { d += (i ? "L" : "M") + x(i) + " " + y(p.v); });
+  const last = vals[vals.length - 1];
+  const colour = last >= 0 ? cssVar("--s-ads") : cssVar("--bad");
+  svg.appendChild(sv("path", { d: d + `L${x(series.length - 1)} ${y(0)}L${x(0)} ${y(0)}Z`, fill: colour, opacity: .1 }));
+  svg.appendChild(sv("path", { d, fill: "none", stroke: colour, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  svg.appendChild(sv("circle", { cx: x(series.length - 1), cy: y(last), r: 4.5, fill: colour, stroke: cssVar("--surface-1"), "stroke-width": 2 }));
+  const lab = sv("text", { x: x(series.length - 1) - 4, y: y(last) - 12, "text-anchor": "end", class: "lbl-dir" });
+  lab.textContent = money(last, { dp: 0 }); svg.appendChild(lab);
+  const every = tickEvery(series.length, pw, 64);
+  series.forEach((p, i) => {
+    if (i % every === 0 || i === series.length - 1) {
+      const tx = sv("text", { x: x(i), y: H - 8, "text-anchor": i === series.length - 1 ? "end" : "middle" });
+      tx.textContent = fmtDay(p.n); svg.appendChild(tx);
+    }
+  });
+  host.textContent = "";
+  host.appendChild(svg);
+  const evs = eventRules(svg, { list: mapEventsToDays(series.map(p => ({ n: p.n }))), xAt: x, top: M.t, bottom: M.t + ph });
+  void evs;
+  const tip = makeTip(host);
+  attachCrosshair({
+    svg, host, tip, count: series.length, xAt: x, top: M.t, bottom: M.t + ph,
+    label: i => fmtDayFull(series[i].n),
+    build: (i, box) => {
+      box.appendChild(el("div", "tt", fmtDayFull(series[i].n)));
+      tipRow(box, colour, "Annualised", money(series[i].v, { dp: 0 }));
+      tipRow(box, null, "Per day", money(Math.round(series[i].v / 365)));
+    }
+  });
+  tableTwin($("#twinRun"), ["Window ending", "Per day", "Annualised"],
+    series.map(p => [fmtDayFull(p.n), money(Math.round(p.v / 365)), money(p.v, { dp: 0 })]));
+}
+
+/* =========================================================================
+   BREAK-EVEN + ACQUISITION EFFICIENCY
+   ====================================================================== */
+function tileInto(host, items, cls) {
+  host.className = "hl" + (cls ? " " + cls : "");
+  host.textContent = "";
+  for (const it of items) {
+    const d = el("div");
+    d.appendChild(el("div", "k", it.k));
+    d.appendChild(el("div", "v", it.v));
+    d.appendChild(el("div", "s", it.s || ""));
+    host.appendChild(d);
+  }
+}
+function drawBreakeven() {
+  const B = breakeven(), T = V.total;
+  if (!T.expenses) {
+    tileInto($("#breakTiles"), [
+      { k: "Daily burn", v: money(0), s: "no expenses recorded" },
+      { k: "Break-even", v: "immediate", s: "any revenue is profit until costs are entered" },
+      { k: "Days above break-even", v: `${B.aboveDays} of ${B.totalDays}`, s: "days with non-negative profit" }
+    ]);
+    return;
+  }
+  tileInto($("#breakTiles"), [
+    { k: "Daily burn", v: money(B.burnPerDay), s: "trailing 28-day average" },
+    { k: "Revenue cover", v: B.coverage == null ? "—" : B.coverage.toFixed(2) + "×", s: "revenue per £1 of cost" },
+    { k: "Break-even DAU", v: B.dauNeeded == null ? "—" : intFmt(B.dauNeeded), s: T.arpdau ? `at ${money(T.arpdau, { dp: 4 })} ARPDAU` : "needs a user metric" },
+    { k: "Break-even eCPM", v: B.ecpmNeeded == null ? "—" : money(B.ecpmNeeded), s: "if ads alone had to cover it" },
+    { k: "Days above break-even", v: `${B.aboveDays} of ${B.totalDays}`, s: B.totalDays ? pct(B.aboveDays / B.totalDays, 0) + " of the period" : "" },
+    { k: "Longest run", v: `${B.longestStreak} ${B.longestStreak === 1 ? "day" : "days"}`, s: B.currentStreak ? `${B.currentStreak} currently` : "not currently above" }
+  ]);
+}
+function drawMarketing() {
+  const T = V.total, host = $("#mktBody");
+  host.textContent = "";
+  if (!T.mkt) {
+    const e = el("div", "empty");
+    e.appendChild(el("b", null, "No acquisition spend recorded"));
+    e.appendChild(el("span", null, 'Add an expense in the "User acquisition" category — for example a daily Google Ads budget — and this panel computes ROAS, spend as a share of revenue, and contribution after acquisition cost.'));
+    host.appendChild(e);
+    return;
+  }
+  const inner = el("div");
+  host.appendChild(inner);
+  const contribMargin = T.netRev > 0 ? T.contribution / T.netRev : null;
+  tileInto(inner, [
+    { k: "Acquisition spend", v: money(T.mkt), s: `${money(Math.round(T.mkt / Math.max(1, T.days)))} per day` },
+    { k: "Share of revenue", v: T.mktPct == null ? "—" : pct(T.mktPct, 1), s: "spend ÷ net revenue" },
+    { k: "Blended ROAS", v: T.roas == null ? "—" : T.roas.toFixed(2) + "×", s: "revenue per £1 spent" },
+    { k: "Contribution", v: money(T.contribution), s: "net revenue less acquisition" },
+    { k: "Contribution margin", v: contribMargin == null ? "—" : pct(contribMargin, 1), s: "after acquisition only" },
+    { k: "Spend per DAU-day", v: T.mktPerDauDay == null ? "—" : money(T.mktPerDauDay, { dp: 4 }), s: T.auSum ? `${intFmt(T.auSum)} user-days` : "needs a user metric" }
+  ]);
+  const note = el("p", "hint");
+  note.style.marginTop = "12px";
+  note.textContent = T.roas != null && T.roas < 1
+    ? `Every £1 of acquisition is currently returning ${money(Math.round(T.roas * 100))} of net revenue inside this window. Blended ROAS below 1× means the period does not pay for its own acquisition — though revenue from earlier cohorts keeps arriving, so a single window understates lifetime return.`
+    : "Blended across all users, so revenue from users acquired before this window is included. It is not a cohort payback figure.";
+  host.appendChild(note);
+}
+
+/* =========================================================================
+   CASH RECEIPTS
+   ====================================================================== */
+function drawPayouts() {
+  const rows = payouts(), wrap = $("#payWrap");
+  wrap.textContent = "";
+  const t = el("table"), th = el("thead"), hr = el("tr");
+  for (const h of ["Earned in", "Ad earnings", "Payable", "Expected on", "In-app (net)", "Expected on", "Total expected"]) hr.appendChild(el("th", null, h));
+  th.appendChild(hr); t.appendChild(th);
+  const tb = el("tbody");
+  let carriedNote = 0;
+  for (const r of rows) {
+    const tr = el("tr");
+    tr.appendChild(el("td", null, r.label));
+    tr.appendChild(el("td", null, money(r.ads)));
+    tr.appendChild(el("td", r.payable ? null : "zero", r.payable ? money(r.payable) : "carried forward"));
+    tr.appendChild(el("td", r.payable ? null : "zero", r.payable ? r.adsDate : "—"));
+    tr.appendChild(el("td", null, money(r.iap)));
+    tr.appendChild(el("td", null, r.iap ? r.iapDate : "—"));
+    tr.appendChild(el("td", null, money(r.total)));
+    tb.appendChild(tr);
+    if (!r.payable) carriedNote += r.ads;
+  }
+  const tot = el("tr", "total");
+  tot.appendChild(el("td", null, "Total"));
+  tot.appendChild(el("td", null, money(rows.reduce((s, r) => s + r.ads, 0))));
+  tot.appendChild(el("td", null, money(rows.reduce((s, r) => s + r.payable, 0))));
+  tot.appendChild(el("td", null, ""));
+  tot.appendChild(el("td", null, money(rows.reduce((s, r) => s + r.iap, 0))));
+  tot.appendChild(el("td", null, ""));
+  tot.appendChild(el("td", null, money(rows.reduce((s, r) => s + r.total, 0))));
+  tb.appendChild(tot);
+  t.appendChild(tb);
+  wrap.appendChild(t);
+  const last = rows[rows.length - 1];
+  $("#pyHint").textContent =
+    `Revenue is earned before it is received. Ad earnings are assumed paid on day ${S.assume.payAd} of the following month once the balance clears ${money(S.assume.threshold)}, otherwise carried forward; store revenue on day ${S.assume.payIap}. ` +
+    (last && !last.payable ? `${money(last.carried)} is currently below the threshold and rolls forward.` : "Dates are expectations from the assumptions, not confirmations.");
+}
+
+/* =========================================================================
+   TIMELINE MARKERS
+   ====================================================================== */
+function sortedEvents() {
+  return (S.events || []).slice()
+    .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0)
+    .map((e, i) => ({ id: e.id, date: e.date, label: e.label, num: i + 1, n: dnum(e.date) }));
+}
+function mapEventsToPeriods(P) {
+  return sortedEvents().map(e => {
+    let idx = null;
+    for (let i = 0; i < P.length; i++) if (e.n >= P[i].first && e.n <= P[i].last) { idx = i; break; }
+    return Object.assign({}, e, { idx });
+  });
+}
+function mapEventsToDays(days) {
+  const pos = new Map(days.map((m, i) => [m.n, i]));
+  return sortedEvents().map(e => Object.assign({}, e, { idx: pos.has(e.n) ? pos.get(e.n) : null }));
+}
+/* Dashed here is deliberate: this is a threshold/marker, not a gridline. */
+function eventRules(svg, opts) {
+  const { list, xAt, top, bottom } = opts;
+  const drawn = [];
+  for (const e of list) {
+    if (e.idx == null) continue;
+    const x = xAt(e.idx);
+    svg.appendChild(sv("line", { x1: x, x2: x, y1: top, y2: bottom, stroke: cssVar("--axis"), "stroke-width": 1, "stroke-dasharray": "3 3" }));
+    svg.appendChild(sv("rect", { x: x - 6.5, y: top - 15, width: 13, height: 13, rx: 3.5, fill: cssVar("--surface-3") }));
+    const t = sv("text", { x, y: top - 5, "text-anchor": "middle", "font-size": "9", "font-weight": "700" });
+    t.textContent = String(e.num);
+    svg.appendChild(t);
+    drawn.push(e);
+  }
+  return drawn;
+}
+function eventFootnote(host, drawn) {
+  host.textContent = "";
+  for (const e of drawn) {
+    const w = el("span", "ev");
+    w.appendChild(el("span", "evbadge", String(e.num)));
+    w.appendChild(el("span", null, `${fmtDay(e.n)} · ${e.label}`));
+    host.appendChild(w);
+  }
+}
+function drawEvents() {
+  const host = $("#evList");
+  host.textContent = "";
+  const list = sortedEvents();
+  if (!list.length) {
+    const e = el("div", "empty");
+    e.appendChild(el("b", null, "No markers yet"));
+    e.appendChild(el("span", null, "A marker on the day a campaign started or a release shipped makes the charts explain themselves."));
+    host.appendChild(e);
+    return;
+  }
+  for (const e of list) {
+    const row = el("div", "evrow");
+    row.appendChild(el("span", "evbadge", String(e.num)));
+    row.appendChild(el("span", "d", fmtDayFull(e.n)));
+    row.appendChild(el("span", "t", e.label));
+    const btns = el("div", "rowbtns no-print");
+    const del = el("button", "btn sm danger", "Remove");
+    del.addEventListener("click", () => {
+      const i = S.events.findIndex(x => x.id === e.id);
+      if (i < 0) return;
+      const [gone] = S.events.splice(i, 1);
+      save(); render();
+      toast("Marker removed", { label: "Undo", fn: () => { S.events.splice(i, 0, gone); save(); render(); } });
+    });
+    btns.appendChild(del);
+    row.appendChild(btns);
+    host.appendChild(row);
+  }
+}
+
+/* =========================================================================
+   SOURCE DATA — the export itself, so no figure is unauditable
+   ====================================================================== */
+function sourceRows() {
+  return V.days.map(m => [
+    m.date,
+    m.au == null ? "—" : intFmt(m.au),
+    m.av == null ? "—" : intFmt(m.av),
+    intFmt(m.imp),
+    m.imp ? money(m.ads / m.imp * 1000) : "—",
+    money(m.ads),
+    m.iapNull ? "not reported" : money(m.grossBillings),
+    money(m.commission),
+    money(m.netRev),
+    money(m.cogs + m.opex),
+    money(m.netProfit)
+  ]);
+}
+const SOURCE_COLS = ["Date", "DAU", "Ad viewers", "Impressions", "eCPM", "Ad revenue",
+  "In-app gross", "Commission", "Net revenue", "Expenses", "Net profit"];
+function drawSourceData() {
+  tableTwin($("#srcTable"), SOURCE_COLS, sourceRows());
+  $("#srcHint").textContent =
+    `All ${V.days.length} days in the selected range, as read from the export, with each derived figure beside it. Nothing in this report comes from anywhere else.`;
+}
+
+/* =========================================================================
+   NARRATIVE — computed sentences only
+   ====================================================================== */
+function drawNarrative() {
+  const T = V.total, R = runRate(), B = breakeven(), host = $("#narrative");
+  host.textContent = "";
+  const line = (parts, flagged) => {
+    const li = el("li");
+    if (flagged) li.className = "flagged";
+    for (const p of parts) li.appendChild(typeof p === "string" ? document.createTextNode(p) : p);
+    host.appendChild(li);
+  };
+  const b = t => el("b", null, t);
+
+  const adShare = T.netRev > 0 ? T.adsNet / T.netRev : null;
+  line(["Net revenue of ", b(money(T.netRev)), ` over ${T.days} days`,
+    adShare == null ? "" : `, ${pct(adShare, 0)} advertising and ${pct(1 - adShare, 0)} in-app purchases`,
+    `, after stripping ${S.assume.fee}% store commission (`, b(money(T.commission)), ")."]);
+
+  if (T.expenses) {
+    line(["Costs of ", b(money(T.expenses)), ` (${T.netRev > 0 ? pct(T.expenses / T.netRev, 0) : "—"} of revenue) leave `,
+      b(money(T.netProfit)), T.margin == null ? "" : ` at a ${pct(T.margin, 1)} net margin`, "."]);
+  } else {
+    line(["No costs are recorded, so ", b(money(T.netProfit)), " of “profit” is simply net revenue. Enter acquisition, hosting and tooling spend to make this a true income statement."], true);
+  }
+
+  if (R.profitPerDay28 != null) {
+    line([`The trailing 28 days ran at `, b(money(Math.round(R.profitPerDay28)) + " per day"),
+      `, a run-rate of `, b(money(R.monthlyProfit) + " a month"), ` or `, b(money(R.annualProfit, { dp: 0 }) + " a year"),
+      ". A run-rate extrapolates the observed rate; it assumes no growth and no change in spend."]);
+  }
+  if (R.wowRev != null) {
+    const dir = R.wowRev >= 0 ? "up" : "down";
+    line([`Revenue in the last 7 days was `, b(money(R.t7.netRev)), `, ${dir} `, b(pct(Math.abs(R.wowRev), 0)),
+      " on the prior seven."]);
+  }
+  if (T.expenses && B.burnPerDay) {
+    line([`Break-even needs `, b(money(B.burnPerDay) + " a day"),
+      B.dauNeeded == null ? "" : ` — about ${intFmt(B.dauNeeded)} daily users at the current ARPDAU`,
+      `. ${B.aboveDays} of ${B.totalDays} days cleared it, the longest run being ${B.longestStreak}.`]);
+  }
+  const best = V.days.reduce((a, c) => c.netRev > a.netRev ? c : a, V.days[0]);
+  const worst = V.days.reduce((a, c) => c.netProfit < a.netProfit ? c : a, V.days[0]);
+  line([`Strongest day was `, b(fmtDayFull(best.n)), ` at ${money(best.netRev)} of revenue; weakest was `,
+    b(fmtDayFull(worst.n)), ` at ${money(worst.netProfit)}`,
+    worst.grossBillings < 0 ? `, driven by ${money(worst.grossBillings)} of net refunds` : "", "."]);
+  if (T.refunds) {
+    line([`Refunds of `, b(money(T.refunds)), " are netted against gross billings, with store commission reversed at the same rate."]);
+  }
+}
+
+/* ---------------------------------------------- crosshair + keyboard nav --- */
+function attachCrosshair(cfg) {
+  const { svg, host, tip, count, xAt, top, bottom, build, label } = cfg;
+  if (!count) return;
+  const hair = sv("line", { class: "hair", y1: top, y2: bottom, x1: -99, x2: -99, opacity: 0 });
+  svg.appendChild(hair);
+  const vbW = Number(svg.getAttribute("width")) || 1;
+  /* A focusable sibling, not a child of the svg: the svg keeps role="img" with
+     its text summary, and this layer owns pointer + keyboard interaction.
+     Both it and the svg are rebuilt on every render, so listeners can never
+     accumulate the way container-level listeners did. */
+  const kbd = el("div", "kbd");
+  kbd.tabIndex = 0;
+  kbd.setAttribute("role", "group");
+  kbd.setAttribute("aria-label", "Chart values — press the left and right arrow keys to step through periods");
+  host.appendChild(kbd);
+
+  let cur = -1;
+  const scale = () => (svg.getBoundingClientRect().width || vbW) / vbW;
+  const nearest = clientX => {
+    const sr = svg.getBoundingClientRect();
+    const px = (clientX - sr.left) / scale();
+    let bi = 0, bd = Infinity;
+    for (let i = 0; i < count; i++) { const d = Math.abs(xAt(i) - px); if (d < bd) { bd = d; bi = i; } }
+    return bi;
+  };
+  const showAt = (i, clientY) => {
+    cur = i;
+    const cx = xAt(i), k = scale();
+    hair.setAttribute("x1", cx); hair.setAttribute("x2", cx); hair.setAttribute("opacity", 1);
+    const hr = host.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+    const px = cx * k + (sr.left - hr.left);
+    const py = clientY != null ? clientY - hr.top : (top + bottom) / 2 * k + (sr.top - hr.top);
+    tip.show(px, py, b => build(i, b));
+  };
+  const clear = () => { hair.setAttribute("opacity", 0); tip.hide(); };
+
+  kbd.addEventListener("pointermove", ev => showAt(nearest(ev.clientX), ev.clientY));
+  kbd.addEventListener("pointerleave", clear);
+  kbd.addEventListener("focus", () => showAt(cur < 0 ? count - 1 : cur));
+  kbd.addEventListener("blur", clear);
+  kbd.addEventListener("keydown", ev => {
+    const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+    if (!keys.includes(ev.key)) return;
+    ev.preventDefault();
+    let i = cur < 0 ? count - 1 : cur;
+    if (ev.key === "ArrowLeft") i = Math.max(0, i - 1);
+    if (ev.key === "ArrowRight") i = Math.min(count - 1, i + 1);
+    if (ev.key === "Home") i = 0;
+    if (ev.key === "End") i = count - 1;
+    showAt(i);
+    const live = $("#live");
+    if (live) live.textContent = (label ? label(i) + ": " : "") + tip.node.textContent;
+  });
+}
+
+/* =========================================================================
+   STATEMENT
+   ====================================================================== */
+function drawStatement() {
+  const P = V.periods, T = V.total;
+  const head = $("#stmt thead"), body = $("#stmt tbody");
+  head.textContent = ""; body.textContent = "";
+  const hr = el("tr");
+  hr.appendChild(el("th", null, S.gran === "day" ? "Day" : S.gran === "month" ? "Month" : "Year"));
+  for (const a of P) hr.appendChild(el("th", null, periodLabelOf(a.key, S.gran)));
+  hr.appendChild(el("th", null, "Total"));
+  head.appendChild(hr);
+
+  /* Three display modes share one row builder. Costs are carried as negative
+     numbers, so colouring a change by its sign colours it by its effect on
+     profit — a rising cost reads red without any special case. */
+  const mode = S.stmtMode || "amount";
+  const aggs = P.concat([T]);
+  const line = (label, fn, rowCls, opts = {}) => {
+    const tr = el("tr", rowCls);
+    tr.appendChild(el("td", "lbl-cell", label));
+    const vals = aggs.map(fn);
+    vals.forEach((v, i) => {
+      const isTotal = i === aggs.length - 1;
+      const td = el("td");
+      if (v == null) { td.textContent = "—"; td.className = "zero"; tr.appendChild(td); return; }
+      if (mode === "pct") {
+        const base = aggs[i].netRev;
+        td.textContent = base === 0 ? "—" : (v / base * 100).toFixed(1) + "%";
+        if (opts.colour) td.className = v > 0 ? "pos" : v < 0 ? "neg" : "zero";
+      } else if (mode === "delta") {
+        const prev = isTotal ? vals[0] : (i > 0 ? vals[i - 1] : null);
+        const cmp = isTotal ? vals[P.length - 1] : v;
+        if (prev == null || (isTotal && P.length < 2)) { td.textContent = "—"; td.className = "zero"; }
+        else {
+          const d = cmp - prev;
+          td.textContent = d === 0 ? money(0) : money(d, { sign: true });
+          td.className = d > 0 ? "d-up" : d < 0 ? "d-down" : "zero";
+        }
+      } else {
+        td.textContent = money(v);
+        td.className = opts.colour ? (v > 0 ? "pos" : v < 0 ? "neg" : "zero") : (v === 0 ? "zero" : "");
+      }
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  };
+  const section = label => {
+    const tr = el("tr", "sec");
+    const td = el("td", null, label); td.colSpan = P.length + 2;
+    tr.appendChild(td); body.appendChild(tr);
+  };
+
+  section("Revenue");
+  line("Advertising revenue (net)", a => a.ads, "sub");
+  line("In-app purchases — gross billings", a => a.grossBillings, "sub");
+  line(`Less: store commission (${S.assume.fee}%)`, a => a.commission, "sub");
+  if (S.assume.other > 0) line(`Less: other deductions (${S.assume.other}%)`, a => a.otherDed, "sub");
+  line("Net revenue", a => a.netRev, "total");
+
+  section("Cost of revenue");
+  const cogsCats = catsPresent("cogs");
+  if (cogsCats.length) for (const c of cogsCats) line(CAT_LABEL(c), a => -(catOf(a, c, "cogs")), "sub2");
+  line("Total cost of revenue", a => -a.cogs, "sub");
+  line("Gross profit", a => a.grossProfit, "total");
+
+  section("Operating expenses");
+  const opexCats = catsPresent("opex");
+  if (opexCats.length) for (const c of opexCats) line(CAT_LABEL(c), a => -(catOf(a, c, "opex")), "sub2");
+  else { const tr = el("tr", "sub"); const td = el("td", "lbl-cell", "No operating expenses recorded"); td.colSpan = P.length + 2; tr.appendChild(td); body.appendChild(tr); }
+  line("Total operating expenses", a => -a.opex, "sub");
+  line("Operating profit", a => a.opProfit, "total", { colour: true });
+
+  if (S.assume.tax > 0) line(`Tax (${S.assume.tax}%)`, a => -a.tax, "sub");
+  line("Net profit", a => a.netProfit, "grand", { colour: true });
+
+  /* Ratios and counts are not currency, so they get their own row type instead
+     of being routed through the money formatter. */
+  const memo = (label, fn) => {
+    const tr = el("tr", "memo sub");
+    tr.appendChild(el("td", "lbl-cell", label));
+    for (const a of P.concat([T])) {
+      const v = fn(a);
+      const isObj = v && typeof v === "object";
+      tr.appendChild(el("td", isObj ? v.cls : null, isObj ? v.text : v));
+    }
+    body.appendChild(tr);
+  };
+  memo("Net margin", a => a.margin == null
+    ? { text: "—", cls: "zero" }
+    : { text: pct(a.margin, 1), cls: a.margin > 0 ? "pos" : a.margin < 0 ? "neg" : "zero" });
+
+  section("Memorandum");
+  memo("Days in period", a => intFmt(a.days));
+  memo("Ad impressions", a => intFmt(a.imp));
+  memo("eCPM", a => a.ecpm == null ? "—" : money(a.ecpm));
+  memo("Average DAU", a => a.avgAu == null ? "—" : intFmt(a.avgAu));
+  memo("ARPDAU", a => a.arpdau == null ? "—" : money(a.arpdau, { dp: 4 }));
+  memo("Refunds included", a => a.refunds ? money(a.refunds) : money(0));
+  memo("Net profit per day", a => a.days ? money(Math.round(a.netProfit / a.days)) : "—");
+
+  $("#stHint").textContent =
+    `${P.length} ${S.gran === "day" ? "day" : S.gran} column${P.length === 1 ? "" : "s"} · ${fmtDayFull(V.from)} to ${fmtDayFull(V.to)} · figures in ${CUR}` +
+    ` · net revenue is after stripping ${S.assume.fee}% store commission from in-app billings` +
+    (mode === "pct" ? " · shown as % of that period's net revenue"
+      : mode === "delta" ? " · each column shows the change on the one before it; the total column shows first to last"
+        : "");
+}
+function catsPresent(cls) {
+  const set = new Set();
+  for (const e of S.expenses) if (e.cls === cls) set.add(e.cat);
+  const order = CATS.map(c => c.id);
+  return Array.from(set).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+}
+/* Category total for one period, attributed to a single treatment. The
+   aggregate already carries these keyed totals, so this is a map lookup. */
+function catOf(a, cat, cls) { return a.cats.get(catKey(cat, cls)) || 0; }
+
+/* =========================================================================
+   HERO / HIGHLIGHTS / NOTES
+   ====================================================================== */
+/* Values cross-fade through a blur rather than snapping, which means the write
+   is deferred. Compare against the PENDING target, not the current text: with a
+   current-text comparison, a fast A→B→A change early-returns on the way back
+   and then lets the stale B write land, leaving a figure that contradicts the
+   selected range. One pending write per node, always to the latest target. */
+function swapText(node, text) {
+  if (node.__target === text) return;
+  node.__target = text;
+  if (node.textContent === text) { clearTimeout(node.__timer); node.classList.remove("swap"); return; }
+  node.classList.add("swap");
+  clearTimeout(node.__timer);
+  node.__timer = setTimeout(() => {
+    node.textContent = node.__target;
+    node.classList.remove("swap");
+  }, 130);
+}
+function drawHero() {
+  const T = V.total, prev = V.prev;
+  $("#heroPeriod").textContent = `${fmtDay(V.from)} – ${fmtDayFull(V.to)}`;
+  swapText($("#heroValue"), money(T.netProfit));
+  $("#heroMargin").textContent = T.margin == null ? "no revenue" : `${pct(T.margin, 1)} net margin on ${money(T.netRev)} revenue`;
+  const dEl = $("#heroDelta");
+  dEl.textContent = "";
+  if (prev && V.prevDays >= (V.to - V.from + 1) * 0.6) {
+    const diff = T.netProfit - prev.netProfit;
+    const rel = prev.netProfit !== 0 ? diff / Math.abs(prev.netProfit) : null;
+    const s = el("span", "delta " + (diff > 0 ? "up" : diff < 0 ? "down" : "flat"));
+    s.textContent = (diff > 0 ? "▲ " : diff < 0 ? "▼ " : "· ") + money(Math.abs(diff)) + (rel == null ? "" : " (" + pct(Math.abs(rel), 0) + ")");
+    dEl.appendChild(s);
+    dEl.appendChild(document.createTextNode(" vs previous " + (V.to - V.from + 1) + " days"));
+  } else {
+    dEl.textContent = "no comparable prior period in the data";
+  }
+
+  const tiles = [
+    { k: "Net revenue", v: money(T.netRev), d: `${money(T.ads)} ads · ${money(T.iapNet)} in-app` },
+    { k: "Total expenses", v: money(T.expenses), d: T.expenses ? `${money(T.cogs)} direct · ${money(T.opex)} operating` : "none recorded" },
+    { k: "Gross billings", v: money(T.grossBillings), d: `commission ${money(T.commission)}` },
+    { k: "Profit / day", v: T.days ? money(Math.round(T.netProfit / T.days)) : "—", d: `${T.days} days` },
+    { k: "eCPM", v: T.ecpm == null ? "—" : money(T.ecpm), d: `${intFmt(T.imp)} impressions` },
+    { k: "ARPDAU", v: T.arpdau == null ? "—" : money(T.arpdau, { dp: 4 }), d: T.avgAu == null ? "no user metric" : `${intFmt(T.avgAu)} avg DAU` }
+  ];
+  const host = $("#heroTiles");
+  if (host.children.length !== tiles.length) {
+    host.textContent = "";
+    for (const t of tiles) {
+      const d = el("div", "tile");
+      d.appendChild(el("div", "k", t.k));
+      d.appendChild(el("div", "v", t.v));
+      d.appendChild(el("div", "d", t.d));
+      host.appendChild(d);
+    }
+  } else {
+    Array.from(host.children).forEach((node, i) => {
+      node.children[0].textContent = tiles[i].k;
+      swapText(node.children[1], tiles[i].v);
+      node.children[2].textContent = tiles[i].d;
+    });
+  }
+  $("#noExpBanner").hidden = S.expenses.length > 0;
+}
+
+function drawHighlights() {
+  const T = V.total, D = V.days;
+  const host = $("#hlGrid");
+  host.textContent = "";
+  const best = D.reduce((a, b) => b.netRev > a.netRev ? b : a, D[0]);
+  const adShare = T.netRev > 0 ? T.adsNet / T.netRev : null;
+  const last7 = D.slice(-7), prev7 = D.slice(-14, -7);
+  const s7 = last7.reduce((s, m) => s + m.netRev, 0), p7 = prev7.reduce((s, m) => s + m.netRev, 0);
+  const trend = p7 !== 0 ? (s7 - p7) / Math.abs(p7) : null;
+  const refunds = D.reduce((s, m) => s + Math.min(0, m.grossBillings), 0);
+  const items = [
+    { k: "Strongest day", v: money(best.netRev), s: fmtDayFull(best.n) },
+    { k: "Revenue mix", v: adShare == null ? "—" : pct(adShare, 0) + " advertising", s: adShare == null ? "no revenue in period" : pct(1 - adShare, 0) + " in-app purchases" },
+    { k: "Last 7 days", v: money(s7), s: trend == null ? "no prior week to compare" : (trend >= 0 ? "▲ " : "▼ ") + pct(Math.abs(trend), 0) + " vs prior 7 days" },
+    { k: "Refunds", v: refunds ? money(refunds) : money(0), s: refunds ? "netted against gross billings" : "none in period" },
+    { k: "Rewarded ad events", v: intFmt(T.reSum), s: T.imp ? pct(T.reSum / T.imp, 0) + " of impressions" : "—" },
+    { k: "Cash conversion", v: T.netRev ? pct(T.netProfit / T.netRev, 0) : "—", s: "net profit ÷ net revenue" }
+  ];
+  for (const it of items) {
+    const d = el("div");
+    d.appendChild(el("div", "k", it.k));
+    d.appendChild(el("div", "v", it.v));
+    d.appendChild(el("div", "s", it.s));
+    host.appendChild(d);
+  }
+}
+
+function drawNotes() {
+  const src = $("#noteSource");
+  src.textContent = "";
+  const bold = (label, rest) => { const n = el("li"); n.appendChild(el("b", null, label)); n.appendChild(document.createTextNode(" " + rest)); src.appendChild(n); };
+  bold("Source file:", META.source + (META.imported ? " (imported in this session)" : ""));
+  bold("Coverage:", `${fmtDayFull(DATA_FROM)} to ${fmtDayFull(DATA_TO)} — ${DAYS.length} days` +
+    (META.gapDays > 0 ? `, with ${META.gapDays} calendar day${META.gapDays === 1 ? "" : "s"} absent from the export.` : ", consecutive, no gaps."));
+  bold("Currency:", CUR + ", as exported. No FX conversion is applied anywhere in this report.");
+  bold("Generated:", META.generated + " from the AdMob user-metrics export.");
+  bold("Store commission:", `${S.assume.fee}% is stripped from in-app gross billings to reach net revenue.`);
+
+  const flags = $("#noteFlags");
+  flags.textContent = "";
+  const flag = (kind, text) => {
+    const d = el("div", "flag " + kind);
+    d.appendChild(el("span", "d"));
+    d.appendChild(el("span", null, text));
+    flags.appendChild(d);
+  };
+  const noAu = DAYS.filter(d => d.au == null).length;
+  const noIap = DAYS.filter(d => d.iapNull).length;
+  const refundDays = DAYS.filter(d => d.iap < 0).length;
+  if (noIap) flag("warn", `In-app purchase reporting is absent for the first ${noIap} days (to ${dstr(DAYS[noIap - 1].n)}). Those days carry advertising revenue only — they are not zero-purchase days, they are unreported.`);
+  if (noAu) flag("warn", `Active users are missing on ${noAu} of ${DAYS.length} days — the earliest days pre-date metric linking, and the most recent days lag. ARPDAU and ad reach are computed only on the ${DAYS.length - noAu} days that report it.`);
+  if (refundDays) flag("info", `${refundDays} days show negative purchase earnings (refunds or chargebacks exceeding sales). They are netted, not discarded.`);
+  if (META.partialLast) flag("warn", `The last day (${dstr(DATA_TO)}) is today, so it is almost certainly a partial day. Use the "Include today" assumption to exclude it.`);
+  if (META.gapDays > 0) flag("warn", `${META.gapDays} calendar day${META.gapDays === 1 ? " is" : "s are"} missing from the export. Missing days are left blank, never treated as zero-revenue days.`);
+  /* Reconcile the components we build on against the platform's own total. */
+  const repDays = DAYS.filter(d => d.rep != null);
+  if (repDays.length) {
+    const drift = repDays.reduce((s, d) => s + d.rep - (d.ads + d.iap), 0);
+    if (drift !== 0) flag("info", `The platform rounds each money column separately, so its "Overall earnings" column totals ${money(drift, { sign: true })} against the sum of advertising plus purchases. This report is built from the two components, which are the lines a statement needs.`);
+    else flag("info", "Advertising plus purchases reconciles exactly to the platform's own overall-earnings total.");
+  }
+  flag("info", "Advertising figures are AdMob estimates until finalised at month end, and exclude any invalid-traffic deductions applied later.");
+  if (!storageOK) flag("warn", "Local storage is unavailable in this context, so expenses will not survive a reload. Use Export to keep your ledger.");
+
+  /* the ledger is entered in whatever currency the export reports */
+  $("#lblAmt").textContent = `Amount (${SYM})`;
+  $("#lblThresh").textContent = `Ad payment threshold (${SYM})`;
+  $("#pcMeta").textContent =
+    `${fmtDayFull(V.from)} to ${fmtDayFull(V.to)} · ${CUR} · prepared ${new Date().toISOString().slice(0, 10)} ` +
+    `· source ${META.source} · indicative management information, not a statutory account`;
+  $("#topSub").textContent = `Management accounts · ${CUR} · ${fmtDayFull(DATA_FROM)} – ${fmtDayFull(DATA_TO)}`;
+  $("#btnRevert").hidden = !META.imported;
+  $("#footMeta").textContent = `Money Tycoon · built from ${META.source} · ${DAYS.length} days · generated ${META.generated} · indicative management information, not a statutory account`;
+}
+
+/* =========================================================================
+   EXPENSES UI
+   ====================================================================== */
+const TEMPLATES = [
+  { label: "Google Ads UAC", cat: "ua", desc: "Google Ads UAC campaign", rec: "daily", cls: "opex" },
+  { label: "Firebase / GCP", cat: "infra", desc: "Firebase Blaze usage", rec: "monthly", cls: "cogs" },
+  { label: "VPS hosting", cat: "infra", desc: "Exchange server VPS", rec: "monthly", cls: "cogs" },
+  { label: "Play Console", cat: "fees", desc: "Google Play developer registration", rec: "once", cls: "opex" },
+  { label: "Apple Developer", cat: "fees", desc: "Apple Developer Program", rec: "annual", cls: "opex" },
+  { label: "Tooling", cat: "tools", desc: "Design and dev subscriptions", rec: "monthly", cls: "opex" },
+  { label: "Contractor", cat: "people", desc: "Freelance work", rec: "once", cls: "opex" }
+];
+let editingId = null;
+
+function drawExpenseUI() {
+  /* summary over the visible slice */
+  const T = V.total;
+  const sum = $("#expSum");
+  sum.textContent = "";
+  const box = (k, v) => { const d = el("div"); d.appendChild(el("div", "k", k)); d.appendChild(el("div", "v", v)); sum.appendChild(d); };
+  box("In period", money(T.expenses));
+  box("Cost of revenue", money(T.cogs));
+  box("Operating", money(T.opex));
+  box("Ledger items", intFmt(S.expenses.length));
+  box("Per day", T.days ? money(Math.round(T.expenses / T.days)) : "—");
+
+  const host = $("#expList");
+  host.textContent = "";
+  if (!S.expenses.length) {
+    const e = el("div", "empty");
+    e.appendChild(el("b", null, "Your expense ledger is empty"));
+    e.appendChild(el("span", null, "Add acquisition spend, hosting, tooling or contractor costs above. Until you do, the statement shows revenue with no costs against it."));
+    host.appendChild(e);
+    return;
+  }
+  const wrap = el("div", "stmt-wrap");
+  const t = el("table");
+  const th = el("thead"), hr = el("tr");
+  for (const h of ["Description", "Category", "Treatment", "Frequency", "Starts", "Ends", "Amount", "In period", ""]) hr.appendChild(el("th", null, h));
+  th.appendChild(hr); t.appendChild(th);
+  const tb = el("tbody");
+  const sorted = S.expenses.slice().sort((a, b) => a.date === b.date ? a.id.localeCompare(b.id) : (a.date < b.date ? 1 : -1));
+  for (const e of sorted) {
+    const tr = el("tr", "exp-row" + (editingId === e.id ? " editing" : ""));
+    tr.appendChild(el("td", null, e.desc || CAT_LABEL(e.cat)));
+    const tdCat = el("td"); tdCat.appendChild(el("span", "tag", CAT_LABEL(e.cat))); tr.appendChild(tdCat);
+    tr.appendChild(el("td", null, e.cls === "cogs" ? "Cost of revenue" : "Operating"));
+    tr.appendChild(el("td", null, { once: "One-off", daily: "Per day", monthly: "Per month", annual: "Per year" }[e.rec]));
+    tr.appendChild(el("td", null, e.date));
+    tr.appendChild(el("td", null, e.end || (e.rec === "once" ? "—" : "ongoing")));
+    tr.appendChild(el("td", null, money(e.amount)));
+    tr.appendChild(el("td", null, money(inPeriod(e))));
+    const tdb = el("td");
+    const btns = el("div", "rowbtns");
+    const bE = el("button", "btn sm", "Edit");
+    bE.addEventListener("click", () => startEdit(e.id));
+    const bD = el("button", "btn sm danger", "Delete");
+    bD.addEventListener("click", () => removeExpense(e.id));
+    btns.appendChild(bE); btns.appendChild(bD); tdb.appendChild(btns); tr.appendChild(tdb);
+    tb.appendChild(tr);
+  }
+  t.appendChild(tb); wrap.appendChild(t); host.appendChild(wrap);
+}
+/* How much of one expense lands inside the visible window — same expansion the
+   statement and charts use, so the ledger column can never disagree with them. */
+function inPeriod(e) {
+  let sum = 0;
+  for (const [n, p] of expenseDays(e)) if (n >= V.from && n <= V.to) sum += p;
+  return sum;
+}
+function newId() { return "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function startEdit(id) {
+  const e = S.expenses.find(x => x.id === id);
+  if (!e) return;
+  editingId = id;
+  $("#fDate").value = e.date; $("#fCat").value = e.cat; $("#fDesc").value = e.desc || "";
+  $("#fAmt").value = (e.amount / 100).toFixed(2); $("#fRec").value = e.rec;
+  $("#fEnd").value = e.end || ""; $("#fCls").value = e.cls;
+  $("#btnSaveExp").textContent = "Save changes";
+  $("#btnCancelEdit").hidden = false;
+  syncRecUI();
+  drawExpenseUI();
+  $("#cardExpenses").scrollIntoView({ behavior: "smooth", block: "start" });
+  $("#fAmt").focus();
+}
+function cancelEdit() {
+  editingId = null;
+  $("#expForm").reset();
+  $("#fDate").value = dstr(V.to);
+  $("#btnSaveExp").textContent = "Add expense";
+  $("#btnCancelEdit").hidden = true;
+  $("#expErr").textContent = "";
+  syncRecUI();
+  drawExpenseUI();
+}
+function removeExpense(id) {
+  const i = S.expenses.findIndex(x => x.id === id);
+  if (i < 0) return;
+  const [gone] = S.expenses.splice(i, 1);
+  if (editingId === id) cancelEdit();
+  save(); render();
+  toast("Expense removed", { label: "Undo", fn: () => { S.expenses.splice(i, 0, gone); save(); render(); } });
+}
+function syncRecUI() {
+  const rec = $("#fRec").value;
+  $("#wrapEnd").style.opacity = rec === "once" ? .45 : 1;
+  $("#fEnd").disabled = rec === "once";
+  $("#lblDate").textContent = rec === "once" ? "Date" : "Start date";
+}
+
+/* =========================================================================
+   CONTROLS
+   ====================================================================== */
+function initSeg(sel, get, set) {
+  const seg = $(sel);
+  const btns = $$("button", seg);
+  const ind = $(".ind", seg);
+  const place = () => {
+    const on = btns.find(b => b.getAttribute("aria-pressed") === "true");
+    /* Nothing pressed means a custom range — hide the pill rather than parking
+       it under an option that is not actually selected. */
+    ind.style.opacity = on ? "1" : "0";
+    const t = on || btns[0];
+    ind.style.width = t.offsetWidth + "px";
+    ind.style.transform = `translateX(${t.offsetLeft - 3}px)`;
+  };
+  const sync = () => {
+    const v = String(get());
+    for (const b of btns) b.setAttribute("aria-pressed", String(b.dataset.v === v));
+    place();
+  };
+  for (const b of btns) b.addEventListener("click", () => { set(b.dataset.v); sync(); });
+  seg.__sync = sync;
+  requestAnimationFrame(sync);
+  return sync;
+}
+function applyPreset(v) {
+  S.preset = v;
+  if (v === "all") { S.from = dstr(DATA_FROM); S.to = dstr(DATA_TO); }
+  else if (v === "mtd") { const p = dparts(DATA_TO); S.from = `${p.y}-${pad2(p.m)}-01`; S.to = dstr(DATA_TO); }
+  else { const n = Number(v); S.to = dstr(DATA_TO); S.from = dstr(Math.max(DATA_FROM, DATA_TO - n + 1)); }
+  $("#dFrom").value = S.from; $("#dTo").value = S.to;
+}
+/* =========================================================================
+   RENDER
+   ====================================================================== */
+let firstPaint = true;
+function drawCharts() {
+  if (!V) return;
+  try {
+    drawBridge(); drawVariance(); drawCum(); drawMix(); drawUnit(); drawRun(); drawCal();
+  } catch (err) {
+    console.error("Chart render failed", err);
+    toast("A chart failed to draw — see the browser console.");
+  }
+}
+function render() {
+  recompute();
+  drawHero();
+  drawNarrative();
+  drawHighlights();
+  drawStatement();
+  drawBreakeven();
+  drawMarketing();
+  drawPayouts();
+  drawEvents();
+  drawSourceData();
+  drawExpenseUI();
+  drawNotes();
+  drawCharts();
+  if (firstPaint) {
+    firstPaint = false;
+    for (const p of $$(".plot")) RO.observe(p);
+  }
+}
+
+/* =========================================================================
+   EXPORTS
+   ====================================================================== */
+function download(name, text, type) {
+  const blob = new Blob([text], { type: type || "text/plain;charset=utf-8" });
+  const a = el("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const csvCell = v => /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+function exportStatementCsv() {
+  const P = V.periods, T = V.total;
+  const cols = P.map(a => periodLongLabel(a.key, S.gran)).concat(["Total"]);
+  const rows = [["Money Tycoon income statement"], [`Period,${dstr(V.from)} to ${dstr(V.to)}`], [`Grouping,${S.gran}`],
+                [`Store commission,${S.assume.fee}%`], [`Other deductions,${S.assume.other}%`], [`Tax,${S.assume.tax}%`], [], ["Line"].concat(cols)];
+  const add = (label, fn) => rows.push([label].concat(P.concat([T]).map(a => (fn(a) / 100).toFixed(2))));
+  add("Advertising revenue (net)", a => a.ads);
+  add("In-app gross billings", a => a.grossBillings);
+  add("Store commission", a => a.commission);
+  add("Other deductions", a => a.otherDed);
+  add("Net revenue", a => a.netRev);
+  add("Cost of revenue", a => -a.cogs);
+  add("Gross profit", a => a.grossProfit);
+  add("Operating expenses", a => -a.opex);
+  add("Operating profit", a => a.opProfit);
+  add("Tax", a => -a.tax);
+  add("Net profit", a => a.netProfit);
+  rows.push([]);
+  rows.push(["Impressions"].concat(P.concat([T]).map(a => String(a.imp))));
+  rows.push(["Average DAU"].concat(P.concat([T]).map(a => a.avgAu == null ? "" : String(Math.round(a.avgAu)))));
+  const csv = rows.map(r => r.map(c => csvCell(String(c))).join(",")).join("\n");
+  download(`money-tycoon-income-statement-${dstr(V.from)}_${dstr(V.to)}.csv`, csv, "text/csv;charset=utf-8");
+  toast("Statement exported as CSV");
+}
+function exportLedger() {
+  download("money-tycoon-expenses.json", JSON.stringify({
+    version: 2, exported: new Date().toISOString(),
+    assume: S.assume, expenses: S.expenses, events: S.events
+  }, null, 2), "application/json");
+  toast("Expense ledger and markers exported");
+}
+
+/* =========================================================================
+   DATASET REFRESH  +  SELF-CONTAINED SNAPSHOT
+   ====================================================================== */
+const DATA_KEY = "mt.income.data.v1";
+
+function applyState(o) {
+  if (!o || typeof o !== "object") return;
+  S = Object.assign(S, o);
+  S.assume = Object.assign(JSON.parse(JSON.stringify(DEFAULTS.assume)), o.assume || {});
+  S.expenses = Array.isArray(o.expenses) ? o.expenses.filter(validExpense) : [];
+  S.events = Array.isArray(o.events) ? o.events.filter(validEvent) : [];
+}
+function readEmbedded() {
+  const node = document.getElementById("embedded-state");
+  if (!node) return null;
+  try {
+    const o = JSON.parse(node.textContent || "null");
+    return (o && o.data && Array.isArray(o.data.rows) && o.data.rows.length) ? o : null;
+  } catch (err) { console.warn("Embedded snapshot is not valid JSON — ignoring it.", err); return null; }
+}
+function readStoredDataset() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    return (o && Array.isArray(o.rows) && o.rows.length) ? o : null;
+  } catch (err) { console.warn("Cached dataset unreadable — ignoring it.", err); return null; }
+}
+function storeDataset() {
+  if (!storageOK) return;
+  try { localStorage.setItem(DATA_KEY, JSON.stringify({ rows: ROWS, meta: META })); }
+  catch (err) { console.warn("Could not cache dataset", err); toast("Too large to cache locally — use Download report to keep it."); }
+}
+function forgetStoredDataset() {
+  try { localStorage.removeItem(DATA_KEY); } catch (err) { console.warn(err); }
+}
+function syncAssumptionInputs() {
+  $("#aFee").value = String(S.assume.fee);
+  $("#aOther").value = String(S.assume.other);
+  $("#aTax").value = String(S.assume.tax);
+  $("#aPartial").value = String(S.assume.partial);
+  $("#aPayAd").value = String(S.assume.payAd);
+  $("#aPayIap").value = String(S.assume.payIap);
+  $("#aThresh").value = (S.assume.threshold / 100).toFixed(0);
+}
+function syncDateInputs() {
+  const f = $("#dFrom"), t = $("#dTo");
+  f.min = t.min = dstr(DATA_FROM);
+  f.max = t.max = dstr(DATA_TO);
+  f.value = S.from; t.value = S.to;
+}
+
+/* Read a fresh export and swap the dataset under the whole report. */
+function loadCsvFile(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    const before = DAYS.length, wasSource = META.source;
+    try {
+      const parsed = parseAdMobCsv(decodeBytes(fr.result), file.name);
+      setDataset(parsed.rows, parsed.meta);
+      fitRangeToData();
+      syncDateInputs();
+      for (const s of [$("#segRange"), $("#segGran")]) if (s.__sync) s.__sync();
+      storeDataset(); save(); render();
+      toast(`Loaded ${DAYS.length} days from ${file.name} — previously ${before} from ${wasSource}`);
+    } catch (err) {
+      console.error("CSV import failed", err);
+      toast("Could not read that export: " + err.message);
+    }
+  };
+  fr.onerror = () => { console.error("FileReader failed", fr.error); toast("Could not read that file"); };
+  fr.readAsArrayBuffer(file);
+}
+/* Restore a previously exported expense ledger (JSON). */
+function importLedgerFile(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const o = JSON.parse(String(fr.result));
+      const list = Array.isArray(o) ? o : o.expenses;
+      if (!Array.isArray(list)) throw new Error("no expenses array in that file");
+      const clean = list.filter(validExpense);
+      if (!clean.length) throw new Error("no valid expense records found");
+      S.expenses = clean;
+      if (o.assume) S.assume = Object.assign(S.assume, o.assume);
+      if (Array.isArray(o.events)) S.events = o.events.filter(validEvent);
+      syncAssumptionInputs();
+      save(); render();
+      toast(`Imported ${clean.length} expense${clean.length === 1 ? "" : "s"}`);
+    } catch (err) {
+      console.error("Ledger import failed", err);
+      toast("Import failed: " + err.message);
+    }
+  };
+  fr.onerror = () => { console.error("FileReader failed", fr.error); toast("Could not read that file"); };
+  fr.readAsText(file);
+}
+function revertBuiltIn() {
+  try {
+    setDataset(RAW.rows, RAW.meta);
+    forgetStoredDataset();
+    const node = document.getElementById("embedded-state");
+    if (node) node.textContent = "null";
+    applyPreset("all");
+    syncDateInputs();
+    for (const s of [$("#segRange")]) if (s.__sync) s.__sync();
+    save(); render();
+    toast("Reverted to the built-in dataset");
+  } catch (err) { console.error(err); toast("Revert failed: " + err.message); }
+}
+
+/* Write the live dataset + ledger into the snapshot slot and serialise the whole
+   document. The downloaded file is standalone and opens showing exactly this. */
+const DYNAMIC_SELECTORS = ["#plotBridge", "#plotCum", "#plotMix", "#plotUnit", "#plotCal",
+  "#twinBridge", "#twinCum", "#twinMix", "#twinUnit", "#twinCal", "#toasts", "#expList", "#heroTiles", "#hlGrid"];
+function downloadSnapshot() {
+  const node = document.getElementById("embedded-state");
+  try {
+    node.textContent = JSON.stringify({ v: 1, savedAt: Date.now(), data: { rows: ROWS, meta: META }, state: S });
+    /* strip rendered output so the file stays small — it all rebuilds on load */
+    for (const sel of DYNAMIC_SELECTORS) { const n = $(sel); if (n) n.textContent = ""; }
+    const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+    render();
+    const stamp = dstr(DATA_TO);
+    download(`money-tycoon-income-statement-${stamp}.html`, html, "text/html;charset=utf-8");
+    toast("Report downloaded — data and expenses travel with the file");
+  } catch (err) {
+    console.error("Snapshot failed", err);
+    render();
+    toast("Could not build the snapshot: " + err.message);
+  }
+}
+
+/* =========================================================================
+   BOOT
+   ====================================================================== */
+function boot() {
+  load();
+
+  /* Dataset precedence: a snapshot baked into this file, else a locally cached
+     import, else the dataset compiled in at build time. Newest wins when both
+     a snapshot and a cache exist. */
+  const emb = readEmbedded(), cached = readStoredDataset();
+  let chosen = null;
+  if (emb && cached) chosen = (emb.savedAt || 0) >= ((cached.meta && cached.meta.savedAt) || 0) ? emb : { data: cached };
+  else chosen = emb || (cached ? { data: cached } : null);
+  try {
+    if (chosen) setDataset(chosen.data.rows, chosen.data.meta);
+    else setDataset(RAW.rows, RAW.meta);
+    if (emb && chosen === emb && emb.state) applyState(emb.state);
+  } catch (err) {
+    console.error("Dataset load failed — falling back to the built-in export.", err);
+    setDataset(RAW.rows, RAW.meta);
+  }
+  fitRangeToData();
+  /* live region for keyboard chart nav */
+  const live = el("div", "vh"); live.id = "live"; live.setAttribute("aria-live", "polite"); document.body.appendChild(live);
+
+  /* theme */
+  const applyTheme = () => {
+    if (S.theme === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", S.theme);
+  };
+  applyTheme();
+  $("#btnTheme").addEventListener("click", () => {
+    const order = ["auto", "light", "dark"];
+    S.theme = order[(order.indexOf(S.theme) + 1) % 3];
+    applyTheme(); save();
+    $("#btnTheme").title = "Colour theme: " + S.theme;
+    drawCharts();
+    toast("Theme: " + S.theme);
+  });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (S.theme === "auto") drawCharts(); });
+
+  /* categories */
+  for (const c of CATS) { const o = el("option", null, c.label); o.value = c.id; $("#fCat").appendChild(o); }
+
+  /* quick-add chips */
+  const chips = $("#chips");
+  for (const t of TEMPLATES) {
+    const b = el("button", "chip", t.label);
+    b.type = "button";
+    b.addEventListener("click", () => {
+      editingId = null;
+      $("#btnSaveExp").textContent = "Add expense";
+      $("#btnCancelEdit").hidden = true;
+      $("#fCat").value = t.cat; $("#fDesc").value = t.desc; $("#fRec").value = t.rec; $("#fCls").value = t.cls;
+      if (!$("#fDate").value) $("#fDate").value = dstr(V ? V.to : DATA_TO);
+      syncRecUI();
+      $("#fAmt").focus(); $("#fAmt").select();
+    });
+    chips.appendChild(b);
+  }
+
+  /* controls */
+  $("#dFrom").min = $("#dTo").min = dstr(DATA_FROM);
+  $("#dFrom").max = $("#dTo").max = dstr(DATA_TO);
+  $("#dFrom").value = S.from; $("#dTo").value = S.to;
+  const segRange = initSeg("#segRange", () => S.preset, v => { applyPreset(v); save(); render(); });
+  initSeg("#segGran", () => S.gran, v => { S.gran = v; save(); render(); });
+  initSeg("#segMeasure", () => S.measure, v => { S.measure = v; save(); drawUnit(); });
+  const onDate = () => {
+    S.from = $("#dFrom").value || dstr(DATA_FROM);
+    S.to = $("#dTo").value || dstr(DATA_TO);
+    S.preset = "custom";
+    segRange();
+    save(); render();
+  };
+  $("#dFrom").addEventListener("change", onDate);
+  $("#dTo").addEventListener("change", onDate);
+
+  /* assumptions */
+  syncAssumptionInputs();
+  const onAssume = () => {
+    S.assume.fee = Number($("#aFee").value) || 0;
+    S.assume.other = clamp(Number($("#aOther").value) || 0, 0, 100);
+    S.assume.tax = clamp(Number($("#aTax").value) || 0, 0, 100);
+    S.assume.partial = Number($("#aPartial").value) ? 1 : 0;
+    S.assume.payAd = clamp(Math.round(Number($("#aPayAd").value) || 21), 1, 28);
+    S.assume.payIap = clamp(Math.round(Number($("#aPayIap").value) || 15), 1, 28);
+    S.assume.threshold = Math.max(0, poundsToPence($("#aThresh").value || 0));
+    save(); render();
+  };
+  for (const id of ["#aFee", "#aOther", "#aTax", "#aPartial", "#aPayAd", "#aPayIap", "#aThresh"]) $(id).addEventListener("change", onAssume);
+
+  /* statement display mode */
+  initSeg("#segMode", () => S.stmtMode, v => { S.stmtMode = v; save(); drawStatement(); });
+
+  /* Data tables. The panels it opens sit inside cards further down the page, so
+     without a label change and a toast the button looks broken from the top. */
+  const syncTablesBtn = () => {
+    const b = $("#btnTables");
+    b.setAttribute("aria-pressed", String(S.showTables));
+    b.textContent = S.showTables ? "Hide data tables" : "Show data tables";
+  };
+  $("#btnTables").addEventListener("click", () => {
+    S.showTables = !S.showTables;
+    syncTablesBtn();
+    for (const d of $$("details.twin")) d.open = S.showTables;
+    save();
+    toast(S.showTables
+      ? "Tables opened under every chart, and in Source data at the foot of the page"
+      : "Data tables hidden");
+  });
+  $("#btnPrint").addEventListener("click", () => { for (const d of $$("details.twin")) d.open = false; window.print(); });
+  $("#btnCsv").addEventListener("click", exportStatementCsv);
+
+  /* data refresh + snapshot */
+  $("#btnData").addEventListener("click", () => $("#fileCsv").click());
+  $("#fileCsv").addEventListener("change", ev => {
+    const f = ev.target.files && ev.target.files[0];
+    if (f) loadCsvFile(f);
+    ev.target.value = "";
+  });
+  $("#btnRevert").addEventListener("click", revertBuiltIn);
+  $("#btnSnap").addEventListener("click", downloadSnapshot);
+
+  /* drop a fresh export anywhere on the page */
+  const drop = $("#drop");
+  let dragDepth = 0;
+  const hasFile = ev => ev.dataTransfer && Array.from(ev.dataTransfer.types || []).includes("Files");
+  window.addEventListener("dragenter", ev => { if (!hasFile(ev)) return; ev.preventDefault(); dragDepth++; drop.classList.add("on"); });
+  window.addEventListener("dragover", ev => { if (hasFile(ev)) ev.preventDefault(); });
+  window.addEventListener("dragleave", () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) drop.classList.remove("on"); });
+  window.addEventListener("drop", ev => {
+    if (!hasFile(ev)) return;
+    ev.preventDefault();
+    dragDepth = 0; drop.classList.remove("on");
+    const f = ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (!f) return;
+    if (/\.json$/i.test(f.name)) { importLedgerFile(f); return; }
+    loadCsvFile(f);
+  });
+  $("#btnExpExport").addEventListener("click", exportLedger);
+  $("#btnExpImport").addEventListener("click", () => $("#fileImport").click());
+  $("#fileImport").addEventListener("change", ev => {
+    const f = ev.target.files && ev.target.files[0];
+    if (f) importLedgerFile(f);
+    ev.target.value = "";
+  });
+  $("#btnJumpExp").addEventListener("click", () => {
+    $("#cardExpenses").scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => $("#fAmt").focus(), 380);
+  });
+
+  /* daily source data as a spreadsheet-ready CSV (raw numbers, not formatted) */
+  $("#btnSrcCsv").addEventListener("click", () => {
+    const rows = [["Date", "DAU", "Ad viewers", "Impressions", "eCPM", "Ad revenue",
+      "In-app gross", "Store commission", "Net revenue", "Expenses", "Net profit"]];
+    for (const m of V.days) rows.push([
+      m.date, m.au == null ? "" : m.au, m.av == null ? "" : m.av, m.imp,
+      m.imp ? (m.ads / m.imp * 10).toFixed(4) : "",
+      (m.ads / 100).toFixed(2), m.iapNull ? "" : (m.grossBillings / 100).toFixed(2),
+      (m.commission / 100).toFixed(2), (m.netRev / 100).toFixed(2),
+      ((m.cogs + m.opex) / 100).toFixed(2), (m.netProfit / 100).toFixed(2)
+    ]);
+    download(`money-tycoon-daily-${dstr(V.from)}_${dstr(V.to)}.csv`,
+      rows.map(r => r.map(c => csvCell(String(c))).join(",")).join("\n"), "text/csv;charset=utf-8");
+    toast("Daily source data exported");
+  });
+
+  /* timeline markers */
+  $("#evForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const err = $("#evErr");
+    err.textContent = "";
+    const date = $("#evDate").value, label = $("#evLabel").value.trim();
+    if (!date) { err.textContent = "Pick a date."; $("#evDate").focus(); return; }
+    if (!label) { err.textContent = "Say what happened on that date."; $("#evLabel").focus(); return; }
+    if (dnum(date) < DATA_FROM || dnum(date) > DATA_TO) {
+      err.textContent = "Saved, but that date sits outside the data so no rule is drawn yet.";
+    }
+    S.events.push({ id: newId(), date, label });
+    const keep = err.textContent;
+    $("#evLabel").value = "";
+    save(); render();
+    $("#evErr").textContent = keep;
+    toast("Marker added");
+  });
+
+  /* keyboard shortcuts */
+  const SHORTCUTS = [
+    ["1 2 3", "Group by day, month or year"],
+    ["R", "Cycle the date range"],
+    ["T", "Light, dark or system theme"],
+    ["B", "Show or hide the data tables"],
+    ["E", "Jump to the expense form"],
+    ["M", "Jump to the marker form"],
+    ["U", "Load a fresh CSV export"],
+    ["S", "Download this report"],
+    ["P", "Print or save as PDF"],
+    ["← →", "Step through values on a focused chart"],
+    ["?", "This list"]
+  ];
+  const dlg = $("#helpDlg");
+  const helpList = $("#helpList");
+  for (const [k, d] of SHORTCUTS) {
+    const dt = el("dt");
+    for (const part of k.split(" ")) dt.appendChild(el("span", "key", part));
+    helpList.appendChild(dt);
+    helpList.appendChild(el("dd", null, d));
+  }
+  const openHelp = () => { if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", ""); };
+  $("#btnHelp").addEventListener("click", openHelp);
+  $("#helpClose").addEventListener("click", () => dlg.close());
+  document.addEventListener("keydown", ev => {
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    const t = ev.target;
+    if (t && t.matches && (t.matches("input,select,textarea,button") || t.isContentEditable)) return;
+    if (ev.key === "Escape" && dlg.open) { dlg.close(); return; }
+    const k = ev.key.toLowerCase();
+    const gran = v => { S.gran = v; save(); render(); const s = $("#segGran"); if (s.__sync) s.__sync(); };
+    if (k === "1") gran("day");
+    else if (k === "2") gran("month");
+    else if (k === "3") gran("year");
+    else if (k === "r") {
+      const order = ["7", "30", "mtd", "90", "all"];
+      applyPreset(order[(order.indexOf(String(S.preset)) + 1) % order.length]);
+      save(); render();
+      const s = $("#segRange"); if (s.__sync) s.__sync();
+    }
+    else if (k === "t") $("#btnTheme").click();
+    else if (k === "b") $("#btnTables").click();
+    else if (k === "e") $("#btnJumpExp").click();
+    else if (k === "m") { $("#cardEvents").scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(() => $("#evLabel").focus(), 380); }
+    else if (k === "u") $("#btnData").click();
+    else if (k === "s") $("#btnSnap").click();
+    else if (k === "p") $("#btnPrint").click();
+    else if (ev.key === "?") openHelp();
+    else return;
+    ev.preventDefault();
+  });
+
+  /* expense form */
+  $("#fRec").addEventListener("change", syncRecUI);
+  $("#btnCancelEdit").addEventListener("click", cancelEdit);
+  $("#expForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const err = $("#expErr");
+    err.textContent = "";
+    const date = $("#fDate").value;
+    const amtRaw = $("#fAmt").value;
+    if (!date) { err.textContent = "Pick a date."; $("#fDate").focus(); return; }
+    if (amtRaw === "" || !isFinite(Number(amtRaw))) { err.textContent = "Enter an amount in pounds."; $("#fAmt").focus(); return; }
+    const amount = poundsToPence(amtRaw);
+    if (amount <= 0) { err.textContent = "Amount must be greater than zero."; $("#fAmt").focus(); return; }
+    const rec = $("#fRec").value;
+    const end = rec === "once" ? "" : $("#fEnd").value;
+    if (end && dnum(end) < dnum(date)) { err.textContent = "End date is before the start date."; $("#fEnd").focus(); return; }
+    if (dnum(date) > DATA_TO) err.textContent = "Note: that date is after the last day of revenue data, so it will not affect the statement yet.";
+    const rec2 = { id: editingId || newId(), date, end: end || "", cat: $("#fCat").value, desc: $("#fDesc").value.trim(), amount, rec, cls: $("#fCls").value };
+    if (!validExpense(rec2)) { err.textContent = "Something about that entry is invalid — check the fields."; return; }
+    if (editingId) {
+      const i = S.expenses.findIndex(x => x.id === editingId);
+      S.expenses[i] = rec2;
+      editingId = null;
+      $("#btnSaveExp").textContent = "Add expense";
+      $("#btnCancelEdit").hidden = true;
+      toast("Expense updated");
+    } else {
+      S.expenses.push(rec2);
+      toast(`Added ${money(amount)} — ${CAT_LABEL(rec2.cat)}`);
+    }
+    const keepErr = err.textContent;
+    $("#expForm").reset();
+    $("#fDate").value = date;
+    syncRecUI();
+    save(); render();
+    $("#expErr").textContent = keepErr;
+    $("#fAmt").focus();
+  });
+
+  /* first paint */
+  $("#fDate").value = dstr(DATA_TO);
+  $("#evDate").value = dstr(DATA_TO);
+  syncRecUI();
+  render();
+  for (const d of $$("details.twin")) d.open = S.showTables;
+  syncTablesBtn();
+  $("#btnTheme").title = "Colour theme: " + S.theme;
+  window.addEventListener("resize", () => { for (const s of [$("#segRange"), $("#segGran"), $("#segMeasure")]) if (s.__sync) s.__sync(); });
+}
+boot();
+</script>
+</body>
+</html>
