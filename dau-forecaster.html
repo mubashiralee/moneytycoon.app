@@ -348,7 +348,7 @@
       <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
       <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
     </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the <b>measured normal-serving</b> ARPDAU £0.0085 at rewarded-only — AdMob daily data, limited-serving days excluded; mix ~64% ads / 36% IAP. Assumes serving stays healthy — if it gets policy-limited again, actuals drop toward £0.003–0.005. Use the <b>Ad formats</b> lever for the interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the <b>measured normal-serving</b> ARPDAU £0.0085 with the live Android Rewarded + Rewarded interstitial + Banner mix — AdMob daily data, limited-serving days excluded; mix ~64% ads / 36% IAP. Assumes serving stays healthy — if it gets policy-limited again, actuals drop toward £0.003–0.005. Use the <b>Ad formats</b> lever for higher-volume interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
     </div>
 
@@ -365,7 +365,7 @@
       <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
       <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
     </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. <b>Rewarded only</b> is the effective current setup: AdMob's live 28-day mix is overwhelmingly rewarded, with only 1.03K banner impressions at £0.08 eCPM. The card recomputes the actual revenue composition from the current 2,631-DAU anchor; richer ad formats remain explicit what-if scenarios. Current subscribers remain anchored to historical Play data and are not presented as a live subscriber count. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. The live Android mix is Rewarded + Rewarded interstitial + Banner; AdMob's Jul 2–31 report measured 62,935 rewarded, 188 rewarded-interstitial and 1,452 banner impressions, with the latter two contributing only $0.50 of $160.44 total. The card recomputes the actual revenue composition from the current 2,631-DAU anchor; higher-volume ad depth remains an explicit what-if scenario. Current subscribers remain anchored to historical Play data and are not presented as a live subscriber count. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
   </div>
     </div>
 
@@ -408,12 +408,12 @@
           <summary>▸ Read the full plan &amp; assumptions note</summary>
   <div class="banner" style="border-color:var(--gold);background:linear-gradient(90deg,rgba(233,196,106,.14),transparent)">
     <b>★ This opens on the best plan supported by the current shipped position.</b>
-    The constrained search fixes the plan to <b>Tier-3 Android · rewarded-only ads · Google Ads only · named countries</b>
+    The constrained search fixes the plan to <b>Tier-3 Android · live Rewarded + Rewarded interstitial + Banner mix · Google Ads only · named countries</b>
     and uses <b>25 organic installs/day</b> plus the latest Firebase/GA4 Android <b>2,631 DAU</b> anchor (1-day value for Jul 31, 2026).
     At the verified <b>£20/day Google Ads budget</b>, the constrained duration search selects <b>4 months</b>
-    → <b>£4,748</b> 12-mo revenue, <b>£2,348 profit</b> (ROAS <b>1.98×</b>), with cumulative break-even in month 1.
-    This is the honest current-position forecast: it does not assume iOS, passive banners, rewarded interstitials, extra UA
-    networks, or country expansion before those capabilities are live and measured. The £20 is the configured campaign budget;
+    → <b>£4,757</b> 12-mo revenue, <b>£2,357 profit</b> (ROAS <b>1.98×</b>), with cumulative break-even in month 1.
+    This is the honest current-position forecast: it uses the measured Android Rewarded + Rewarded interstitial + Banner mix;
+    it does not assume iOS, extra UA networks, or country expansion before those capabilities are live and measured. The £20 is the configured campaign budget;
     Google Ads delivered an average £5.17/day over Jul 2–31 because the campaign was policy-limited. The previous <b>£75/day
     funded target</b> remains available as a clearly labelled scenario, but it is a build-toward plan rather than current reality.
     Every number here is editable.
@@ -479,13 +479,13 @@
         </div>
         <div class="card">
           <h2>Monetisation &amp; market levers</h2>
-      <label style="margin-top:14px">Ad formats (monetisation depth) <span class="pill">default: current rewarded-only</span></label>
+      <label style="margin-top:14px">Ad formats (monetisation depth) <span class="pill">default: measured live mix</span></label>
       <div class="seg" id="adSeg">
-        <button data-am="1.0" class="on">Rewarded only</button>
-        <button data-am="1.8">+ Interstitial</button>
-        <button data-am="2.1">+ Interstitial + Banner</button>
+        <button data-am="1.0031" class="on">Live mix · all 3</button>
+        <button data-am="1.8">Expanded interstitial</button>
+        <button data-am="2.1">Expanded interstitial + banner</button>
       </div>
-      <div class="hint">The current live baseline remains <b>effectively rewarded-only</b>: AdMob showed about 61.3K rewarded impressions at £1.61–£2.07 eCPM versus only 1.03K banner impressions at £0.08 eCPM in the current 28-day view. Interstitial/banner values remain scenario multipliers; the measured banner contribution is too small to change the 1.0× baseline.</div>
+      <div class="hint">The current live baseline includes all three Android formats. In AdMob's <b>Jul 2–31, 2026</b> Format report: Rewarded <b>62,935 impressions / $159.94</b>, Rewarded interstitial <b>188 / $0.37</b>, Banner <b>1,452 / $0.13</b>, plus App open <b>1 / $0.00</b>. That gives a measured ad-revenue multiplier of <b>1.0031×</b> versus Rewarded alone. The larger interstitial/banner settings are explicit high-volume what-if scenarios.</div>
       <label style="margin-top:14px">UA network mix <span class="pill">default: Google only</span></label>
       <div class="seg" id="netSeg">
         <button data-nm="1.0" class="on">Google only</button>
@@ -672,7 +672,7 @@ function subSurv(a,churn){ return a<=0?1:Math.pow(1-churn,a/30); }
 function subLifeDays(p){ let s=0; for(let a=0;a<730;a++) s+=subSurv(a,p.churn); return s; }
 function cumSubArr(days,p){ const c=new Array(days+1); let s=0; for(let a=0;a<=days;a++){ s+=subSurv(a,p.churn); c[a]=s; } return c; }
 // net flow ARPDAU (ads + consumable IAP, per DAU-day) — EXCLUDES subscriptions (modelled as a stock).
-// adMult scales ONLY the ad portion (Rewarded-only=1 · +Interstitial≈1.8 · +Interstitial+Banner≈2.1).
+// adMult scales ONLY the ad portion (live Jul 2–31 mix=1.0031 · expanded interstitial≈1.8 · expanded interstitial+banner≈2.1).
 function flowAr(t,p,ios){ const m=ios?p.ios.ar:1; return (t.ar*(1-t.iap)*p.adMult + t.ar*t.iap*(1-p.subFrac)*(1-p.fee))*m; }
 const flowArT3=p=>flowAr(p.tiers[2],p,false);
 // current legacy subscription revenue/day (net), anchored to measured data (currentDAU × ARPDAU × IAP% × sub% of IAP)
@@ -682,7 +682,7 @@ const orgSubRev=p=>p.org*p.tiers[2].sconv*subLifeDays(p)*p.tiers[2].sprice/30;
 
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, life=365, adMult=1.0, networkMult=1.0, chart, chart2, chart3;   // current shipped baseline: rewarded-only monetisation and Google-only acquisition; future format/network scenarios remain selectable.
+let horizon=180, life=365, adMult=1.0031, networkMult=1.0, chart, chart2, chart3;   // current shipped baseline: measured Android all-format mix and Google-only acquisition; future format/network scenarios remain selectable.
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
@@ -1093,8 +1093,8 @@ $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
 
 // preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?, organic?]
 const MIX={
-  opt:[0,0,100,0,20,1.4,1.0,4,1.0,1.0,25],      // ★ current plan: fixed £20/day Google Ads budget, Android+rewarded-only, stop M4, Firebase DAU anchor
-  cur:[0,0,100,0,0,1.0,1.0,12,1.0,1.0,25],       // no-investment view: current DAU decays toward the measured organic floor
+  opt:[0,0,100,0,20,1.4,1.0031,4,1.0,1.0,25],    // ★ current plan: fixed £20/day Google Ads budget, Android live all-format mix, stop M4, Firebase DAU anchor
+  cur:[0,0,100,0,0,1.0,1.0031,12,1.0,1.0,25],     // no-investment view: current DAU decays toward the measured organic floor
   fund:[0,0,100,65,75,1.4,2.1,12,1.6,2.0,100],  // future funded target: kept explicit and opt-in; assumes iOS, richer ads, network and country expansion
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
