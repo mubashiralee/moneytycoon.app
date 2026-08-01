@@ -390,7 +390,7 @@
       <div class="kpi em"><div class="v" id="cTailPct">—</div><div class="l">…the tail, as % of revenue</div></div>
     </div>
     <div class="chartbox" style="margin-top:12px"><canvas id="chart2"></canvas></div>
-    <div class="hint" style="margin-top:8px">The <b>burst</b> question — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). Profit keeps climbing after spend stops: the retention tail monetising users you already paid for. <b>Caveat:</b> the "spread budget over more days beats one big burst" effect is largely driven by the <i>reach/saturation</i> assumption (a short burst hits the daily-reach ceiling and pays a higher effective CPI) — it's real but assumption-sensitive, not a universal law. Paid cohorts only; organic is extra.</div>
+    <div class="hint" style="margin-top:8px">The <b>burst</b> question — distinct from the steady-state <i>Net/month</i> below (which assumes you spend <i>forever</i>). Profit keeps climbing after spend stops: the retention tail monetising users you already paid for. <b>Caveat:</b> the "spread budget over more days beats one big burst" effect depends on the provisional reference/elasticity curve and is not a measured £500/day response. Paid cohorts only; organic is extra.</div>
   </div>
     </div>
 
@@ -411,7 +411,7 @@
   <div class="banner" style="border-color:var(--gold);background:linear-gradient(90deg,rgba(233,196,106,.14),transparent)">
     <b>★ This opens on the best plan supported by the current shipped position.</b>
     The constrained search fixes the plan to <b>Tier-3 Android · live Rewarded + Rewarded interstitial + Banner mix · Google Ads only · named countries</b>
-    and uses <b>25 organic installs/day</b> plus the latest Firebase/GA4 Android <b>2,631 DAU</b> anchor (1-day value for Jul 31, 2026).
+    and uses <b>25 organic installs/day</b> plus the carried-forward Firebase/GA4 Android <b>2,631 DAU</b> anchor (last captured for Jul 31, 2026).
     At the verified <b>£20/day Google Ads budget</b>, the constrained duration search selects <b>4 months</b>
     → <b>£4,757</b> 12-mo revenue, <b>£2,357 profit</b> (ROAS <b>1.98×</b>), with cumulative break-even in month 1.
     This is the honest current-position forecast: it uses the measured Android Rewarded + Rewarded interstitial + Banner mix;
@@ -422,10 +422,10 @@
   </div>
   <div class="banner">
     <b>How this works.</b> Split your daily budget across <b>geo tiers</b> (T1 US/UK/EU · T2 Brazil/Turkey · T3 India/PH/PK) and
-    <b>Android / iOS</b> — six markets, each with its own economics. <b>CPI rises with spend</b>: as you exhaust a market's cheap
-    daily reach, your <b>effective CPI</b> climbs and ROAS degrades on its own (no manual edit needed). Blended ARPDAU/CPI/ROAS are
+    <b>Android / iOS</b> — six markets, each with its own economics. <b>CPI rises with spend</b>: above the reference budget, the
+    calibrated elasticity makes your <b>effective CPI</b> climb and ROAS degrade on its own (no manual edit needed). Blended ARPDAU/CPI/ROAS are
     <b>computed from the mix</b>. The <b>installs→DAU retention engine</b> is fitted to your real data; everything else (floor CPI,
-    reach, ARPDAU, retention) is an <b>editable assumption</b> under <i>Advanced</i>. Shaded chart band + KPI ranges show the
+    reference reach, scale elasticity, ARPDAU, retention) is an <b>editable assumption</b> under <i>Advanced</i>. Shaded chart band + KPI ranges show the
     <b>conservative→optimistic</b> spread — the honest answer is a range. iOS is a <b>projection</b> (not launched yet).
   </div>
         </details>
@@ -443,6 +443,7 @@
       <label>Total daily ad spend &nbsp;<span class="pill" id="spendPill">£20/day</span></label>
       <div class="row"><input id="spend" type="range" min="0" max="500" step="1" value="20"/>
         <input id="spendN" type="number" min="0" max="5000" step="1" value="20"/></div>
+      <div class="note" id="scaleStatus" style="margin-top:8px"></div>
 
       <label style="margin-top:14px">Spend duration — months, then stop <span class="pill">12 = sustained</span></label>
         <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="4"/>
@@ -470,10 +471,10 @@
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
       <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="25"/>
         <input id="orgN" type="number" min="0" max="3000" step="1" value="25"/></div>
-      <div class="hint">Default <b>25/day is the latest measured organic floor</b>. At this rate, organic alone settles near ~145 DAU, so a £0-spend forecast decays from the current Firebase 2,631-DAU anchor. Raise this only when a fresh acquisition-source measurement supports it.</div>
-      <label style="margin-top:14px">Last verified DAU anchor <span class="pill">anchors the model</span></label>
+      <div class="hint">Default <b>25/day is the latest measured organic floor</b>. At this rate, organic alone settles near ~145 DAU, so a £0-spend forecast decays from the carried-forward Firebase 2,631-DAU anchor. Raise this only when a fresh acquisition-source measurement supports it.</div>
+      <label style="margin-top:14px">DAU anchor <span class="pill">last captured; refresh required</span></label>
       <div class="row"><input id="currentDAU" type="number" min="0" max="100000" step="1" value="2631"/></div>
-      <div class="hint">Live source: <b>Firebase/GA4 Android active users = 2,631</b> for the 1-day metric ending Jul 31, 2026 (last-28-day report Jul 4–31). The forecast starts here and the chart, current-revenue &amp; maintenance all use this single anchor. Play Console's current DAU report was unavailable, so it was not substituted.</div>
+      <div class="hint">Historical source: <b>Firebase/GA4 Android active users = 2,631</b> for the 1-day metric ending Jul 31, 2026. The forecast starts here and the chart, current-revenue &amp; maintenance all use this single anchor. Firebase could not be re-verified in the current console session, so this value is explicitly carried forward; Play Console's partial DAU report is not substituted because its window and metric grain differ.</div>
       <label style="margin-top:14px">Store fee on IAP %</label>
       <div class="row"><input id="fee" type="range" min="0" max="30" step="1" value="15"/>
         <input id="feeN" type="number" min="0" max="30" step="1" value="15"/></div>
@@ -523,10 +524,10 @@
         <button data-h="365">365 days</button>
       </div>
       <details id="adv">
-        <summary>▸ Advanced assumptions (floor CPI · reach · ARPDAU · retention)</summary>
-        <div class="hint" style="margin:8px 0"><b>Floor CPI</b> = cheapest CPI at low volume; <b>reach</b> = daily installs a market yields before CPI climbs steeply (effective CPI = spend ÷ installs rises as you approach reach). Android base values; iOS derived by the multipliers below.</div>
+        <summary>▸ Advanced assumptions (floor CPI · reach · scale elasticity · ARPDAU · retention)</summary>
+        <div class="hint" style="margin:8px 0"><b>Floor CPI</b> = the low-volume planning floor; <b>reference reach</b> = the inventory anchor used to preserve the measured/legacy curve at the reference budget. Above that budget, installs follow a configurable diminishing-return elasticity instead of an artificial finite ceiling. Android base values; iOS is derived by the multipliers below.</div>
         <table style="font-size:11px">
-          <thead><tr><th>Tier</th><th>Floor CPI £</th><th>Reach/d</th><th>ARPDAU £</th><th>Ret ×</th><th>IAP %</th></tr></thead>
+          <thead><tr><th>Tier</th><th>Floor CPI £</th><th>Reference reach/d</th><th>ARPDAU £</th><th>Ret ×</th><th>IAP %</th></tr></thead>
           <tbody>
             <tr><td>🟢 T1</td>
               <td><input class="mini" id="cpi1" type="number" min="0.01" step="0.05" value="2.60"/></td>
@@ -567,7 +568,14 @@
           <div style="flex:1"><div class="hint" style="margin:0 0 3px">Ranking halo ×</div>
             <input class="mini" id="halo" type="number" min="1" step="0.1" value="1.4"/></div>
         </div>
-        <div class="hint" style="margin-top:4px"><b>Ranking/organic halo ×</b> — extra installs your paid spend generates <i>indirectly</i> via Play-Store ranking &amp; organic discovery (installs = paid × halo). Strongest in cheap Tier-3 (applied ×1.0 T3 / ×0.6 T2 / ×0.3 T1). Your launch ran ~<b>1.6×</b> (£497 → ~15,600 real installs = £0.03 effective vs £0.05 floor); default 1.4 assumes some of that launch/ranking momentum persists but not all (Google policy-throttled it). Set to 1.0 for pure paid, no halo.</div>
+        <div class="row" style="gap:6px;margin-top:6px">
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Scale reference £/day</div>
+            <input class="mini" id="scaleReference" type="number" min="1" step="1" value="20"/></div>
+          <div style="flex:1"><div class="hint" style="margin:0 0 3px">Scale elasticity</div>
+            <input class="mini" id="scaleElasticity" type="number" min="0.1" max="1" step="0.01" value="0.75"/></div>
+        </div>
+        <div class="hint" style="margin-top:4px"><b>Scale reference + elasticity</b> — the legacy auction curve is retained up to the reference budget (default £20/day). Above it, paid installs scale as <i>reference installs × (spend ÷ reference spend)<sup>elasticity</sup></i>. The default <b>0.75</b> is a provisional diminishing-return sensitivity calibrated to the existing £20→£50 shape, not a claim that £500/day has been measured. Values above the reference budget are marked as extrapolation until stable first-open data exists at that spend.</div>
+        <div class="hint" style="margin-top:4px"><b>Ranking/organic halo ×</b> — extra installs your paid spend generates <i>indirectly</i> via Play-Store ranking &amp; organic discovery (installs = paid × halo). Strongest in cheap Tier-3 (applied ×1.0 T3 / ×0.6 T2 / ×0.3 T1). Your launch ran ~<b>1.6×</b> (£497 → ~15,600 real installs = £0.03 effective vs £0.05 floor); default 1.4 is a provisional carry-forward, not a universal constant. Set to 1.0 for pure paid, no halo.</div>
         <div class="hint" style="margin:12px 0 3px"><b>Subscriptions</b> — recurring, modelled as a subscriber <i>stock</i> with its own churn (per-tier price)</div>
         <table style="font-size:11px">
           <thead><tr><th>Tier</th><th>Sub conv %*</th><th>Net £/sub/mo</th></tr></thead>
@@ -590,9 +598,9 @@
             <input class="mini" id="churn" type="number" min="1" step="1" value="14"/></div>
         </div>
         <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP ≈ 65%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
-        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> remains the planning floor from the historical launch investigation (£497 → ~15,600 GA4 users ≈ £0.03 effective, plus buffer); the model raises it automatically as spend scales. Google Ads currently reports about <b>£0.0107 per install conversion</b>, but that action reports 14,515 installs while Firebase reports 579 first_opens and Play reports 6.81K device acquisitions over nearby windows, so the denominators do not reconcile and the 1.07p figure is not promoted into the model floor. <b>T3 ARPDAU £0.0085, IAP 40%</b> remains the measured normal-serving historical rate; current AdMob/Play/Firebase revenue windows have different scopes and currencies, so they are retained as validation evidence rather than blended into a false point estimate. Use the live platform figures above to review the assumptions before making a new commitment. β &amp; retention remain fitted inputs. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections.</div>
+        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> remains the planning floor from the historical launch investigation (£497 → ~15,600 GA4 users ≈ £0.03 effective, plus buffer). Google Ads currently reports about <b>£0.0107 per conversion</b> from 14,537 conversions, but the selected conversion action is not confirmed as an install/first_open; Play's recent dashboard shows 677 first opens versus 9.09K device acquisitions over a different window. The denominators do not reconcile, so the 1.07p figure is not promoted into the model floor. <b>T3 ARPDAU £0.0085, IAP 40%</b> remains the measured normal-serving historical rate; current AdMob/Play/Firebase revenue windows have different scopes and currencies, so they are retained as validation evidence rather than blended into a false point estimate. Use the live platform figures above to review the assumptions before making a new commitment. β &amp; retention remain fitted inputs. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections.</div>
       </details>
-      <div class="hint" style="margin-top:16px">Engine: installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
+      <div class="hint" style="margin-top:16px">Engine: the legacy reach curve is used through the reference budget, then paid installs follow a diminishing-return power curve; there is no hard finite ceiling. DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
         </div>
       </div>
     </div>
@@ -608,7 +616,7 @@
     <table><thead><tr><th>Market</th><th>Spend/day</th><th>Eff. CPI £</th><th>Installs/d</th><th>Net ARPDAU £</th><th>Steady DAU</th><th>Rev/mo £</th><th>ROAS</th></tr></thead>
       <tbody id="mktBody"></tbody></table>
     <div class="hint" id="haloEcho" style="margin-top:8px;color:var(--gold)"></div>
-    <div class="hint" style="margin-top:6px"><b>Eff. CPI</b> is spend ÷ installs (incl. free halo installs), and rises above the floor CPI as you approach a market's daily reach. Cheap Tier-3 installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept far fewer users. ROAS is lifetime paid-value ÷ spend at your chosen LTV horizon.</div>
+    <div class="hint" style="margin-top:6px"><b>Eff. CPI</b> is spend ÷ installs (incl. free halo installs). It rises as spend moves above the reference budget because the calibrated elasticity is below 1; it is no longer forced toward a finite reach ceiling. Cheap Tier-3 installs dominate the DAU count and pull blended ARPDAU toward the floor — to lift blended ARPDAU you must move most of the budget upmarket and accept fewer users. ROAS is lifetime paid-value ÷ spend at your chosen LTV horizon.</div>
   </div>
   <!-- TABLES -->
   <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:20px">
@@ -637,7 +645,7 @@
   </div>
   <div class="foot">
     <b>How the maths answers your questions.</b><br>
-    • <b>"£X/day → how much DAU, and does it still work at higher £X?"</b> installs = reach·(1−e<sup>−spend/(cpi·reach)</sup>); <b>effective CPI rises</b> as you exhaust a market, so ROAS degrades automatically — no manual edit. Each sustained 1 install/day ≈ 5–6 DAU (T3) up to ≈ 8–9 (T1 iOS) at a 365-day lifetime.<br>
+    • <b>"£X/day → how much DAU, and does it still work at higher £X?"</b> the legacy auction curve is preserved through the reference budget; above it, installs = reference installs × (spend ÷ reference spend)<sup>elasticity</sup>. With elasticity below 1, <b>effective CPI rises</b> and ROAS degrades automatically — no artificial finite ceiling. Each sustained 1 install/day ≈ 5–6 DAU (T3) up to ≈ 8–9 (T1 iOS) at a 365-day lifetime.<br>
     • <b>"For how long?"</b> the curve climbs to a plateau; "days→80%" is measured against the steady-state asymptote (horizon-invariant).<br>
     • <b>"How much to maintain?"</b> solved by bisection to hold your current DAU flat, at the mix's effective CPI.<br>
     • <b>"What if I spend a burst then stop?"</b> the Campaign P&amp;L integrates every cohort's revenue over 12 months incl. the retention tail after spend ends.<br>
@@ -659,8 +667,19 @@ function survival(a,p){ if(a>=p.life) return 0; if(a===0) return 1; const s=Math
 function Lsum(p,life){ const L=life||p.life; let s=0; for(let a=0;a<L;a++) s+=survival(a,p); return s; }
 // steady DAU per sustained install/day, given retention uplift & lifetime
 function Lval(ret,p,life){ return M*(ret||1)*Lsum(p,life); }
-// endogenous CPI: installs saturate toward `reach`; effective CPI = spend/installs rises with spend
-function installsFromSpend(spend,cpi,reach){ if(cpi<=0||reach<=0||spend<=0) return 0; return reach*(1-Math.exp(-spend/(cpi*reach))); }
+// Spend-to-installs curve: retain the legacy auction response through the reference budget,
+// then use a configurable diminishing-return elasticity rather than a finite reach ceiling.
+function legacyInstallsFromSpend(spend,cpi,reach){
+  if(cpi<=0||reach<=0||spend<=0) return 0;
+  return reach*(1-Math.exp(-spend/(cpi*reach)));
+}
+function installsFromSpend(spend,cpi,reach,referenceSpend,elasticity){
+  if(cpi<=0||reach<=0||spend<=0) return 0;
+  const ref=Math.max(0.01,referenceSpend||20), e=Math.min(1,Math.max(0.1,elasticity||0.75));
+  if(spend<=ref) return legacyInstallsFromSpend(spend,cpi,reach);
+  const refInstalls=legacyInstallsFromSpend(ref,cpi,reach);
+  return refInstalls*Math.pow(spend/ref,e);
+}
 // DAU trajectory (index 0 = today) for a constant future install rate, with a history prefix
 function trajFromInstalls(inst,days,ret,hist,p){
   const full=hist.concat(new Array(days).fill(inst)), n=full.length, out=new Array(n);
@@ -706,6 +725,7 @@ function readP(){
     currentDAU:num('currentDAU')||0, fee:num('fee')/100,
     beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
     subFrac:num('subFrac')/100, churn:num('churn')/100, halo:num('halo')||1, adMult:adMult,
+    scaleReference:Math.max(1,num('scaleReference')||20), scaleElasticity:Math.min(1,Math.max(0.1,num('scaleElasticity')||0.75)),
     networkMult:networkMult, countryMult:num('countryMult')||1,
     fixedCosts:{firebase:num('firebaseCost'),vps:num('vpsCost'),ai:num('aiCost')},
     tiers:[
@@ -720,6 +740,13 @@ const withLife=(p,l)=>Object.assign({},p,{life:l});
 const withWeights=(p,w)=>Object.assign({},p,{w:w});
 const fixedCostsMonthly=p=>p.fixedCosts.firebase+p.fixedCosts.vps+p.fixedCosts.ai;
 const fixedCostsTotal=(p,days=360)=>fixedCostsMonthly(p)*days/30;
+function scaleStatusHtml(spend,p){
+  const ref=p.scaleReference;
+  if(spend<=ref){
+        return `<b>Scale status: within configured reference budget; delivery evidence limited.</b> Forecast uses the configured £${fmt(ref)}/day reference; Google Ads delivered £5.17/day on average during the Jul 2–31 policy-limited window, so actual delivery still needs monitoring.`;
+  }
+  return `<b>Scale status: illustrative extrapolation above £${fmt(ref)}/day.</b> Paid installs use elasticity ${p.scaleElasticity.toFixed(2)} with no hard ceiling, but £${fmt(spend)}/day has not been validated by stable first-open data. Treat the result as a range and do not read it as a committed delivery forecast.`;
+}
 
 // Multi-network + multi-country reach expansion (both default OFF = today's Google-only, named-countries reality).
 // countryScale: tier-scaled full-expansion ratio minus 1, derived from DataReportal Jan'25 internet-users ×
@@ -736,13 +763,13 @@ function buildMarkets(p,spend,cpiMult){
   cpiMult=cpiMult||1; const names=['Tier-1','Tier-2','Tier-3'], out=[];
   for(let i=0;i<3;i++){
     if(p.w[i]<=0) continue;
-    const t=p.tiers[i], ts=spend*p.w[i], arFee=1-t.iap*p.fee, tReach=effReach(t,i,p);
+    const t=p.tiers[i], ts=spend*p.w[i], refTs=p.scaleReference*p.w[i], arFee=1-t.iap*p.fee, tReach=effReach(t,i,p);
     const aS=ts*(1-p.iosShare);
     if(aS>0) out.push({name:names[i]+' · Android',plat:'android',tier:i,spend:aS,
-      cpi:t.cpi*cpiMult,reach:tReach,installs:installsFromSpend(aS,t.cpi*cpiMult,tReach),arNet:t.ar*arFee,ret:t.ret});
+      cpi:t.cpi*cpiMult,reach:tReach,installs:installsFromSpend(aS,t.cpi*cpiMult,tReach,refTs*(1-p.iosShare),p.scaleElasticity),arNet:t.ar*arFee,ret:t.ret});
     const iS=ts*p.iosShare;
     if(iS>0) out.push({name:names[i]+' · iOS',plat:'ios',tier:i,spend:iS,
-      cpi:t.cpi*p.ios.cpi*cpiMult,reach:tReach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,tReach*p.ios.reach),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
+      cpi:t.cpi*p.ios.cpi*cpiMult,reach:tReach*p.ios.reach,installs:installsFromSpend(iS,t.cpi*p.ios.cpi*cpiMult,tReach*p.ios.reach,refTs*p.iosShare,p.scaleElasticity),arNet:t.ar*p.ios.ar*arFee,ret:t.ret*p.ios.ret});
   }
   const SLD=subLifeDays(p), haloScale=[0.3,0.6,1.0];   // ranking/organic halo strongest in cheap Tier-3
   out.forEach(m=>{
@@ -935,7 +962,7 @@ function renderMoM(spend,p){
 // ================= render: main =================
 function recompute(){
   const p=readP(), spend=p.spend;
-  $('spendN').value=spend; $('spendPill').textContent='£'+spend+'/day';
+  $('spendN').value=spend; $('spendPill').textContent='£'+spend+'/day'; $('scaleStatus').innerHTML=scaleStatusHtml(spend,p);
   $('orgN').value=num('org'); $('feeN').value=num('fee'); $('iosShareN').value=num('iosShare');
   $('ltdBase').textContent=Lval(1,p).toFixed(2)+' DAU';
   const pLow=withLife(p,Math.min(p.life,120)), pHigh=withLife(p,365);
@@ -1038,7 +1065,7 @@ function recompute(){
 
   // spend scenarios (current mix, endogenous CPI visible)
   const sb=$('scenBody'); sb.innerHTML='';
-  [0,25,50,100,200,300].forEach(S=>{
+  [0,20,50,100,200,500].forEach(S=>{
     const smk=buildMarkets(p,S,1), inst=smk.reduce((s,m)=>s+m.installs,0), eff=inst>0?S/inst:0;
     const t=mixTraj(S,180,p,1);
     sb.insertAdjacentHTML('beforeend',
@@ -1096,15 +1123,16 @@ function recompute(){
 }));
 
 const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN'],['momStop','momStopN'],['countryMult','countryMultN']];
+const clearPresetSelection=()=>[...$('mixSeg').children].forEach(b=>b.classList.remove('on'));
 NUMPAIR.forEach(([r,n])=>{
-  $(r).addEventListener('input',()=>{$(n).value=$(r).value;recompute();});
-  $(n).addEventListener('input',()=>{$(r).value=$(n).value;recompute();});
+  $(r).addEventListener('input',()=>{clearPresetSelection();$(n).value=$(r).value;recompute();});
+  $(n).addEventListener('input',()=>{clearPresetSelection();$(r).value=$(n).value;recompute();});
 });
 ['t1','t2','t3','currentDAU','cpi1','cpi2','cpi3','reach1','reach2','reach3','ar1','ar2','ar3',
  'ret1','ret2','ret3','iap1','iap2','iap3','iosCpi','iosAr','iosRet','iosReach','beta','floor',
- 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn','halo',
+ 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn','halo','scaleReference','scaleElasticity',
  'firebaseCost','vpsCost','aiCost']
-  .forEach(id=>$(id).addEventListener('input',recompute));
+  .forEach(id=>$(id).addEventListener('input',()=>{clearPresetSelection();recompute();}));
 
 $('horizonSeg').addEventListener('click',e=>{ if(e.target.dataset.h){
   horizon=+e.target.dataset.h;
@@ -1113,9 +1141,11 @@ $('lifeSeg').addEventListener('click',e=>{ if(e.target.dataset.l){
   life=+e.target.dataset.l;
   [...$('lifeSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 $('adSeg').addEventListener('click',e=>{ if(e.target.dataset.am){
+  clearPresetSelection();
   adMult=+e.target.dataset.am;
   [...$('adSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
+  clearPresetSelection();
   networkMult=+e.target.dataset.nm;
   [...$('netSeg').children].forEach(b=>b.classList.toggle('on',b===e.target)); recompute();}});
 
