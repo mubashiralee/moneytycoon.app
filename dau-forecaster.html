@@ -295,7 +295,7 @@
       </div>
       <div class="statrow">
         <div class="stat"><div class="v" id="xRev">—</div><div class="l">Revenue · 12 mo</div></div>
-        <div class="stat"><div class="v" id="xBudget">—</div><div class="l">Capital required</div></div>
+        <div class="stat"><div class="v" id="xBudget">—</div><div class="l">Total costs · 12 mo</div></div>
         <div class="stat"><div class="v" id="xRoas">—</div><div class="l">Return on ad spend</div></div>
         <div class="stat"><div class="v" id="xPayback">—</div><div class="l">Cumulative breakeven</div></div>
         <div class="stat"><div class="v" id="xPeak">—</div><div class="l">Peak daily active users</div></div>
@@ -309,9 +309,9 @@
     <h2>Monthly profit &amp; loss statement <span class="pill" id="momPill">spend M1–M6, then £0</span></h2>
     <div class="note" id="momStopEcho" style="margin:4px 0 10px"></div>
     <div class="chartbox" style="height:300px"><canvas id="chart3"></canvas></div>
-    <table style="margin-top:10px"><thead><tr><th>Month</th><th>Avg DAU</th><th>Revenue</th><th>Ad spend</th><th>Net profit</th><th>Cumulative</th></tr></thead>
+    <table style="margin-top:10px"><thead><tr><th>Month</th><th>Avg DAU</th><th>Revenue</th><th>Ad spend</th><th>Firebase</th><th>VPS</th><th>AI subscription</th><th>Total costs</th><th>Net profit</th><th>Cumulative</th></tr></thead>
       <tbody id="momBody"></tbody></table>
-    <div class="hint" style="margin-top:8px">Set <b>how many months you keep spending</b> (12 = never stop). Spend is charged <b>only while active</b> — £0 after you stop — and paid DAU + new subscribers then decay on the retention tail while <b>organic and already-bought users keep paying</b>. Watch the <b>J-curve</b>: DAU ramps over the first ~6 weeks so early months can run at a loss and <b>cumulative profit dips before it recovers</b>; after you stop, cumulative profit keeps climbing as the tail monetises. Revenue includes free organic; net = revenue − ad spend.</div>
+    <div class="hint" style="margin-top:8px">Set <b>how many months you keep spending</b> (12 = never stop). Ad spend is charged <b>only while active</b> — £0 after you stop — but recurring Firebase, VPS and AI costs continue through the full 12-month forecast. Paid DAU + new subscribers then decay on the retention tail while <b>organic and already-bought users keep paying</b>. Watch the <b>J-curve</b>: DAU ramps over the first ~6 weeks so early months can run at a loss and <b>cumulative profit dips before it recovers</b>; after you stop, cumulative profit keeps climbing as the tail monetises. Net = revenue − ad spend − recurring operating costs.</div>
   </div>
     </div>
 
@@ -375,7 +375,7 @@
   <div class="card" style="margin-top:20px">
     <h2>Capital deployment &amp; the retention tail <span class="pill">paid cohorts · 12 months</span></h2>
     <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
-      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily spend = your <b id="cSpendEcho">£20</b>/day at the current mix → total budget <b id="cBudget" style="color:var(--gold)">£2,400</b>, then £0. Revenue keeps flowing from users already bought — shown over 12 months. The current default spends for 120 days, so this card shows the retention tail after the current plan stops.</div>
+      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily ad spend = your <b id="cSpendEcho">£20</b>/day at the current mix → ad budget <b id="cBudget" style="color:var(--gold)">£2,400</b>, then £0. Recurring operating costs continue separately; total cash cost is shown below. Revenue keeps flowing from users already bought — shown over 12 months. The current default spends for 120 days, so this card shows the retention tail after the current plan stops.</div>
     </div>
     <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
       <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
@@ -383,7 +383,9 @@
       <div class="kpi" id="cPayCard"><div class="v" id="cPayback">—</div><div class="l">Payback day</div></div>
       <div class="kpi gold"><div class="v" id="cRoas">—</div><div class="l">12-mo ROAS (rev ÷ budget)</div></div>
       <div class="kpi gold"><div class="v" id="cRev">—</div><div class="l">12-mo total revenue</div></div>
-      <div class="kpi" id="cProfitCard"><div class="v" id="cProfit">—</div><div class="l">12-mo profit (rev − budget)</div></div>
+      <div class="kpi"><div class="v" id="cOpEx">—</div><div class="l">12-mo operating costs</div></div>
+      <div class="kpi gold"><div class="v" id="cTotalCost">—</div><div class="l">12-mo total costs</div></div>
+      <div class="kpi" id="cProfitCard"><div class="v" id="cProfit">—</div><div class="l">12-mo profit (rev − all costs)</div></div>
       <div class="kpi em"><div class="v" id="cTail">—</div><div class="l">Revenue AFTER spend stops</div></div>
       <div class="kpi em"><div class="v" id="cTailPct">—</div><div class="l">…the tail, as % of revenue</div></div>
     </div>
@@ -476,6 +478,16 @@
       <div class="row"><input id="fee" type="range" min="0" max="30" step="1" value="15"/>
         <input id="feeN" type="number" min="0" max="30" step="1" value="15"/></div>
       <div class="hint">15% under £1M/yr. Applied to each tier's IAP slice; ad revenue is already net.</div>
+      <div class="hint" style="margin-top:18px"><b>Recurring operating costs</b> <span class="pill">£/month · charged all 12 months</span></div>
+      <div class="row" style="gap:8px;margin-top:6px;align-items:flex-end">
+        <div style="flex:1"><div class="hint" style="margin:0 0 3px">Firebase</div>
+          <input class="mini" id="firebaseCost" type="number" min="0" step="1" value="0" aria-label="Firebase monthly cost"/></div>
+        <div style="flex:1"><div class="hint" style="margin:0 0 3px">VPS hosting</div>
+          <input class="mini" id="vpsCost" type="number" min="0" step="1" value="0" aria-label="VPS hosting monthly cost"/></div>
+        <div style="flex:1"><div class="hint" style="margin:0 0 3px">AI subscription</div>
+          <input class="mini" id="aiCost" type="number" min="0" step="1" value="0" aria-label="AI subscription monthly cost"/></div>
+      </div>
+      <div class="hint">These defaults are <b>£0 because the current monthly bills were not verified in the workspace</b>. Enter the real monthly amounts here; the P&amp;L, hero total cost, campaign tail and net profit recompute immediately. Costs continue after ad spend stops.</div>
         </div>
         <div class="card">
           <h2>Monetisation &amp; market levers</h2>
@@ -695,6 +707,7 @@ function readP(){
     beta:num('beta')||1.0699, floor:(num('floor')||0)/100, life:life,
     subFrac:num('subFrac')/100, churn:num('churn')/100, halo:num('halo')||1, adMult:adMult,
     networkMult:networkMult, countryMult:num('countryMult')||1,
+    fixedCosts:{firebase:num('firebaseCost'),vps:num('vpsCost'),ai:num('aiCost')},
     tiers:[
       {cpi:num('cpi1'),reach:num('reach1'),ar:num('ar1'),ret:num('ret1'),iap:num('iap1')/100,sconv:num('sconv1')/100,sprice:num('sprice1')},
       {cpi:num('cpi2'),reach:num('reach2'),ar:num('ar2'),ret:num('ret2'),iap:num('iap2')/100,sconv:num('sconv2')/100,sprice:num('sprice2')},
@@ -705,6 +718,8 @@ function readP(){
 }
 const withLife=(p,l)=>Object.assign({},p,{life:l});
 const withWeights=(p,w)=>Object.assign({},p,{w:w});
+const fixedCostsMonthly=p=>p.fixedCosts.firebase+p.fixedCosts.vps+p.fixedCosts.ai;
+const fixedCostsTotal=(p,days=360)=>fixedCostsMonthly(p)*days/30;
 
 // Multi-network + multi-country reach expansion (both default OFF = today's Google-only, named-countries reality).
 // countryScale: tier-scaled full-expansion ratio minus 1, derived from DataReportal Jan'25 internet-users ×
@@ -806,9 +821,14 @@ function simulateCampaign(spend,D,H,p){
       const accD=t<D?csDAU[t]:csDAU[t]-csDAU[t-D]; const d=kk*accD; dau[t]+=d; rev[t]+=d*m.fAr;   // flow
       const accS=t<D?csSub[t]:csSub[t]-csSub[t-D]; rev[t]+=subK*accS;                              // subscriptions
     } });
-  let cr=0; const cumRev=[],cumSpend=[],cumProfit=[];
-  for(let t=0;t<=H;t++){ cr+=rev[t]; const sp=Math.min(t+1,D)*spend; cumRev.push(cr); cumSpend.push(sp); cumProfit.push(cr-sp); }
-  return {dau,cumRev,cumSpend,cumProfit,totalInstalls:mk.reduce((s,m)=>s+m.installs,0)*D};
+  let cr=0; const cumRev=[],cumSpend=[],cumOperating=[],cumTotalCost=[],cumProfit=[];
+  for(let t=0;t<=H;t++){
+    cr+=rev[t]; const sp=Math.min(t+1,D)*spend;
+    // The card is a 12-month view even though its chart has a 365-day axis: cap recurring costs at 360 days.
+    const op=fixedCostsTotal(p,Math.min(t+1,360));
+    cumRev.push(cr); cumSpend.push(sp); cumOperating.push(op); cumTotalCost.push(sp+op); cumProfit.push(cr-sp-op);
+  }
+  return {dau,cumRev,cumSpend,cumOperating,cumTotalCost,cumProfit,totalInstalls:mk.reduce((s,m)=>s+m.installs,0)*D};
 }
 
 // ================= render: campaign =================
@@ -818,13 +838,15 @@ function renderCampaign(spend,p){
   const sim=simulateCampaign(spend,D,H,p);
   const peak=sim.dau.reduce((a,b)=>b>a?b:a,0);
   let payback=null; for(let t=0;t<=H;t++){ if(sim.cumProfit[t]>=0){payback=t;break;} }
-  const budget=spend*D, rev12=sim.cumRev[H], profit12=sim.cumProfit[H], roas12=budget>0?rev12/budget:Infinity;
+  const budget=sim.cumSpend[H], operating=sim.cumOperating[H], totalCost=sim.cumTotalCost[H], rev12=sim.cumRev[H], profit12=sim.cumProfit[H], roas12=budget>0?rev12/budget:Infinity;
   const revAfter=rev12-sim.cumRev[Math.min(D-1,H)], tailPct=rev12>0?revAfter/rev12*100:0;
   $('cInstalls').textContent=fmt(sim.totalInstalls);
   $('cPeak').textContent=fmt(peak);
   $('cPayback').textContent=payback===null?'>365d':payback+'d';
   $('cRoas').textContent=(isFinite(roas12)?roas12.toFixed(2):'∞')+'×';
   $('cRev').textContent=gbp(rev12);
+  $('cOpEx').textContent=gbp(operating);
+  $('cTotalCost').textContent=gbp(totalCost);
   $('cProfit').textContent=(profit12>=0?'+£':'−£')+fmt(Math.abs(profit12));
   $('cTail').textContent=gbp(revAfter);
   $('cTailPct').textContent=Math.round(tailPct)+'%';
@@ -835,7 +857,8 @@ function renderCampaign(spend,p){
   const gl=document.body.classList.contains('light')?'#E7E2D1':'#22342b99';
   const ds=[
     {label:'Cumulative revenue',data:sim.cumRev,borderColor:'#2E9E6B',backgroundColor:'rgba(46,158,107,.10)',fill:true,tension:.15,pointRadius:0,borderWidth:2},
-    {label:'Cumulative spend (stops day '+D+')',data:sim.cumSpend,borderColor:'#98A69B',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
+    {label:'Cumulative ad spend (stops day '+D+')',data:sim.cumSpend,borderColor:'#98A69B',borderDash:[6,5],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
+    {label:'Cumulative total costs',data:sim.cumTotalCost,borderColor:'#C47C5A',borderDash:[3,3],fill:false,tension:0,pointRadius:0,borderWidth:1.5},
     {label:'Cumulative profit',data:sim.cumProfit,borderColor:'#C9A227',fill:false,tension:.15,pointRadius:0,borderWidth:2.5}
   ];
   if(chart2){chart2.data.labels=labels;chart2.data.datasets=ds;chart2.update();}
@@ -852,27 +875,30 @@ function renderMoM(spend,p){
   const stopMo=Math.min(12,Math.max(1,Math.round(num('momStop'))));   // spend for this many months, then stop (12 = sustained)
   const stopDay=stopMo>=12?Infinity:stopMo*30;
   const rv=revTraj(spend,days,p,stopDay), traj=mixTraj(spend,days,p,1,stopDay);
+  const fixed=p.fixedCosts, fixedTotal=fixedCostsMonthly(p);
   const rows=[]; let cum=0;
   for(let mo=0;mo<12;mo++){
     let rev=0,dau=0; for(let d=0;d<30;d++){ const idx=mo*30+d; rev+=rv[idx]; dau+=traj[idx]; }
-    const sp=(mo<stopMo?spend:0)*30, net=rev-sp; cum+=net;          // spend only while active — £0 after you stop
-    rows.push({m:mo+1,dau:dau/30,rev,sp,net,cum});
+    const sp=(mo<stopMo?spend:0)*30, totalCost=sp+fixedTotal, net=rev-totalCost; cum+=net;          // ad spend stops; recurring operating costs continue
+    rows.push({m:mo+1,dau:dau/30,rev,sp,firebase:fixed.firebase,vps:fixed.vps,ai:fixed.ai,opEx:fixedTotal,totalCost,net,cum});
   }
   $('momStopN').value=stopMo;
   $('momPill').textContent = stopMo>=12 ? 'sustained · 12 months' : 'spend M1–M'+stopMo+', then £0';
   $('momStopEcho').innerHTML = stopMo>=12
-    ? 'Spending <b>all 12 months</b>. Drag down to stop early and watch revenue coast on the retention tail while spend drops to £0.'
-    : 'Spending <b>£'+fmt(spend)+'/day for '+stopMo+' month'+(stopMo>1?'s':'')+'</b> (budget <b style="color:var(--gold)">£'+fmt(spend*stopMo*30)+'</b>), then <b>£0</b>. Paid DAU &amp; new subscribers decay after M'+stopMo+'; organic + already-bought users keep paying.';
+    ? 'Spending <b>all 12 months</b>. Recurring operating costs are <b>£'+fmt(fixedTotal)+'/month</b>. Drag down to stop ad spend early and watch revenue coast on the retention tail while ad spend drops to £0.'
+    : 'Spending <b>£'+fmt(spend)+'/day for '+stopMo+' month'+(stopMo>1?'s':'')+'</b> (ad budget <b style="color:var(--gold)">£'+fmt(spend*stopMo*30)+'</b>), then <b>£0</b> ad spend. Recurring operating costs remain <b>£'+fmt(fixedTotal)+'/month</b>. Paid DAU &amp; new subscribers decay after M'+stopMo+'; organic + already-bought users keep paying.';
   const tb=$('momBody'); tb.innerHTML='';
   // accounting format: negatives in (parentheses), tabular alignment via CSS
   const acc=x=> x<0 ? `(£${fmt(Math.abs(x))})` : `£${fmt(x)}`;
   const cls=x=> x<0 ? 'neg' : 'pos';
   rows.forEach(r=>tb.insertAdjacentHTML('beforeend',
     `<tr${(stopMo<12&&r.m===stopMo+1)?' class="stoprow"':''}><td>Month ${r.m}</td><td>${fmt(r.dau)}</td><td>£${fmt(r.rev)}</td><td>${r.sp>0?'£'+fmt(r.sp):'—'}</td>`+
+    `<td>£${fmt(r.firebase)}</td><td>£${fmt(r.vps)}</td><td>£${fmt(r.ai)}</td><td>£${fmt(r.totalCost)}</td>`+
     `<td class="${cls(r.net)}">${acc(r.net)}</td><td class="${cls(r.cum)}">${acc(r.cum)}</td></tr>`));
-  const totRev=rows.reduce((s,r)=>s+r.rev,0), totSp=rows.reduce((s,r)=>s+r.sp,0), totNet=totRev-totSp;
+  const totRev=rows.reduce((s,r)=>s+r.rev,0), totSp=rows.reduce((s,r)=>s+r.sp,0), totFirebase=rows.reduce((s,r)=>s+r.firebase,0), totVps=rows.reduce((s,r)=>s+r.vps,0), totAi=rows.reduce((s,r)=>s+r.ai,0), totOpEx=rows.reduce((s,r)=>s+r.opEx,0), totCost=rows.reduce((s,r)=>s+r.totalCost,0), totNet=totRev-totCost;
   tb.insertAdjacentHTML('beforeend',
     `<tr class="tot"><td>Total · 12 months</td><td>—</td><td>£${fmt(totRev)}</td><td>£${fmt(totSp)}</td>`+
+    `<td>£${fmt(totFirebase)}</td><td>£${fmt(totVps)}</td><td>£${fmt(totAi)}</td><td>£${fmt(totCost)}</td>`+
     `<td class="${cls(totNet)}">${acc(totNet)}</td><td></td></tr>`);
   // ---- executive hero (report front page) ----
   if($('xNet')){
@@ -880,13 +906,13 @@ function renderMoM(spend,p){
     const peak=Math.round(Math.max(...traj));
     $('xNet').textContent=(totNet<0?'−£':'£')+fmt(Math.abs(totNet));
     $('xRev').textContent=gbp(totRev);
-    $('xBudget').textContent=gbp(totSp);
+    $('xBudget').textContent=gbp(totCost);
     $('xRoas').textContent=totSp>0?(totRev/totSp).toFixed(2)+'×':'∞';
     $('xPayback').textContent=bk?('Month '+bk):'>12 mo';
     $('xPeak').textContent=fmt(peak);
     $('xPlan').innerHTML = stopMo>=12
-      ? `The selected plan deploys <b>£${fmt(spend)}/day, sustained across all 12 months</b> — total capital <b>£${fmt(totSp)}</b>. At this budget the model finds it's still worth spending every month: returns haven't diminished enough to justify stopping. Every figure in this document recomputes live.`
-      : `The selected plan deploys <b>£${fmt(spend)}/day</b> for <b>${stopMo} months</b>, then £0 — total capital <b>£${fmt(totSp)}</b>. Revenue keeps flowing after spend stops: users already acquired continue paying on the retention tail. Every figure in this document recomputes live.`;
+      ? `The selected plan deploys <b>£${fmt(spend)}/day, sustained across all 12 months</b> — total cash costs <b>£${fmt(totCost)}</b>, including <b>£${fmt(totOpEx)}</b> of recurring operating costs. At this budget the model finds it's still worth spending every month: returns haven't diminished enough to justify stopping. Every figure in this document recomputes live.`
+      : `The selected plan deploys <b>£${fmt(spend)}/day</b> for <b>${stopMo} months</b>, then £0 ad spend — total cash costs <b>£${fmt(totCost)}</b>, including <b>£${fmt(totOpEx)}</b> of recurring operating costs. Revenue keeps flowing after spend stops: users already acquired continue paying on the retention tail. Every figure in this document recomputes live.`;
   }
   const labels=rows.map(r=>'M'+r.m);
   const mut=(getComputedStyle(document.body).getPropertyValue('--muted')||'#8FA89A').trim();
@@ -894,6 +920,7 @@ function renderMoM(spend,p){
   const ds=[
     {type:'bar',label:'Revenue',data:rows.map(r=>r.rev),backgroundColor:'rgba(46,158,107,.55)',borderColor:'#2E9E6B',borderWidth:1},
     {type:'bar',label:'Ad spend',data:rows.map(r=>r.sp),backgroundColor:'rgba(152,166,155,.28)',borderColor:'#98A69B',borderWidth:1},
+    {type:'bar',label:'Operating costs',data:rows.map(r=>r.opEx),backgroundColor:'rgba(196,124,90,.32)',borderColor:'#C47C5A',borderWidth:1},
     {type:'line',label:'Cumulative profit',data:rows.map(r=>r.cum),borderColor:'#C9A227',backgroundColor:'rgba(201,162,39,.12)',borderWidth:2.5,tension:.2,pointRadius:0,fill:false,yAxisID:'y1'}
   ];
   if(chart3){chart3.data.labels=labels;chart3.data.datasets=ds;chart3.update();}
@@ -1075,7 +1102,8 @@ NUMPAIR.forEach(([r,n])=>{
 });
 ['t1','t2','t3','currentDAU','cpi1','cpi2','cpi3','reach1','reach2','reach3','ar1','ar2','ar3',
  'ret1','ret2','ret3','iap1','iap2','iap3','iosCpi','iosAr','iosRet','iosReach','beta','floor',
- 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn','halo']
+ 'sconv1','sconv2','sconv3','sprice1','sprice2','sprice3','subFrac','churn','halo',
+ 'firebaseCost','vpsCost','aiCost']
   .forEach(id=>$(id).addEventListener('input',recompute));
 
 $('horizonSeg').addEventListener('click',e=>{ if(e.target.dataset.h){
