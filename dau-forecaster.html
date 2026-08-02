@@ -284,6 +284,15 @@
   <!-- ════════ 01 · INVESTOR REPORT ════════ -->
   <div class="panel active" id="panel-report">
 
+    <div class="banner" role="note" aria-label="High acquisition reconciliation warning" style="border-color:var(--danger);background:linear-gradient(90deg,rgba(196,124,90,.14),transparent)">
+      <b>HIGH — acquisition reconciliation remains unresolved.</b>
+      The model's <b>£0.0104</b> input is a monitored Google Ads App-campaign Google Play <b>installs-action CPI</b> only:
+      <b>£102.55 ÷ 9,882</b>. It is <b>not</b> a GA4-reconciled unique-user CPI or validated scalable-delivery CPI.
+      For the same completed 28 Jul–1 Aug window, GA4 reports <b>445 first_open events / 441 users</b> and User acquisition reports
+      <b>451 total new users / 297 Cross-network</b>; do not use 297 as total installs. Forecasts above the <b>£20/day</b> reference are
+      illustrative extrapolations until aligned exports reconcile the definitions and denominators.
+    </div>
+
     <div class="hero">
       <div class="kick">Twelve-month projected outcome — selected scenario</div>
       <div class="hero-grid">
@@ -348,7 +357,7 @@
       <div class="kpi blue"><div class="v" id="rBreak">—</div><div class="l">Break-even CPI (paid)</div></div>
       <div class="kpi blue"><div class="v" id="rLtv">—</div><div class="l">Blended LTV / paid install</div><div class="rng" id="rLtvRng"></div></div>
     </div>
-    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses the <b>measured normal-serving</b> ARPDAU £0.0085 with the live Android Rewarded + Rewarded interstitial + Banner mix — AdMob daily data, limited-serving days excluded; mix ~64% ads / 36% IAP. Assumes serving stays healthy — if it gets policy-limited again, actuals drop toward £0.003–0.005. Use the <b>Ad formats</b> lever for higher-volume interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
+    <div class="hint" style="margin-top:8px"><b>Two different questions.</b> <b>Net/month</b> &amp; <b>Business ROAS</b> = the business reality, <i>including your free organic users</i> — stays positive whenever organic + affordable paid outweigh spend. (Current-rev uses a <b>five-day live</b> Rewarded-only-plus-IAP T3 base of £0.007082; the live 1.0294× multiplier is applied once to its ad slice, reconstructing the £0.007224 all-format gross calibration. Base IAP share is 31.91%. This is a short-window calibration, so keep monitoring serving and purchase settlement. Use the <b>Ad formats</b> lever for higher-volume interstitial/banner upside.) <b>Marginal ROAS</b> = whether the <i>next</i> £ of ads pays back on its own; profitable only while <b>effective CPI &lt; break-even</b>. Ranges show conservative (higher CPI, 120-day lifetime) → optimistic (lower CPI, 365-day lifetime).</div>
   </div>
     </div>
 
@@ -365,7 +374,7 @@
       <div class="kpi"><div class="v" id="cmpSubsSteady">—</div><div class="l">Steady subscribers</div></div>
       <div class="kpi"><div class="v" id="cmpArpu">—</div><div class="l">Net £/subscriber/mo (blended)</div></div>
     </div>
-    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. The live Android mix is Rewarded + Rewarded interstitial + Banner; AdMob's Jul 2–31 report measured 62,935 rewarded, 188 rewarded-interstitial and 1,452 banner impressions, with the latter two contributing only $0.50 of $160.44 total. The card recomputes the actual revenue composition from the current 2,631-DAU anchor; higher-volume ad depth remains an explicit what-if scenario. Current subscribers remain anchored to historical Play data and are not presented as a live subscriber count. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
+    <div class="hint" style="margin-top:8px">Three income streams, each with its own mechanic. <b>Ads</b> &amp; <b>consumable IAP</b> scale per active user (DAU × rate). <b>Subscriptions</b> are a recurring subscriber <i>stock</i> — installs convert (per-tier %), pay a per-tier monthly price, and churn ~14%/mo — so they do <b>not</b> track DAU-days and keep paying even on days a user doesn't open the app. Shown at your <b>current DAU</b> and the selected <b>Ad-formats</b> level. The five-day AdMob format window measured 37,968 rewarded impressions / $90.71, 414 rewarded-interstitial / $0.82 and 22,996 banner / $1.85; the latter two appeared mainly on Jul 31–Aug 1. The card recomputes the actual revenue composition from the current 2,804-DAU Firebase anchor; higher-volume ad depth remains an explicit what-if scenario. Current subscribers remain anchored to historical Play data and are not presented as a live subscriber count. Edit conversion, price (per tier), churn &amp; sub-share under <i>Advanced</i>.</div>
   </div>
     </div>
 
@@ -375,7 +384,7 @@
   <div class="card" style="margin-top:20px">
     <h2>Capital deployment &amp; the retention tail <span class="pill">paid cohorts · 12 months</span></h2>
     <div class="row" style="gap:16px;flex-wrap:wrap;align-items:flex-end">
-      <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily ad spend = your <b id="cSpendEcho">£20</b>/day at the current mix → ad budget <b id="cBudget" style="color:var(--gold)">£2,400</b>, then £0. Recurring operating costs continue separately; total cash cost is shown below. Revenue keeps flowing from users already bought — shown over 12 months. The current default spends for 120 days, so this card shows the retention tail after the current plan stops.</div>
+          <div class="hint" style="margin:0 0 8px;flex:1;min-width:220px">Daily ad spend = your <b id="cSpendEcho">£20</b>/day at the current mix → ad budget <b id="cBudget" style="color:var(--gold)">£6,600</b>, then £0. Recurring operating costs continue separately; total cash cost is shown below. Revenue keeps flowing from users already bought — shown over 12 months. The opening current plan spends for 11 months, so this card shows the retention tail after the current plan stops.</div>
     </div>
     <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:12px">
       <div class="kpi"><div class="v" id="cInstalls">—</div><div class="l">Total installs bought</div></div>
@@ -411,12 +420,12 @@
   <div class="banner" style="border-color:var(--gold);background:linear-gradient(90deg,rgba(233,196,106,.14),transparent)">
     <b>★ This opens on the best plan supported by the current shipped position.</b>
     The constrained search fixes the plan to <b>Tier-3 Android · live Rewarded + Rewarded interstitial + Banner mix · Google Ads only · named countries</b>
-    and uses <b>25 organic installs/day</b> plus the carried-forward Firebase/GA4 Android <b>2,631 DAU</b> anchor (last captured for Jul 31, 2026).
-    At the verified <b>£20/day Google Ads budget</b>, the constrained duration search selects <b>4 months</b>
-    → <b>£4,757</b> 12-mo revenue, <b>£2,357 profit</b> (ROAS <b>1.98×</b>), with cumulative break-even in month 1.
+    and uses <b>25 organic installs/day</b> plus the verified Firebase Android <b>2,804 DAU</b> anchor (latest one-day value ending Aug 1, 2026).
+    At the verified <b>£20/day Google Ads budget</b>, the constrained duration search selects <b>11 months</b>
+    → <b>£13,391</b> 12-mo revenue, <b>+£4,722 net profit</b> (ROAS <b>2.03×</b>), after <b>£2,069</b> of recurring operating costs across the year.
     This is the honest current-position forecast: it uses the measured Android Rewarded + Rewarded interstitial + Banner mix;
     it does not assume iOS, extra UA networks, or country expansion before those capabilities are live and measured. The £20 is the configured campaign budget;
-    Google Ads delivered an average £5.17/day over Jul 2–31 because the campaign was policy-limited. The previous <b>£75/day
+    Google Ads delivered <b>£102.55 total (£20.51/day average)</b> over Jul 28–Aug 1. The previous <b>£75/day
     funded target</b> remains available as a clearly labelled scenario, but it is a build-toward plan rather than current reality.
     Every number here is editable.
   </div>
@@ -446,12 +455,12 @@
       <div class="note" id="scaleStatus" style="margin-top:8px"></div>
 
       <label style="margin-top:14px">Spend duration — months, then stop <span class="pill">12 = sustained</span></label>
-        <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="4"/>
-          <input id="momStopN" type="number" min="1" max="12" step="1" value="4"/></div>
+      <div class="row"><input id="momStop" type="range" min="1" max="12" step="1" value="11"/>
+          <input id="momStopN" type="number" min="1" max="12" step="1" value="11"/></div>
       <div class="hint">The plan runs this many months, then spend goes to £0 and the model coasts on the retention tail. Mirrored in days below.</div>
       <label style="margin-top:10px">Spend duration — days <span class="pill">synced with months</span></label>
-        <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="120"/>
-          <input id="cDaysN" type="number" min="1" max="365" step="1" value="120"/></div>
+      <div class="row"><input id="cDays" type="range" min="1" max="365" step="1" value="330"/>
+          <input id="cDaysN" type="number" min="1" max="365" step="1" value="330"/></div>
 
       <label style="margin-top:14px">Geo-tier split of budget %</label>
       <div class="allocbar" id="allocBar"><span></span><span></span><span></span></div>
@@ -471,10 +480,10 @@
       <label style="margin-top:14px">Organic installs / day <span class="pill">T3 Android</span></label>
       <div class="row"><input id="org" type="range" min="0" max="300" step="1" value="25"/>
         <input id="orgN" type="number" min="0" max="3000" step="1" value="25"/></div>
-      <div class="hint">Default <b>25/day is the latest measured organic floor</b>. At this rate, organic alone settles near ~145 DAU, so a £0-spend forecast decays from the carried-forward Firebase 2,631-DAU anchor. Raise this only when a fresh acquisition-source measurement supports it.</div>
-      <label style="margin-top:14px">DAU anchor <span class="pill">last captured; refresh required</span></label>
-      <div class="row"><input id="currentDAU" type="number" min="0" max="100000" step="1" value="2631"/></div>
-      <div class="hint">Historical source: <b>Firebase/GA4 Android active users = 2,631</b> for the 1-day metric ending Jul 31, 2026. The forecast starts here and the chart, current-revenue &amp; maintenance all use this single anchor. Firebase could not be re-verified in the current console session, so this value is explicitly carried forward; Play Console's partial DAU report is not substituted because its window and metric grain differ.</div>
+      <div class="hint">Default <b>25/day is the latest measured organic floor</b>. At this rate, organic alone settles near ~145 DAU, so a £0-spend forecast decays from the verified Firebase 2,804-DAU anchor. Raise this only when a fresh acquisition-source measurement supports it.</div>
+      <label style="margin-top:14px">DAU anchor <span class="pill">verified Aug 1</span></label>
+      <div class="row"><input id="currentDAU" type="number" min="0" max="100000" step="1" value="2804"/></div>
+      <div class="hint">Live source: <b>Firebase Android active users = 2,804</b> for the latest one-day metric ending Aug 1, 2026. The forecast starts here and the chart, current-revenue &amp; maintenance all use this single anchor. Play Console's partial DAU report is not substituted because its window and metric grain differ.</div>
       <label style="margin-top:14px">Store fee on IAP %</label>
       <div class="row"><input id="fee" type="range" min="0" max="30" step="1" value="15"/>
         <input id="feeN" type="number" min="0" max="30" step="1" value="15"/></div>
@@ -482,23 +491,23 @@
       <div class="hint" style="margin-top:18px"><b>Recurring operating costs</b> <span class="pill">£/month · charged all 12 months</span></div>
       <div class="row" style="gap:8px;margin-top:6px;align-items:flex-end">
         <div style="flex:1"><div class="hint" style="margin:0 0 3px">Firebase</div>
-          <input class="mini" id="firebaseCost" type="number" min="0" step="1" value="0" aria-label="Firebase monthly cost"/></div>
+          <input class="mini" id="firebaseCost" type="number" min="0" step="0.01" value="10.45" aria-label="Firebase monthly cost"/></div>
         <div style="flex:1"><div class="hint" style="margin:0 0 3px">VPS hosting</div>
-          <input class="mini" id="vpsCost" type="number" min="0" step="1" value="0" aria-label="VPS hosting monthly cost"/></div>
+          <input class="mini" id="vpsCost" type="number" min="0" step="0.01" value="1.99" aria-label="VPS hosting monthly cost"/></div>
         <div style="flex:1"><div class="hint" style="margin:0 0 3px">AI subscription</div>
-          <input class="mini" id="aiCost" type="number" min="0" step="1" value="0" aria-label="AI subscription monthly cost"/></div>
+          <input class="mini" id="aiCost" type="number" min="0" step="0.01" value="160.00" aria-label="AI subscription monthly cost"/></div>
       </div>
-      <div class="hint">These defaults are <b>£0 because the current monthly bills were not verified in the workspace</b>. Enter the real monthly amounts here; the P&amp;L, hero total cost, campaign tail and net profit recompute immediately. Costs continue after ad spend stops.</div>
+      <div class="hint">Verified current monthly amounts are <b>Firebase £10.45 · VPS £1.99 · AI subscription £160.00</b> — <b>£172.44/month total</b>. Edit them here if a bill changes; the P&amp;L, hero total cost, campaign tail and net profit recompute immediately. Costs continue after ad spend stops.</div>
         </div>
         <div class="card">
           <h2>Monetisation &amp; market levers</h2>
       <label style="margin-top:14px">Ad formats (monetisation depth) <span class="pill">default: measured live mix</span></label>
       <div class="seg" id="adSeg">
-        <button data-am="1.0031" class="on">Live mix · all 3</button>
+        <button data-am="1.0294" class="on">Live mix · all 3</button>
         <button data-am="1.8">Expanded interstitial</button>
         <button data-am="2.1">Expanded interstitial + banner</button>
       </div>
-      <div class="hint">The current live baseline includes all three Android formats. In AdMob's <b>Jul 2–31, 2026</b> Format report: Rewarded <b>62,935 impressions / $159.94</b>, Rewarded interstitial <b>188 / $0.37</b>, Banner <b>1,452 / $0.13</b>, plus App open <b>1 / $0.00</b>. That gives a measured ad-revenue multiplier of <b>1.0031×</b> versus Rewarded alone. The larger interstitial/banner settings are explicit high-volume what-if scenarios.</div>
+      <div class="hint">The current live baseline includes all three Android formats. In AdMob's <b>Jul 28–Aug 1, 2026</b> five-day Format report: Rewarded <b>37,968 impressions / $90.71</b>, Rewarded interstitial <b>414 / $0.82</b>, Banner <b>22,996 / $1.85</b>, plus App open <b>$0.00</b>. That gives a measured short-window ad-revenue multiplier of <b>1.0294×</b> versus Rewarded alone. The larger interstitial/banner settings are explicit high-volume what-if scenarios.</div>
       <label style="margin-top:14px">UA network mix <span class="pill">default: Google only</span></label>
       <div class="seg" id="netSeg">
         <button data-nm="1.0" class="on">Google only</button>
@@ -509,7 +518,7 @@
       <label style="margin-top:14px">Country/market expansion <span class="pill">default: named countries</span></label>
       <div class="row"><input id="countryMult" type="range" min="1" max="2" step="0.05" value="1"/>
         <input id="countryMultN" type="number" min="1" max="2" step="0.05" value="1"/></div>
-      <div class="hint">The current baseline counts only the named T1/T2/T3 countries. Higher values are explicit build-toward scenarios and raise the reach ceiling using the existing population proxy; they are not current measured reach.</div>
+      <div class="hint">The current baseline counts only the named T1/T2/T3 countries. Higher values are explicit build-toward scenarios and raise the reference inventory anchor using the existing population proxy; they are not current measured reach.</div>
       <label style="margin-top:14px">User lifetime (LTV horizon) <span class="pill">caps the tail</span></label>
       <div class="seg" id="lifeSeg">
         <button data-l="90">90 days</button>
@@ -532,21 +541,21 @@
             <tr><td>🟢 T1</td>
               <td><input class="mini" id="cpi1" type="number" min="0.01" step="0.05" value="2.60"/></td>
               <td><input class="mini" id="reach1" type="number" min="10" step="10" value="250"/></td>
-              <td><input class="mini" id="ar1" type="number" min="0.001" step="0.005" value="0.062"/></td>
+              <td><input class="mini" id="ar1" type="number" min="0.001" step="0.000000001" value="0.051657141872"/></td>
               <td><input class="mini" id="ret1" type="number" min="0" step="0.05" value="1.40"/></td>
               <td><input class="mini" id="iap1" type="number" min="0" max="100" step="1" value="44"/></td></tr>
             <tr><td>🟡 T2</td>
               <td><input class="mini" id="cpi2" type="number" min="0.01" step="0.05" value="0.70"/></td>
               <td><input class="mini" id="reach2" type="number" min="10" step="10" value="500"/></td>
-              <td><input class="mini" id="ar2" type="number" min="0.001" step="0.005" value="0.027"/></td>
+              <td><input class="mini" id="ar2" type="number" min="0.001" step="0.000000001" value="0.022495852106"/></td>
               <td><input class="mini" id="ret2" type="number" min="0" step="0.05" value="1.20"/></td>
               <td><input class="mini" id="iap2" type="number" min="0" max="100" step="1" value="40"/></td></tr>
             <tr><td>🔵 T3</td>
-              <td><input class="mini" id="cpi3" type="number" min="0.005" step="0.01" value="0.05"/></td>
+              <td><input class="mini" id="cpi3" type="number" min="0.005" step="0.0001" value="0.0104"/></td>
               <td><input class="mini" id="reach3" type="number" min="10" step="10" value="1200"/></td>
-              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.0005" value="0.0085"/></td>
-              <td><input class="mini" id="ret3" type="number" min="0" step="0.05" value="1.00"/></td>
-              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="1" value="40"/></td></tr>
+              <td><input class="mini" id="ar3" type="number" min="0.001" step="0.000000001" value="0.007082027515"/></td>
+              <td><input class="mini" id="ret3" type="number" min="0" step="0.05" value="0.65"/></td>
+              <td><input class="mini" id="iap3" type="number" min="0" max="100" step="0.000001" value="31.90962318"/></td></tr>
           </tbody>
         </table>
         <div class="hint" style="margin:10px 0 3px">iOS × Android multipliers · retention decay · floor</div>
@@ -598,7 +607,7 @@
             <input class="mini" id="churn" type="number" min="1" step="1" value="14"/></div>
         </div>
         <div class="hint" style="margin-top:4px">*% of installs that become subscribers. <b>Net £/sub/mo</b> is after store fee (iOS ×ARPDAU mult). <b>Sub % of IAP ≈ 65%</b> (measured from your Play data: Mogul Premium monthly/yearly + Dividend Society tiers = £108 of £170 IAP) splits IAP into subs vs consumables and anchors current sub revenue. <b>Churn 14%/mo ≈ 6.5-month</b> subscriber life. iOS subs assumed to pay the iOS ARPDAU multiple.</div>
-        <div class="hint" style="margin-top:8px"><b>Floor CPI T3 £0.05</b> remains the planning floor from the historical launch investigation (£497 → ~15,600 GA4 users ≈ £0.03 effective, plus buffer). Google Ads currently reports about <b>£0.0107 per conversion</b> from 14,537 conversions, but the selected conversion action is not confirmed as an install/first_open; Play's recent dashboard shows 677 first opens versus 9.09K device acquisitions over a different window. The denominators do not reconcile, so the 1.07p figure is not promoted into the model floor. <b>T3 ARPDAU £0.0085, IAP 40%</b> remains the measured normal-serving historical rate; current AdMob/Play/Firebase revenue windows have different scopes and currencies, so they are retained as validation evidence rather than blended into a false point estimate. Use the live platform figures above to review the assumptions before making a new commitment. β &amp; retention remain fitted inputs. Tier-1/2 ARPDAU = T3 × tier ratio (≈7× / 3×), projections.</div>
+        <div class="hint" style="margin-top:8px"><b>Five-day live calibration (28 Jul–1 Aug).</b> <b>HIGH — acquisition reconciliation remains unresolved.</b> The model's T3 paid CPI input is a monitored Google Ads App-campaign <b>Google Play installs-action CPI</b>: <b>£0.0104 (1.04p)</b> = <b>£102.55</b> ÷ <b>9,882</b>. The account's generic conversion total is mixed; session starts, payments, charges and ad completions are excluded. GA4's exact-window <b>first_open</b> report is <b>445 events / 441 users</b>, while GA4 User acquisition reports <b>451 total new users / 297 Cross-network</b>; 297 is not total installs. Therefore £0.0104 is <b>not</b> a GA4-reconciled unique-user CPI or a validated scalable-delivery CPI. Keep the discrepancy visible and do not extrapolate beyond the £20/day reference until aligned exports reconcile it. AdMob recorded <b>$90.71 Rewarded</b>, <b>$0.82 Rewarded interstitial</b>, <b>$1.85 Banner</b> and <b>$93.38 all formats</b>; GA4 purchase revenue was <b>$42.51</b>. The £101.28 all-format total is rebased to <b>£99.2900</b> = £101.28 × ($90.71 + $42.51) ÷ ($93.38 + $42.51). T3 therefore stores a Rewarded-only-plus-IAP base of <b>£0.007082027515</b> and IAP share <b>31.90962318%</b>; the <b>1.0294</b> live-format multiplier is applied <b>once</b> to the ad slice, reconstructing <b>£0.007223800</b> against the £0.007223966 all-format target (0.0023% low, within 0.1%). Firebase D1 retention was <b>30.8%</b>, normalised against the fitted 47.6% D1 baseline to <b>Ret ×0.65</b>. Tier-1/2 ARPDAU remain projections at ×7.29 / ×3.14 of T3. <b>Reference reach 1,200/day remains a capacity assumption</b> because no console report validates that reference inventory at £20/day.</div>
       </details>
       <div class="hint" style="margin-top:16px">Engine: the legacy reach curve is used through the reference budget, then paid installs follow a diminishing-return power curve; there is no hard finite ceiling. DAU(t)=Σ<sub>markets</sub> installs·Σs(t−c), s(a)=(a+1)<sup>−β</sup> capped at lifetime. Steady DAU per install/day (T3) = <span id="ltdBase">—</span>.</div>
         </div>
@@ -622,6 +631,9 @@
   <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:20px">
     <div class="card">
       <h2>Spend scenarios <span class="pill">@ current mix</span></h2>
+      <div class="banner" role="note" aria-label="High-spend scenario evidence boundary" style="margin:10px 0;border-color:var(--danger);background:linear-gradient(90deg,rgba(196,124,90,.14),transparent)">
+        <b>Illustrative high-spend scenarios — not validated delivery.</b> Every row above the <b>£20/day</b> reference — <b>£50, £100, £200 and £500/day</b> — is an illustrative extrapolation until the Ads-versus-GA4 reconciliation is resolved and stable, correctly attributed first-open evidence exists at that spend.
+      </div>
       <table><thead><tr><th>£/day</th><th>Installs/d*</th><th>Eff. CPI</th><th>DAU 90d</th><th>Steady</th><th>Rev/mo £</th></tr></thead>
         <tbody id="scenBody"></tbody></table>
       <div class="hint" style="margin-top:8px">*incl. organic. Watch effective CPI rise and returns diminish as spend scales — that's the endogenous-CPI curve.</div>
@@ -703,7 +715,7 @@ function subSurv(a,churn){ return a<=0?1:Math.pow(1-churn,a/30); }
 function subLifeDays(p){ let s=0; for(let a=0;a<730;a++) s+=subSurv(a,p.churn); return s; }
 function cumSubArr(days,p){ const c=new Array(days+1); let s=0; for(let a=0;a<=days;a++){ s+=subSurv(a,p.churn); c[a]=s; } return c; }
 // net flow ARPDAU (ads + consumable IAP, per DAU-day) — EXCLUDES subscriptions (modelled as a stock).
-// adMult scales ONLY the ad portion (live Jul 2–31 mix=1.0031 · expanded interstitial≈1.8 · expanded interstitial+banner≈2.1).
+// adMult scales ONLY the ad portion (the stored T3 base is Rewarded-only + IAP; live Jul 28–Aug 1 mix=1.0294 · expanded interstitial≈1.8 · expanded interstitial+banner≈2.1).
 function flowAr(t,p,ios){ const m=ios?p.ios.ar:1; return (t.ar*(1-t.iap)*p.adMult + t.ar*t.iap*(1-p.subFrac)*(1-p.fee))*m; }
 const flowArT3=p=>flowAr(p.tiers[2],p,false);
 // current legacy subscription revenue/day (net), anchored to measured data (currentDAU × ARPDAU × IAP% × sub% of IAP)
@@ -713,7 +725,7 @@ const orgSubRev=p=>p.org*p.tiers[2].sconv*subLifeDays(p)*p.tiers[2].sprice/30;
 
 // ================= read inputs → params =================
 const $=id=>document.getElementById(id);
-let horizon=180, life=365, adMult=1.0031, networkMult=1.0, chart, chart2, chart3;   // current shipped baseline: measured Android all-format mix and Google-only acquisition; future format/network scenarios remain selectable.
+let horizon=180, life=365, adMult=1.0294, networkMult=1.0, chart, chart2, chart3;   // current shipped baseline: measured Android all-format mix and Google-only acquisition; future format/network scenarios remain selectable.
 const fmt=x=>Math.round(x).toLocaleString();
 const gbp=x=>'£'+fmt(x);
 const num=id=>{ const v=+$(id).value; return isFinite(v)?v:0; };
@@ -743,7 +755,7 @@ const fixedCostsTotal=(p,days=360)=>fixedCostsMonthly(p)*days/30;
 function scaleStatusHtml(spend,p){
   const ref=p.scaleReference;
   if(spend<=ref){
-        return `<b>Scale status: within configured reference budget; delivery evidence limited.</b> Forecast uses the configured £${fmt(ref)}/day reference; Google Ads delivered £5.17/day on average during the Jul 2–31 policy-limited window, so actual delivery still needs monitoring.`;
+        return `<b>Scale status: within configured reference budget.</b> Forecast uses the configured £${fmt(ref)}/day reference; Google Ads delivered £102.55 across Jul 28–Aug 1 (£20.51/day average), so current delivery is now aligned with the £20 budget.`;
   }
   return `<b>Scale status: illustrative extrapolation above £${fmt(ref)}/day.</b> Paid installs use elasticity ${p.scaleElasticity.toFixed(2)} with no hard ceiling, but £${fmt(spend)}/day has not been validated by stable first-open data. Treat the result as a range and do not read it as a committed delivery forecast.`;
 }
@@ -1107,23 +1119,32 @@ function recompute(){
 }
 
 // ================= wiring =================
+const clearPresetSelection=()=>[...$('mixSeg').children].forEach(b=>b.classList.remove('on'));
 // ONE plan, two panels: the Campaign P&L day-slider (cDays) and the Month-on-Month month-slider (momStop)
-// both answer "how long do I spend before stopping" — keep them in lockstep BOTH ways, so stopping at
-// 30 days in one panel means M2 onwards shows £0 spend in the other. Registered BEFORE the generic
-// pair-wiring below so recompute() (fired by that wiring) always reads the already-synced values.
-// momStop 12 = "sustained" in the MoM panel, so cDays ≥ 345 rounds up to it; setting momStop=12 sets cDays to 360 (12 × 30-day model months).
-// Each listener reads the control that FIRED (e.target) — the twin range/number input isn't synced yet at this point.
+// both answer "how long do I spend before stopping". Normalize and write BOTH range/number pairs from the
+// event source; otherwise a typed out-of-range number leaves the visible number field stale while the range clamps.
+// momStop 12 = "sustained" in the MoM panel, so cDays ≥ 345 rounds up to it; setting momStop=12 sets cDays to 360
+// (12 × 30-day model months).
+const durationDays=value=>Math.min(365,Math.max(1,Math.round(Number(value)||1)));
+const durationMonths=value=>Math.min(12,Math.max(1,Math.round(Number(value)||1)));
+const syncDurationFromDays=value=>{
+  const days=durationDays(value), months=Math.min(12,Math.max(1,Math.round(days/30)));
+  $('cDays').value=days; $('cDaysN').value=days;
+  $('momStop').value=months; $('momStopN').value=months;
+};
+const syncDurationFromMonths=value=>{
+  const months=durationMonths(value), days=Math.min(365,months*30);
+  $('momStop').value=months; $('momStopN').value=months;
+  $('cDays').value=days; $('cDaysN').value=days;
+};
 ['cDays','cDaysN'].forEach(id=>$(id).addEventListener('input',e=>{
-  const d=+e.target.value||1, mo=Math.min(12,Math.max(1,Math.round(d/30)));
-  $('momStop').value=mo; $('momStopN').value=mo;
+  syncDurationFromDays(e.target.value); clearPresetSelection(); recompute();
 }));
 ['momStop','momStopN'].forEach(id=>$(id).addEventListener('input',e=>{
-  const cd=Math.min(365,Math.max(1,Math.round(+e.target.value||1))*30);
-  $('cDays').value=cd; $('cDaysN').value=cd;
+  syncDurationFromMonths(e.target.value); clearPresetSelection(); recompute();
 }));
 
-const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['cDays','cDaysN'],['momStop','momStopN'],['countryMult','countryMultN']];
-const clearPresetSelection=()=>[...$('mixSeg').children].forEach(b=>b.classList.remove('on'));
+const NUMPAIR=[['spend','spendN'],['org','orgN'],['fee','feeN'],['iosShare','iosShareN'],['countryMult','countryMultN']];
 NUMPAIR.forEach(([r,n])=>{
   $(r).addEventListener('input',()=>{clearPresetSelection();$(n).value=$(r).value;recompute();});
   $(n).addEventListener('input',()=>{clearPresetSelection();$(r).value=$(n).value;recompute();});
@@ -1151,8 +1172,8 @@ $('netSeg').addEventListener('click',e=>{ if(e.target.dataset.nm){
 
 // preset = [t1, t2, t3, iosShare, spend?, halo?, adMult?, momStop?, networkMult?, countryMult?, organic?]
 const MIX={
-  opt:[0,0,100,0,20,1.4,1.0031,4,1.0,1.0,25],    // ★ current plan: fixed £20/day Google Ads budget, Android live all-format mix, stop M4, Firebase DAU anchor
-  cur:[0,0,100,0,0,1.0,1.0031,12,1.0,1.0,25],     // no-investment view: current DAU decays toward the measured organic floor
+  opt:[0,0,100,0,20,1.4,1.0294,11,1.0,1.0,25],    // ★ current plan: fixed £20/day Google Ads budget, Android live all-format mix, stop M11, Firebase DAU anchor
+  cur:[0,0,100,0,0,1.0,1.0294,12,1.0,1.0,25],     // no-investment view: current DAU decays toward the measured organic floor
   fund:[0,0,100,65,75,1.4,2.1,12,1.6,2.0,100],  // future funded target: kept explicit and opt-in; assumes iOS, richer ads, network and country expansion
   bal:[25,25,50,15], prem:[55,20,25,40], rev:[70,20,10,55], launch:[0,0,100,0,11,1.7] };
 $('mixSeg').addEventListener('click',e=>{ if(e.target.dataset.mix){
