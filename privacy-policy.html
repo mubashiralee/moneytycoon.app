@@ -28,18 +28,21 @@
         h1 { border-bottom: 2px solid var(--gold); color: var(--gold); padding-bottom: 12px; }
         h2 { color: var(--blue); margin-top: 36px; }
         h3 { color: var(--green); margin-top: 24px; }
+        h4 { color: var(--muted); margin-top: 18px; }
         a { color: var(--gold); }
         li { margin-bottom: 8px; }
-        .summary, .deletion-card {
+        .summary, .deletion-card, .platform-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 18px;
+            margin: 16px 0;
         }
         .deletion-card { border-left: 5px solid var(--green); }
+        .platform-card { border-left: 5px solid var(--blue); }
         .muted { color: var(--muted); }
         code { background: #0f172a; border-radius: 4px; padding: 2px 5px; }
-        table { border-collapse: collapse; width: 100%; }
+        table { border-collapse: collapse; width: 100%; margin: 12px 0; }
         th, td { border: 1px solid var(--border); padding: 9px; text-align: left; vertical-align: top; }
         th { background: var(--surface); }
     </style>
@@ -47,84 +50,118 @@
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
     <p><strong>Developer and data controller:</strong> CapitalCraft Studios</p>
-    <p><strong>Last updated:</strong> July 29, 2026</p>
-    <p><strong>Effective date:</strong> July 29, 2026</p>
+    <p><strong>Last updated:</strong> August 26, 2026</p>
+    <p><strong>Effective date:</strong> August 26, 2026</p>
 
     <div class="summary">
         <strong>Plain-language summary</strong>
         <ul>
-            <li>Money Tycoon creates an anonymous Firebase account automatically so game data can be protected and synchronized without an email address.</li>
-            <li>Most game processing happens on your device. Current Android builds also mirror game state to protected cloud storage by default when a network connection is available.</li>
-            <li>Linking a Google or Play Games identity, enabling notifications, making a purchase, and choosing to watch a rewarded ad are optional. Free players may also see passive banner ads on a small number of informational screens.</li>
-            <li>Firebase Analytics and Crashlytics collect app-interaction analytics and crash diagnostics, gated by your consent choices where consent is legally required and enabled by default elsewhere. Advertising SDKs may also process the limited data described below when an ad is requested.</li>
-            <li>You can permanently delete your account and cloud data in the app or request deletion by email without reinstalling the app.</li>
+            <li>Money Tycoon is available on <strong>Android (Google Play)</strong> and <strong>iOS (Apple App Store)</strong>. This policy covers both platforms. Platform-specific details are called out below.</li>
+            <li>On first launch, the App creates an anonymous Firebase account so online features can work without requiring an email address.</li>
+            <li>Most game processing happens on your device. Optional cloud backup, notifications, purchases, and rewarded ads are under your control on each platform.</li>
+            <li><strong>Android:</strong> Firebase Analytics and Crashlytics may collect diagnostics where consent law requires opt-in. Google Play Games Saved Games may back up progress when signed in.</li>
+            <li><strong>iOS:</strong> First-party Firebase Analytics and Crashlytics collection are <strong>disabled</strong> in current releases. Ads use Google AdMob with Apple's App Tracking Transparency (ATT) and the Google User Messaging Platform (UMP). Optional Sign in with Apple or Link Google Account (when OAuth is configured) links your Firebase account. Google Play Games Saved Games are not available on iOS.</li>
+            <li>You can delete your account and cloud data in Settings or by email.</li>
         </ul>
     </div>
 
     <h2>1. Scope</h2>
-    <p>This policy explains how CapitalCraft Studios ("we", "our", or "us") processes information when you use the Money Tycoon mobile application ("Money Tycoon" or the "App"). Money Tycoon is a simulation game. Balances, holdings, trades, and other financial values inside the game are virtual game data, not real bank or brokerage accounts.</p>
+    <p>This policy explains how CapitalCraft Studios ("we", "our", or "us") processes information when you use the Money Tycoon mobile application ("Money Tycoon" or the "App") on Android or iOS. Money Tycoon is a simulation game. Balances, holdings, trades, and other financial values inside the game are virtual game data, not real bank or brokerage accounts.</p>
 
     <h2>2. Information we process</h2>
 
     <h3>Local game data</h3>
-    <p>The App stores game progress on your device using Room, DataStore, and protected preferences. This includes your player name, selected country and persona, virtual balances, businesses, properties, investments, orders, achievements, settings, tutorial state, and purchase entitlement state.</p>
+    <div class="platform-card">
+        <p><strong>Android</strong> stores game progress on your device using Room, DataStore, and protected preferences.</p>
+        <p><strong>iOS</strong> stores game progress on your device using Core Data, UserDefaults, and protected preferences.</p>
+    </div>
+    <p>On both platforms this includes your player name, selected country and persona, virtual balances, businesses, properties, investments, orders, achievements, settings, tutorial state, and purchase entitlement state.</p>
 
     <h3>Anonymous account and optional linked identity</h3>
-    <p>On first launch, the App automatically asks Firebase Authentication to create a random user ID. No email address is required for this anonymous account. You may optionally link a Google or Google Play Games identity for account recovery. If you link one, Firebase may receive the email address, provider user ID, display name, and authentication token supplied by Google. We do not receive your Google password.</p>
+    <p>On first launch, the App automatically asks Firebase Authentication to create a random user ID. No email address is required for this anonymous account.</p>
+    <div class="platform-card">
+        <p><strong>Android:</strong> You may optionally link a Google or Google Play Games identity for account recovery. If you link one, Firebase may receive the email address, provider user ID, display name, and authentication token supplied by Google. We do not receive your Google password.</p>
+        <p><strong>iOS:</strong> You may optionally use <strong>Sign in with Apple</strong> to link your Firebase account. When Google OAuth is configured on the build, Settings may also offer <strong>Link Google Account</strong> for the same Firebase backup/account-link path. Apple or Google may provide an email and provider user ID. We do not receive passwords. <strong>Google Play Games Saved Games are not available on iOS.</strong></p>
+    </div>
 
     <h3>Cloud save and game-service data</h3>
-    <p>Current Android builds synchronize a protected copy of game state when cloud services and a network connection are available. The copy is keyed to your Firebase user ID and may include:</p>
-    <ul>
-        <li>player name, selected country, game age, persona, and lifestyle values;</li>
-        <li>virtual cash, bank, credit, business, property, portfolio, and trading records;</li>
-        <li>progress, achievements, daily features, season/pass, prestige, tutorial, and settings state;</li>
-        <li>notification preferences, locale, app version, device model, Android version, and an FCM registration token; and</li>
-        <li>server-authoritative exchange and rebirth data when those features are enabled.</li>
-    </ul>
-    <p>The App remains usable when cloud services are unavailable, but there is no user-facing switch that prevents the automatic anonymous identity or all cloud-save processing in the current release.</p>
-    <p>Older distributed versions could also write Google Play Games Saved Games snapshots. New releases have paused those snapshot mutations during a save-integrity migration. Historical snapshots may remain in Google Play Games until they are deleted through the account-deletion process or Google account controls.</p>
+    <div class="platform-card">
+        <p><strong>Android</strong> may synchronize a protected copy of game state to Firebase when cloud services and a network connection are available, and may write Google Play Games Saved Games snapshots when Play Games sign-in is active.</p>
+        <p><strong>iOS</strong> may synchronize a protected copy of selected game systems to Firebase when you link Sign in with Apple or Google (when Link Google Account is offered) and use cloud backup. iOS does not use Google Play Games. Restore coverage on iOS is limited to the systems implemented in the current release; the App discloses restore limitations in Settings when applicable.</p>
+    </div>
+    <p>Cloud copies are keyed to your Firebase user ID and may include player profile data, virtual economy records, progress, achievements, settings, notification preferences, locale, app version, device model, OS version, and server-authoritative exchange data when those features are enabled.</p>
 
     <h3>Purchases</h3>
-    <p>Google Play processes purchases. We receive purchase tokens, product identifiers, transaction status, and entitlement information needed to verify and deliver a purchase. We do not receive full payment-card or bank-account details.</p>
+    <div class="platform-card">
+        <p><strong>Android:</strong> Google Play processes purchases. We receive purchase tokens, product identifiers, transaction status, and entitlement information needed to verify and deliver a purchase.</p>
+        <p><strong>iOS:</strong> Apple App Store processes purchases through StoreKit. We receive transaction identifiers, product identifiers, and entitlement information needed to verify and deliver a purchase.</p>
+    </div>
+    <p>We do not receive full payment-card or bank-account details on either platform.</p>
 
     <h3>Notifications</h3>
-    <p>Firebase Cloud Messaging may issue a per-installation token. When a token is registered, the App may store it with your Firebase user ID, locale, selected country, notification preferences, streak, app version, device model, and Android version. Android notification permission and in-app category settings control whether notifications are shown. Server-side frequency controls limit engagement messages.</p>
+    <p>Firebase Cloud Messaging (Android) and Apple Push Notification service (iOS) may issue a per-installation token. When registered, the App may store the token with your Firebase user ID, locale, selected country, notification preferences, app version, device model, and OS version. In-app notification settings and OS permission controls determine whether notifications are shown. Server-side frequency controls limit engagement messages.</p>
 
-    <h3>Google Play Games</h3>
-    <p>Google Play Games sign-in is optional. If used, the App may receive a Player ID and display name for authentication and achievements. Earlier versions could submit game statistics such as virtual net worth, business/property counts, passive income, prestige, achievements, trade profit, and virtual tax paid to Google leaderboards. Online cross-player competition is paused in the current release while server-authoritative integrity controls are completed; local and simulated leaderboards remain available.</p>
+    <h3>Google Play Games (Android only)</h3>
+    <p>On Android, Google Play Games sign-in is optional. If used, the App may receive a Player ID and display name for authentication, achievements, Saved Games, and global leaderboards. The App may submit game statistics such as virtual net worth, business/property counts, passive income, prestige, achievements, trade profit, and virtual tax paid. These leaderboard scores are reported by the game client and are not verified from a server-owned gameplay ledger; the App labels that limitation on the leaderboard screen.</p>
+    <p class="muted"><strong>iOS:</strong> Google Play Games is not available on iOS. Empire leaderboards on iOS use on-device records and, when online features are enabled, Firestore-backed boards.</p>
 
     <h3>Advertising and consent</h3>
-    <p>The App may show passive inline banner ads to free players on selected informational screens. It also offers rewarded ads and rewarded-interstitial bonus offers that play only after you deliberately choose to watch. Google AdMob and enabled mediation partners may process an advertising or device identifier, IP-derived approximate location, ad interactions, and diagnostic information for ad delivery, measurement, frequency control, fraud prevention, and compliance. Depending on region and consent, ads may be personalized or non-personalized. The Google User Messaging Platform stores and communicates your advertising consent choices. You can reopen privacy choices from the App's settings and can reset or delete the Android advertising ID in system settings. Remove Ads and qualifying ad-free subscriptions suppress all ad formats. A banner-only pass suppresses passive banners for its purchased duration but does not suppress rewarded offers or other ad formats.</p>
+    <p>On both platforms, the App may show passive inline banner ads to free players on selected informational screens. It also offers rewarded ads and rewarded-interstitial bonus offers that play only after you deliberately choose to watch.</p>
+    <p>Google AdMob and enabled mediation partners may process an advertising or device identifier, IP-derived approximate location, ad interactions, and diagnostic information for ad delivery, measurement, frequency control, fraud prevention, and compliance. Depending on region and consent, ads may be personalized or non-personalized.</p>
+    <div class="platform-card">
+        <p><strong>Android:</strong> The Google User Messaging Platform (UMP) stores and communicates your advertising consent choices. You can reopen privacy choices from Settings and reset or delete the Android advertising ID in system settings.</p>
+        <p><strong>iOS:</strong> UMP presents advertising consent where required. Apple's <strong>App Tracking Transparency</strong> prompt controls access to the Identifier for Advertisers (IDFA) for cross-app tracking. You can change tracking permission in iOS Settings → Privacy &amp; Security → Tracking, and reset the advertising identifier under Privacy &amp; Security → Apple Advertising. The App's privacy manifest declares tracking and the AdMob tracking domain <code>googleads.g.doubleclick.net</code>.</p>
+    </div>
+    <p>Remove Ads and qualifying ad-free subscriptions suppress all ad formats. A banner-only pass suppresses passive banners for its purchased duration but does not suppress rewarded offers or other ad formats.</p>
     <p>Potential mediation partners include Meta Audience Network, Pangle, Unity, Liftoff/Vungle, AppLovin, ironSource, Mintegral, InMobi, and Digital Turbine/Fyber. A partner receives an ad request only when selected by the AdMob mediation configuration and permitted by applicable consent signals.</p>
 
     <h3>Diagnostics, analytics, and configuration</h3>
-    <p>Firebase Analytics and Firebase Crashlytics collect app interactions, crash logs, diagnostics, device information, and an anonymous user ID. Crash reports may additionally include a pseudonymous player identifier and game-progress context such as the current screen and subscription tier. Where privacy law requires consent (for example the EEA and UK), collection is enabled only after you grant consent through the Google-certified consent form shown in the App, and it stays disabled — with unsent crash reports deleted — if you decline or no decision can be obtained. Elsewhere, collection is enabled by default. You can revisit your consent choices at any time from the App's settings. Firebase Remote Config and App Check may process installation and integrity signals needed to deliver configuration securely. Advertising SDKs may process diagnostic information when an ad is requested.</p>
+    <div class="platform-card">
+        <p><strong>Android:</strong> Firebase Analytics and Firebase Crashlytics may collect app interactions, crash logs, diagnostics, device information, and an anonymous user ID where privacy law requires consent (for example the EEA and UK), and may be enabled by default elsewhere. You can revisit consent choices from Settings.</p>
+        <p><strong>iOS:</strong> First-party Firebase Analytics and Crashlytics collection are <strong>disabled</strong> in current App Store builds (<code>FIREBASE_ANALYTICS_COLLECTION_ENABLED=false</code>). Third-party ad SDKs may still process limited diagnostic data when an ad is requested. Firebase Remote Config and Firebase App Check (including Apple <strong>App Attest</strong> where enabled) may process installation and integrity signals needed to deliver configuration and protect online features securely.</p>
+    </div>
 
     <h3>Read-only market-data providers</h3>
-    <p>Optional Pro Trading screens may request public market prices from providers such as Alpha Vantage, Finnhub, or Alpaca. Requests use HTTPS and may expose ordinary connection information such as IP address and user agent to the provider. If you enter a provider API key, it is stored locally and sent only to that provider to make the requested market-data call.</p>
+    <p>Optional Pro Trading screens may request public market prices from providers such as Alpha Vantage, Finnhub, or Alpaca. Requests use HTTPS and may expose ordinary connection information such as IP address and user agent to the provider.</p>
 
     <h3>User-directed sharing</h3>
-    <p>The Tycoon Card feature generates an image on your device. Money Tycoon does not upload the image. If you choose Share or Save, Android sends it to the destination you select, and that destination's privacy terms apply.</p>
+    <div class="platform-card">
+        <p><strong>Android:</strong> The Tycoon Card feature generates an image on your device. Money Tycoon does not upload the image. If you choose Share or Save, Android sends it to the destination you select.</p>
+        <p><strong>iOS:</strong> The same feature uses the system share sheet. Money Tycoon does not upload the image; the destination you choose processes it under its own terms.</p>
+    </div>
 
-    <h2>3. How we use information</h2>
+    <h2>3. iOS privacy manifest alignment</h2>
+    <p>The iOS App declares the following collected data categories in <code>PrivacyInfo.xcprivacy</code>, consistent with this policy:</p>
+    <table>
+        <thead>
+            <tr><th>Category</th><th>Linked to identity?</th><th>Used for tracking?</th><th>Primary purposes</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Device ID (IDFA when permitted)</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
+            <tr><td>Advertising Data</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
+            <tr><td>Product Interaction</td><td>No</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
+            <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, SDK analytics</td></tr>
+            <tr><td>User ID (Firebase uid)</td><td>Yes</td><td>No</td><td>App functionality (account and save link)</td></tr>
+        </tbody>
+    </table>
+    <p class="muted">First-party crash, performance, and usage analytics are not declared because collection is disabled on iOS. Email from Sign in with Apple is optional and described above; it is not listed in the manifest when not collected by our SDK layer.</p>
+
+    <h2>4. How we use information</h2>
     <ul>
         <li>provide gameplay, save recovery, authentication, notifications, achievements, and purchases;</li>
-        <li>protect accounts, prevent abuse, and verify app/device integrity;</li>
+        <li>protect accounts, prevent abuse, and verify app/device integrity (including App Attest on iOS where enabled);</li>
         <li>deliver and measure ads when displayed or requested and permitted;</li>
         <li>operate optional server-authoritative game features;</li>
         <li>diagnose reliability issues where collection is enabled in a distributed version; and</li>
         <li>comply with legal, platform, and accounting obligations.</li>
     </ul>
 
-    <h2>4. Service providers and sharing</h2>
-    <p>We use Google Play, Firebase, Google Play Games, Google AdMob, the mediation partners listed above, and optional market-data providers. We do not sell personal information for money. Advertising identifiers and related data may be "shared" for cross-context behavioural advertising under some privacy laws when personalized advertising is permitted. Service-provider processing for hosting, authentication, purchases, security, and support is limited to providing those services.</p>
-    <p>Provider policies include <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>, <a href="https://firebase.google.com/support/privacy">Firebase Privacy and Security</a>, and <a href="https://support.google.com/admob/answer/6128543">AdMob privacy information</a>.</p>
+    <h2>5. Service providers and sharing</h2>
+    <p>We use Google Firebase, Google AdMob, mediation partners listed above, Apple (App Store, Sign in with Apple, push notifications, App Attest), and on Android Google Play and Google Play Games. We do not sell personal information for money. Advertising identifiers and related data may be "shared" for cross-context behavioural advertising under some privacy laws when personalized advertising is permitted.</p>
+    <p>Provider policies include <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>, <a href="https://firebase.google.com/support/privacy">Firebase Privacy and Security</a>, <a href="https://support.google.com/admob/answer/6128543">AdMob privacy information</a>, and <a href="https://www.apple.com/legal/privacy/">Apple's Privacy Policy</a>.</p>
 
-    <h2>5. Retention</h2>
-    <p>Local data remains until you reset it, clear app storage, delete the account, or uninstall. Cloud game data remains while the account is active or until deletion succeeds. Purchase records and entitlement evidence may be retained where required to prevent duplicate fulfillment, resolve disputes, or meet legal obligations. Google may retain Play purchase history, subscriptions, achievements, and other platform records under Google's policies even after Money Tycoon account deletion.</p>
-
-    <h2>6. Security</h2>
-    <p>Network traffic uses HTTPS and Android cleartext traffic is disabled. Firebase security rules isolate player documents by authenticated user ID. Release builds use code shrinking/obfuscation and app/device integrity controls. No method of transmission or storage is perfectly secure, so we cannot guarantee absolute security.</p>
+    <h2>6. Retention</h2>
+    <p>Local data remains until you reset it, clear app storage, delete the account, or uninstall. Cloud game data remains while the account is active or until deletion succeeds. Purchase records and entitlement evidence may be retained where required to prevent duplicate fulfillment, resolve disputes, or meet legal obligations. Apple or Google may retain store purchase history under their policies even after Money Tycoon account deletion.</p>
 
     <h2 id="data-deletion">7. Data deletion and account deletion</h2>
     <div class="deletion-card">
@@ -134,18 +171,25 @@
             <li>Open <strong>Settings → Account</strong>.</li>
             <li>Select <strong>Delete Account</strong> and confirm.</li>
         </ol>
-        <p>This process requests deletion of the Firebase account, Firestore game data, server-authoritative exchange/rebirth records, registered notification data, and Money Tycoon-managed cloud saves, then clears local game data. If a recent Google reauthentication is required, the App will ask you to sign in again before continuing.</p>
+        <p>This process requests deletion of the Firebase account, Firestore game data, server-authoritative exchange/rebirth records, registered notification data, and Money Tycoon-managed cloud saves, then clears local game data.</p>
+        <p><strong>Android:</strong> If a recent Google reauthentication is required, the App will ask you to sign in again before continuing. Play Games snapshots may require separate cleanup through Google account controls.</p>
+        <p><strong>iOS:</strong> Sign in with Apple reauthentication may be required before deletion completes. Google Play Games steps do not apply on iOS.</p>
 
         <h3>Request deletion without the App</h3>
-        <p>Email <a href="mailto:capitalcraftgames@gmail.com?subject=Money%20Tycoon%20account%20deletion%20request">capitalcraftgames@gmail.com</a> with the subject <strong>Money Tycoon account deletion request</strong>. Include the linked Google email or any player/account identifier you still have. Do not send a password or payment-card information. We may ask for proportionate verification so another person cannot delete your account. We aim to complete verified requests within 30 days.</p>
+        <p>Email <a href="mailto:capitalcraftgames@gmail.com?subject=Money%20Tycoon%20account%20deletion%20request">capitalcraftgames@gmail.com</a> with the subject <strong>Money Tycoon account deletion request</strong>. Include the linked Apple or Google email or any player/account identifier you still have. Do not send a password or payment-card information. We aim to complete verified requests within 30 days.</p>
 
         <h3>What may remain</h3>
-        <p>Google Play purchase history, active/cancelled subscription records, Play Games achievements, fraud-prevention records, and records legally required for accounting or dispute handling may remain under applicable retention rules. De-identified aggregate records that can no longer be linked to you may also remain.</p>
+        <p>App Store or Google Play purchase history, active/cancelled subscription records, platform achievements, fraud-prevention records, and records legally required for accounting or dispute handling may remain under applicable retention rules.</p>
     </div>
     <p><strong>Reset Game</strong> starts a new playthrough and is not the same as Delete Account. <strong>Clear storage</strong> or uninstall removes local data but does not reliably delete cloud data.</p>
 
     <h2>8. Your choices and rights</h2>
-    <p>You can manage ad privacy choices and notification categories in Settings, decline optional Google/Play Games linking, use Android advertising controls, and request access, correction, export, restriction, objection, or deletion where applicable. EEA/UK users may withdraw consent and complain to their local supervisory authority. California residents may request to know, correct, or delete covered information and may opt out of sharing used for cross-context behavioural advertising. We do not discriminate for exercising privacy rights.</p>
+    <div class="platform-card">
+        <p><strong>Both platforms:</strong> Manage ad privacy choices and notification categories in Settings; request access, correction, export, restriction, objection, or deletion where applicable.</p>
+        <p><strong>Android:</strong> Decline optional Google/Play Games linking; use Android advertising controls.</p>
+        <p><strong>iOS:</strong> Decline ATT tracking; manage Sign in with Apple from Settings; use iOS advertising controls described above.</p>
+    </div>
+    <p>EEA/UK users may withdraw consent and complain to their local supervisory authority. California residents may request to know, correct, or delete covered information and may opt out of sharing used for cross-context behavioural advertising. We do not discriminate for exercising privacy rights.</p>
 
     <h2>9. Children</h2>
     <p>Money Tycoon is not directed to children under 13, and we do not knowingly collect personal information from a child under 13. If you believe a child provided information, contact us so we can investigate and delete it.</p>
@@ -160,6 +204,6 @@
     <p><strong>CapitalCraft Studios</strong><br>
        Email: <a href="mailto:capitalcraftgames@gmail.com">capitalcraftgames@gmail.com</a></p>
 
-    <p class="muted">© 2026 CapitalCraft Studios. Money Tycoon is a virtual financial simulation game.</p>
+    <p class="muted">© 2026 CapitalCraft Studios. Money Tycoon is a virtual financial simulation game. Available on Google Play and the Apple App Store.</p>
 </body>
 </html>
