@@ -50,8 +50,8 @@
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
     <p><strong>Developer and data controller:</strong> CapitalCraft Studios</p>
-    <p><strong>Last updated:</strong> August 26, 2026</p>
-    <p><strong>Effective date:</strong> August 26, 2026</p>
+    <p><strong>Last updated:</strong> 30 August 2026</p>
+    <p><strong>Effective date:</strong> 30 August 2026</p>
 
     <div class="summary">
         <strong>Plain-language summary</strong>
@@ -59,8 +59,8 @@
             <li>Money Tycoon is available on <strong>Android (Google Play)</strong> and <strong>iOS (Apple App Store)</strong>. This policy covers both platforms. Platform-specific details are called out below.</li>
             <li>On first launch, the App creates an anonymous Firebase account so online features can work without requiring an email address.</li>
             <li>Most game processing happens on your device. Optional cloud backup, notifications, purchases, and rewarded ads are under your control on each platform.</li>
-            <li><strong>Android:</strong> Firebase Analytics and Crashlytics may collect diagnostics where consent law requires opt-in. Google Play Games Saved Games may back up progress when signed in.</li>
-            <li><strong>iOS:</strong> First-party Firebase Analytics and Crashlytics collection are <strong>disabled</strong> in current releases. Ads use Google AdMob with Apple's App Tracking Transparency (ATT) and the Google User Messaging Platform (UMP). Optional Sign in with Apple or Link Google Account (when OAuth is configured) links your Firebase account. Google Play Games Saved Games are not available on iOS.</li>
+            <li><strong>Android:</strong> Firebase Analytics and Crashlytics may collect diagnostics where consent law requires opt-in. Google Play Games Saved Games may back up progress when signed in. Linking a Google account is Mogul Exchange / online identity, not empire backup.</li>
+            <li><strong>iOS:</strong> First-party Firebase Analytics and Crashlytics collection are <strong>disabled</strong> in current releases. Ads use Google AdMob with Apple's App Tracking Transparency (ATT) and the Google User Messaging Platform (UMP). Empire backup on iOS uses CloudKit / iCloud. Optional Sign in with Apple or Link Google Account (when OAuth is configured) is Mogul Exchange / online identity, not iCloud backup. Google Play Games Saved Games are not available on iOS.</li>
             <li>You can delete your account and cloud data in Settings or by email.</li>
         </ul>
     </div>
@@ -80,16 +80,16 @@
     <h3>Anonymous account and optional linked identity</h3>
     <p>On first launch, the App automatically asks Firebase Authentication to create a random user ID. No email address is required for this anonymous account.</p>
     <div class="platform-card">
-        <p><strong>Android:</strong> You may optionally link a Google or Google Play Games identity for account recovery. If you link one, Firebase may receive the email address, provider user ID, display name, and authentication token supplied by Google. We do not receive your Google password.</p>
-        <p><strong>iOS:</strong> You may optionally use <strong>Sign in with Apple</strong> to link your Firebase account. When Google OAuth is configured on the build, Settings may also offer <strong>Link Google Account</strong> for the same Firebase backup/account-link path. Apple or Google may provide an email and provider user ID. We do not receive passwords. <strong>Google Play Games Saved Games are not available on iOS.</strong></p>
+        <p><strong>Android:</strong> You may optionally sign in to Google Play Games for Saved Games restore, and optionally link a Google account for Mogul Exchange / online identity. Linking Google is not Android empire backup. If you link Google, Firebase may receive the email address, provider user ID, display name, and authentication token supplied by Google. We do not receive your Google password.</p>
+        <p><strong>iOS:</strong> You may optionally use <strong>Sign in with Apple</strong> to link your Firebase account for Mogul Exchange / online identity. That is not iCloud backup. When Google OAuth is configured on the build, Settings may also offer <strong>Link Google Account</strong> for the same Exchange / online identity path. Apple or Google may provide an email and provider user ID. We do not receive passwords. <strong>Google Play Games Saved Games are not available on iOS.</strong></p>
     </div>
 
     <h3>Cloud save and game-service data</h3>
     <div class="platform-card">
-        <p><strong>Android</strong> may synchronize a protected copy of game state to Firebase when cloud services and a network connection are available, and may write Google Play Games Saved Games snapshots when Play Games sign-in is active.</p>
-        <p><strong>iOS</strong> may synchronize a protected copy of selected game systems to Firebase when you link Sign in with Apple or Google (when Link Google Account is offered) and use cloud backup. iOS does not use Google Play Games. Restore coverage on iOS is limited to the systems implemented in the current release; the App discloses restore limitations in Settings when applicable.</p>
+        <p><strong>Android:</strong> Restore authority is Google Play Games Saved Games when you are signed in. Linking a Google account (Firebase Auth) is Mogul Exchange / online identity, not empire backup. Firestore gameplay snapshots are not the Android restore path and remain disabled by default. Play Games Saved Games snapshots may be written when Play Games sign-in is active.</p>
+        <p><strong>iOS:</strong> Empire backup and restore use CloudKit / iCloud. Sign in with Apple (and optional Link Google when OAuth is configured) is Mogul Exchange / online identity, not iCloud backup. iOS does not use Google Play Games. Restore coverage on iOS is limited to the systems implemented in the current release; the App discloses restore limitations in Settings when applicable.</p>
     </div>
-    <p>Cloud copies are keyed to your Firebase user ID and may include player profile data, virtual economy records, progress, achievements, settings, notification preferences, locale, app version, device model, OS version, and server-authoritative exchange data when those features are enabled.</p>
+    <p>Play Games Saved Games snapshots (Android) and CloudKit / iCloud copies (iOS) hold empire restore data when those backup paths are used. Firebase may still hold identity, notification tokens, and Mogul Exchange / online records keyed to your Firebase user ID. Firestore gameplay snapshots are not the Android restore path.</p>
 
     <h3>Purchases</h3>
     <div class="platform-card">
@@ -141,7 +141,7 @@
             <tr><td>Advertising Data</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
             <tr><td>Product Interaction</td><td>No</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
             <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, SDK analytics</td></tr>
-            <tr><td>User ID (Firebase uid)</td><td>Yes</td><td>No</td><td>App functionality (account and save link)</td></tr>
+            <tr><td>User ID (Firebase uid)</td><td>Yes</td><td>No</td><td>App functionality (account and online identity)</td></tr>
         </tbody>
     </table>
     <p class="muted">First-party crash, performance, and usage analytics are not declared because collection is disabled on iOS. Email from Sign in with Apple is optional and described above; it is not listed in the manifest when not collected by our SDK layer.</p>
@@ -157,7 +157,7 @@
     </ul>
 
     <h2>5. Service providers and sharing</h2>
-    <p>We use Google Firebase, Google AdMob, mediation partners listed above, Apple (App Store, Sign in with Apple, push notifications, App Attest), and on Android Google Play and Google Play Games. We do not sell personal information for money. Advertising identifiers and related data may be "shared" for cross-context behavioural advertising under some privacy laws when personalized advertising is permitted.</p>
+    <p>We use Google Firebase, Google AdMob, mediation partners listed above, Apple (App Store, Sign in with Apple, iCloud / CloudKit, push notifications, App Attest), and on Android Google Play and Google Play Games. We do not sell personal information for money. Advertising identifiers and related data may be "shared" for cross-context behavioural advertising under some privacy laws when personalized advertising is permitted.</p>
     <p>Provider policies include <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>, <a href="https://firebase.google.com/support/privacy">Firebase Privacy and Security</a>, <a href="https://support.google.com/admob/answer/6128543">AdMob privacy information</a>, and <a href="https://www.apple.com/legal/privacy/">Apple's Privacy Policy</a>.</p>
 
     <h2>6. Retention</h2>
