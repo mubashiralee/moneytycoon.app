@@ -50,8 +50,8 @@
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
     <p><strong>Developer and data controller:</strong> CapitalCraft Studios</p>
-    <p><strong>Last updated:</strong> 30 August 2026</p>
-    <p><strong>Effective date:</strong> 30 August 2026</p>
+    <p><strong>Last updated:</strong> 3 October 2026</p>
+    <p><strong>Effective date:</strong> 3 October 2026</p>
 
     <div class="summary">
         <strong>Plain-language summary</strong>
@@ -107,7 +107,7 @@
 
     <h3>Advertising and consent</h3>
     <p>On both platforms, the App may show passive inline banner ads to free players on selected informational screens. It also offers rewarded ads and rewarded-interstitial bonus offers that play only after you deliberately choose to watch.</p>
-    <p>Google AdMob and enabled mediation partners may process an advertising or device identifier, IP-derived approximate location, ad interactions, and diagnostic information for ad delivery, measurement, frequency control, fraud prevention, and compliance. Depending on region and consent, ads may be personalized or non-personalized.</p>
+    <p>Google AdMob and enabled mediation partners may process an advertising or device identifier, your IP address and the approximate location derived from it, ad interactions, and diagnostic information about ad performance for ad delivery, measurement, frequency control, fraud prevention, and compliance. Depending on region and consent, ads may be personalized or non-personalized.</p>
     <div class="platform-card">
         <p><strong>Android:</strong> The Google User Messaging Platform (UMP) stores and communicates your advertising consent choices. You can reopen privacy choices from Settings and reset or delete the Android advertising ID in system settings.</p>
         <p><strong>iOS:</strong> UMP presents advertising consent where required. Apple's <strong>App Tracking Transparency</strong> prompt controls access to the Identifier for Advertisers (IDFA) for cross-app tracking. You can change tracking permission in iOS Settings → Privacy &amp; Security → Tracking, and reset the advertising identifier under Privacy &amp; Security → Apple Advertising. The App's privacy manifest declares tracking and the AdMob tracking domain <code>googleads.g.doubleclick.net</code>.</p>
@@ -130,6 +130,9 @@
         <p><strong>iOS:</strong> The same feature uses the system share sheet. Money Tycoon does not upload the image; the destination you choose processes it under its own terms.</p>
     </div>
 
+    <h3>Chat, Messages and Profile Photos</h3>
+    <p>If you use Mogul Exchange chat, we process the messages you send (floor, direct messages and syndicates), reactions, your handle and display name, and any profile photo you upload. Photos are resized on your device before upload. This data is "Other User Content" and "Photos or Videos" in Apple's App Privacy terms, is linked to your account, and is used only to run the chat and to moderate it (automatic screening, reports and staff review). It is stored on our game server <code>exchange.moneytycoon.duckdns.org</code>, is visible to other players in the rooms you post in, and is deleted when you delete your account (Settings → Delete Account).</p>
+
     <h2>3. iOS privacy manifest alignment</h2>
     <p>The iOS App declares the following collected data categories in <code>PrivacyInfo.xcprivacy</code>, consistent with this policy:</p>
     <table>
@@ -137,14 +140,19 @@
             <tr><th>Category</th><th>Linked to identity?</th><th>Used for tracking?</th><th>Primary purposes</th></tr>
         </thead>
         <tbody>
-            <tr><td>Device ID (IDFA when permitted)</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
-            <tr><td>Advertising Data</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
-            <tr><td>Product Interaction</td><td>No</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
-            <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, SDK analytics</td></tr>
+            <tr><td>Name</td><td>Yes</td><td>No</td><td>App functionality (optional Sign in with Apple)</td></tr>
+            <tr><td>Email Address</td><td>Yes</td><td>No</td><td>App functionality (optional Sign in with Apple)</td></tr>
             <tr><td>User ID (Firebase uid)</td><td>Yes</td><td>No</td><td>App functionality (account and online identity)</td></tr>
+            <tr><td>Device ID (IDFA when permitted; push token)</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics, app functionality</td></tr>
+            <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, SDK analytics</td></tr>
+            <tr><td>Product Interaction</td><td>No</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
+            <tr><td>Advertising Data</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
+            <tr><td>Gameplay Content</td><td>Yes</td><td>No</td><td>App functionality (cloud save, Exchange listings and bids)</td></tr>
+            <tr><td>Other User Content (chat messages)</td><td>Yes</td><td>No</td><td>App functionality (chat and moderation)</td></tr>
+            <tr><td>Photos or Videos (profile photos)</td><td>Yes</td><td>No</td><td>App functionality (chat profile and moderation)</td></tr>
         </tbody>
     </table>
-    <p class="muted">First-party crash, performance, and usage analytics are not declared because collection is disabled on iOS. Email from Sign in with Apple is optional and described above; it is not listed in the manifest when not collected by our SDK layer.</p>
+    <p class="muted">First-party crash, performance, and usage analytics are not declared because collection is disabled on iOS. The Google Mobile Ads SDK declares its own collection (including approximate location derived from IP address and ad diagnostics); those categories appear on the App Store privacy label alongside the table above.</p>
 
     <h2>4. How we use information</h2>
     <ul>
@@ -158,6 +166,10 @@
 
     <h2>5. Service providers and sharing</h2>
     <p>We use Google Firebase, Google AdMob, mediation partners listed above, Apple (App Store, Sign in with Apple, iCloud / CloudKit, push notifications, App Attest), and on Android Google Play and Google Play Games. We do not sell personal information for money. Advertising identifiers and related data may be "shared" for cross-context behavioural advertising under some privacy laws when personalized advertising is permitted.</p>
+    <ul>
+        <li><strong>Game services operated by us</strong> — <code>exchange.moneytycoon.duckdns.org</code> runs Mogul Exchange, the Auction House, the Trading Floor and chat. It receives your account ID, sign-in token, trades and listings, and chat content.</li>
+        <li><strong>Discord (optional)</strong> — if you link Discord to claim a welcome reward, we store the link between your game account and your Discord user ID and a referral code. Discord processes your Discord account under its own privacy policy.</li>
+    </ul>
     <p>Provider policies include <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>, <a href="https://firebase.google.com/support/privacy">Firebase Privacy and Security</a>, <a href="https://support.google.com/admob/answer/6128543">AdMob privacy information</a>, and <a href="https://www.apple.com/legal/privacy/">Apple's Privacy Policy</a>.</p>
 
     <h2>6. Retention</h2>
