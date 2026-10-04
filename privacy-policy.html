@@ -50,7 +50,7 @@
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
     <p><strong>Developer and data controller:</strong> CapitalCraft Studios</p>
-    <p><strong>Last updated:</strong> 3 October 2026</p>
+    <p><strong>Last updated:</strong> 4 October 2026</p>
     <p><strong>Effective date:</strong> 3 October 2026</p>
 
     <div class="summary">
@@ -132,6 +132,7 @@
 
     <h3>Chat, Messages and Profile Photos</h3>
     <p>If you use Mogul Exchange chat, we process the messages you send (floor, direct messages and syndicates), reactions, your handle and display name, and any profile photo you upload. Photos are resized on your device before upload. This data is "Other User Content" and "Photos or Videos" in Apple's App Privacy terms, is linked to your account, and is used only to run the chat and to moderate it (automatic screening, reports and staff review). It is stored on our game server <code>exchange.moneytycoon.duckdns.org</code>, is visible to other players in the rooms you post in, and is deleted when you delete your account (Settings → Delete Account).</p>
+    <p><strong>Birth year.</strong> Before your first chat post we ask, once, for the year you were born. We store only the year, linked to your account on the same server, to decide how chat works for you; it is not shown to other players and cannot be changed afterwards. If the answer means you may be under 13, chat becomes read-only (the public Floor only, no direct messages, syndicates or profile photo), any profile photo is removed, and ads on that device are requested with Google's child-directed treatment and without the App Tracking Transparency prompt. The answer is kept if you start a new game and is deleted when you delete your account. This is "Other Data Types" in Apple's App Privacy terms.</p>
 
     <h2>3. iOS privacy manifest alignment</h2>
     <p>The iOS App declares the following collected data categories in <code>PrivacyInfo.xcprivacy</code>, consistent with this policy:</p>
@@ -145,11 +146,13 @@
             <tr><td>User ID (Firebase uid)</td><td>Yes</td><td>No</td><td>App functionality (account and online identity)</td></tr>
             <tr><td>Device ID (IDFA when permitted; push token)</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics, app functionality</td></tr>
             <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, SDK analytics</td></tr>
-            <tr><td>Product Interaction</td><td>No</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
-            <tr><td>Advertising Data</td><td>No</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
+            <tr><td>Product Interaction</td><td>Yes</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
+            <tr><td>Advertising Data</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
+            <tr><td>Coarse Location (approximate, from IP address, by the ads SDK)</td><td>Yes</td><td>No</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
             <tr><td>Gameplay Content</td><td>Yes</td><td>No</td><td>App functionality (cloud save, Exchange listings and bids)</td></tr>
             <tr><td>Other User Content (chat messages)</td><td>Yes</td><td>No</td><td>App functionality (chat and moderation)</td></tr>
             <tr><td>Photos or Videos (profile photos)</td><td>Yes</td><td>No</td><td>App functionality (chat profile and moderation)</td></tr>
+            <tr><td>Other Data Types (chat birth year)</td><td>Yes</td><td>No</td><td>App functionality (chat age rules)</td></tr>
         </tbody>
     </table>
     <p class="muted">First-party crash, performance, and usage analytics are not declared because collection is disabled on iOS. The Google Mobile Ads SDK declares its own collection (including approximate location derived from IP address and ad diagnostics); those categories appear on the App Store privacy label alongside the table above.</p>
@@ -204,7 +207,7 @@
     <p>EEA/UK users may withdraw consent and complain to their local supervisory authority. California residents may request to know, correct, or delete covered information and may opt out of sharing used for cross-context behavioural advertising. We do not discriminate for exercising privacy rights.</p>
 
     <h2>9. Children</h2>
-    <p>Money Tycoon is not directed to children under 13, and we do not knowingly collect personal information from a child under 13. If you believe a child provided information, contact us so we can investigate and delete it.</p>
+    <p>Money Tycoon is not directed to children under 13, and we do not knowingly collect personal information from a child under 13. Chat asks for a birth year before a player's first post; a player whose answer means they may be under 13 can only read the public Floor, cannot post, send direct messages, join syndicates or upload a photo, and is served child-directed ads without the tracking prompt (see Chat, Messages and Profile Photos above). If you believe a child provided information, contact us so we can investigate and delete it.</p>
 
     <h2>10. International transfers</h2>
     <p>Service providers may process information in countries other than your own, including the United States. Where required, transfers rely on recognized safeguards such as adequacy decisions, the EU-US Data Privacy Framework, or standard contractual clauses.</p>
