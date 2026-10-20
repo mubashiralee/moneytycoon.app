@@ -50,8 +50,8 @@
 <body>
     <h1>Privacy Policy for Money Tycoon</h1>
     <p><strong>Developer and data controller:</strong> CapitalCraft Studios</p>
-    <p><strong>Last updated:</strong> 4 October 2026</p>
-    <p><strong>Effective date:</strong> 3 October 2026</p>
+    <p><strong>Last updated:</strong> 17 October 2026</p>
+    <p><strong>Effective date:</strong> 17 October 2026</p>
 
     <div class="summary">
         <strong>Plain-language summary</strong>
@@ -60,7 +60,7 @@
             <li>On first launch, the App creates an anonymous Firebase account so online features can work without requiring an email address.</li>
             <li>Most game processing happens on your device. Optional cloud backup, notifications, purchases, and rewarded ads are under your control on each platform.</li>
             <li><strong>Android:</strong> Firebase Analytics and Crashlytics may collect diagnostics where consent law requires opt-in. Google Play Games Saved Games may back up progress when signed in. Linking a Google account is Mogul Exchange / online identity, not empire backup.</li>
-            <li><strong>iOS:</strong> First-party Firebase Analytics and Crashlytics collection are <strong>disabled</strong> in current releases. Ads use Google AdMob with Apple's App Tracking Transparency (ATT) and the Google User Messaging Platform (UMP). Empire backup on iOS uses CloudKit / iCloud. Optional Sign in with Apple or Link Google Account (when OAuth is configured) is Mogul Exchange / online identity, not iCloud backup. Google Play Games Saved Games are not available on iOS.</li>
+            <li><strong>iOS:</strong> Google Analytics for Firebase measures how the game and its advertising perform, using a limited set of data: app installs and opens, in-app purchase amounts, ad views and ad revenue, and approximate location from your IP address. In regions where privacy law requires consent (for example the EEA and UK), this happens <strong>only after you agree</strong> in the consent form; elsewhere it is <strong>on by default</strong>. It is never enabled for players flagged as children. Firebase Crashlytics stays <strong>disabled</strong>. Ads use Google AdMob with Apple's App Tracking Transparency (ATT) and the Google User Messaging Platform (UMP). Empire backup on iOS uses CloudKit / iCloud. Optional Sign in with Apple or Link Google Account (when OAuth is configured) is Mogul Exchange / online identity, not iCloud backup. Google Play Games Saved Games are not available on iOS.</li>
             <li>You can delete your account and cloud data in Settings or by email.</li>
         </ul>
     </div>
@@ -118,7 +118,7 @@
     <h3>Diagnostics, analytics, and configuration</h3>
     <div class="platform-card">
         <p><strong>Android:</strong> Firebase Analytics and Firebase Crashlytics may collect app interactions, crash logs, diagnostics, device information, and an anonymous user ID where privacy law requires consent (for example the EEA and UK), and may be enabled by default elsewhere. You can revisit consent choices from Settings.</p>
-        <p><strong>iOS:</strong> First-party Firebase Analytics and Crashlytics collection are <strong>disabled</strong> in current App Store builds (<code>FIREBASE_ANALYTICS_COLLECTION_ENABLED=false</code>). Third-party ad SDKs may still process limited diagnostic data when an ad is requested. Firebase Remote Config and Firebase App Check (including Apple <strong>App Attest</strong> where enabled) may process installation and integrity signals needed to deliver configuration and protect online features securely.</p>
+        <p><strong>iOS:</strong> Google Analytics for Firebase stays off until the app has received its remote configuration. In regions where privacy law requires consent (for example the EEA and UK), it is turned on only after you agree in the Google User Messaging Platform (UMP) consent form; elsewhere it is turned on by default. It is never turned on for players flagged as children (the child setting or an under-13 age answer). Advertising uses of your device's advertising identifier require your permission through Apple's App Tracking Transparency (ATT) prompt, which you can change in iOS Settings → Privacy &amp; Security → Tracking; a "Do Not Sell My Data" choice keeps advertising uses off. Where privacy law requires consent, you can change your choice at any time in Settings → About → Manage Privacy Options. When on, it collects app-instance usage events (including <code>first_open</code>), in-app purchase events (product, price, currency), ad-impression revenue, and approximate location derived from your IP address. It is keyed to a random app-instance ID, not to your account. Firebase Crashlytics collection stays <strong>disabled</strong> on iOS. Third-party ad SDKs may still process limited diagnostic data when an ad is requested. Firebase Remote Config and Firebase App Check (including Apple <strong>App Attest</strong> where enabled) may process installation and integrity signals needed to deliver configuration and protect online features securely.</p>
     </div>
 
     <h3>Read-only market-data providers</h3>
@@ -144,18 +144,18 @@
             <tr><td>Name</td><td>Yes</td><td>No</td><td>App functionality (optional Sign in with Apple)</td></tr>
             <tr><td>Email Address</td><td>Yes</td><td>No</td><td>App functionality (optional Sign in with Apple)</td></tr>
             <tr><td>User ID (Firebase uid)</td><td>Yes</td><td>No</td><td>App functionality (account and online identity)</td></tr>
-            <tr><td>Device ID (IDFA when permitted; push token)</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics, app functionality</td></tr>
-            <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, SDK analytics</td></tr>
-            <tr><td>Product Interaction</td><td>Yes</td><td>Yes</td><td>Advertising and SDK analytics</td></tr>
-            <tr><td>Advertising Data</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
-            <tr><td>Coarse Location (approximate, from IP address, by the ads SDK)</td><td>Yes</td><td>No</td><td>Third-party advertising, developer advertising, SDK analytics</td></tr>
+            <tr><td>Device ID (IDFA when permitted; Firebase app-instance ID; push token)</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, analytics, app functionality</td></tr>
+            <tr><td>Purchase History</td><td>Yes</td><td>Yes</td><td>App functionality, analytics (in-app purchase measurement after consent)</td></tr>
+            <tr><td>Product Interaction</td><td>Yes</td><td>Yes</td><td>Analytics (first-party Firebase Analytics after consent, and SDK analytics), developer advertising, third-party advertising</td></tr>
+            <tr><td>Advertising Data</td><td>Yes</td><td>Yes</td><td>Third-party advertising, developer advertising, analytics (including ad-impression revenue)</td></tr>
+            <tr><td>Coarse Location (approximate, from IP address)</td><td>Yes</td><td>No</td><td>Analytics, developer advertising, third-party advertising</td></tr>
             <tr><td>Gameplay Content</td><td>Yes</td><td>No</td><td>App functionality (cloud save, Exchange listings and bids)</td></tr>
             <tr><td>Other User Content (chat messages)</td><td>Yes</td><td>No</td><td>App functionality (chat and moderation)</td></tr>
             <tr><td>Photos or Videos (profile photos)</td><td>Yes</td><td>No</td><td>App functionality (chat profile and moderation)</td></tr>
             <tr><td>Other Data Types (chat birth year)</td><td>Yes</td><td>No</td><td>App functionality (chat age rules)</td></tr>
         </tbody>
     </table>
-    <p class="muted">First-party crash, performance, and usage analytics are not declared because collection is disabled on iOS. The Google Mobile Ads SDK declares its own collection (including approximate location derived from IP address and ad diagnostics); those categories appear on the App Store privacy label alongside the table above.</p>
+    <p class="muted">First-party Firebase Analytics data falls under the Device ID, Product Interaction, Purchase History, Advertising Data and Coarse Location rows above. First-party crash reporting (Firebase Crashlytics) is disabled on iOS. The Google Mobile Ads SDK declares its own collection (including approximate location derived from IP address and ad diagnostics); those categories appear on the App Store privacy label alongside the table above.</p>
 
     <h2>4. How we use information</h2>
     <ul>
